@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
-import { http } from "#/api/http";
+import { http } from "#/shared/api/http";
 
 /**
  * A tiny in-memory stand-in for the Meta-Frame API, plugged into the real axios

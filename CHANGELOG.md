@@ -29,6 +29,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Project restructured into `app/`, `features/` (rolls, cameras, lenses, film-stocks, labs),
+  `shared/` (ui, components, composables, api, lib), `layouts/`, `stores/` and `styles/`. Each
+  feature owns its `api.ts`, `queries.ts`, `types.ts`, `schema.ts`, `components/`, `pages/`,
+  `routes.ts` and `index.ts`. Routing moved from file-based to code-based routes collected in
+  `app/router.ts`; `@tanstack/router-plugin` was removed. shadcn-vue aliases in `components.json`
+  point at `src/shared/`.
 - Cameras, Lenses, Film Stocks, Inventory, Labs, Expiry and Rolls use the same filterable list
   layout. Cameras and Lenses only manage gear information; rolls are managed from Rolls.
 - Select dropdowns use the shadcn-vue `Select` instead of the native element.
@@ -42,6 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Screens and actions that have no API endpoints yet: Overview, Negatives at Lab, Statistics,
   Search by focal length, CSV Import, the processing-job page, Load into camera, Finish roll,
   Send to lab, lens changes on a roll, frame notes and scan import.
+- `@tanstack/router-plugin` and the generated `routeTree.gen.ts`; route code splitting is no longer
+  automatic.
 - "Updated just now" and the Refresh button under lists.
 - The Camera and Lens filters on Rolls.
 
