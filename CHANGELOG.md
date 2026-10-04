@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   cameras, lenses, film stocks, inventory, labs and rolls. API errors keep their HTTP status and
   show the server message.
 - Roll writes through the API: add rolls with `POST /rolls/bulk`, edit with `PUT /rolls/{id}`
-  (`expiryYear` and `expiryMonth` are sent as flat fields) and delete with `DELETE /rolls/{id}`.
+  (expiry is sent as a nested `expiry: { year, month }` object) and delete with `DELETE /rolls/{id}`.
 - Roll detail page backed by `GET /rolls/{id}`, including the camera, its lenses, the base stock,
   processing history, frames and cost totals.
 - `DataTable` built on TanStack Table with sortable columns, a `SearchField`, column filters in the
@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Placeholders on every text, number and select field.
 - shadcn-vue `Select` with the option label shown in the trigger, and the `Empty` and
   `DropdownMenu` components.
+- Pagination on every list: a "Result per page" select (10, 20 or 50, default 10), the visible
+  range with the total, and first, previous, page number, next and last controls.
+- Expiry month is picked by name (January to December) in Add roll and Edit roll.
+- Colored badges for film type, process and packaging on the film stock list.
 - Rolls opens in List view; Expiry is built from the rolls list.
 - Test fake server (`src/test/fakeServer.ts`) and tests for the API layer, tables, filters, dialogs
   and the camera, lens, stock, roll and expiry screens.
@@ -37,6 +41,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   point at `src/shared/`.
 - Cameras, Lenses, Film Stocks, Inventory, Labs, Expiry and Rolls use the same filterable list
   layout. Cameras and Lenses only manage gear information; rolls are managed from Rolls.
+- The roll list "Stock" column and the board cards show brand and name.
+- Sorting is off for Mount, Description and Active on Cameras, and for Format and Status on Rolls.
+- Page title is "Meta Frames | Dashboard".
 - Select dropdowns use the shadcn-vue `Select` instead of the native element.
 - Form fields align at the top when a neighbouring field has a hint or an error.
 - Dialogs always render a description, hidden from view when none is given.
@@ -58,7 +65,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Edit camera form opened empty when its details had not loaded yet.
 - Toast notifications were unstyled because the `vue-sonner` stylesheet was not loaded.
 - The select arrow sat against the edge of the field.
-- Expiry was not saved on rolls: the API reads `expiryYear` and `expiryMonth`, not a nested object.
+- Expiry was not saved when adding or editing rolls: the API reads a nested
+  `expiry: { year, month }` object and ignores flat `expiryYear` and `expiryMonth` fields.
 - "Not found" pages for missing cameras, stocks and rolls never showed, because API errors lost
   their HTTP status.
 - Empty filters showed a blank value instead of "All …".
