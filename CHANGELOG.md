@@ -25,6 +25,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `DropdownMenu` components.
 - Pagination on every list: a "Result per page" select (10, 20 or 50, default 10), the visible
   range with the total, and first, previous, page number, next and last controls.
+- Roll actions through the API, from Roll detail:
+  - Load into camera (`PUT /rolls/{id}/load`) with camera, date loaded and shot ISO; shown for
+    in-stock rolls.
+  - Manage lenses (`PUT /rolls/{id}/lenses`) with the lenses linked to the roll's camera; shown
+    for rolls on a camera that is not fixed-lens.
+  - Mark as finished (`PUT /rolls/{id}/finish`); shown for rolls in a camera.
+  - Send to lab (`PUT /rolls/{id}/processing/{jobId}`) with lab (or self-develop), service,
+    process, price, date sent and notes; shown for rolls that are done shooting.
+- Roll detail has a separate "Camera & lenses" card.
 - Expiry month is picked by name (January to December) in Add roll and Edit roll.
 - Colored badges for film type, process and packaging on the film stock list.
 - Rolls opens in List view; Expiry is built from the rolls list.
@@ -53,8 +62,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Offline mode: the browser-stored data layer, the artificial-latency setting, the CSV import and
   the `idb-keyval` dependency.
 - Screens and actions that have no API endpoints yet: Overview, Negatives at Lab, Statistics,
-  Search by focal length, CSV Import, the processing-job page, Load into camera, Finish roll,
-  Send to lab, lens changes on a roll, frame notes and scan import.
+  Search by focal length, CSV Import, the processing-job page, frame notes and scan import.
 - `@tanstack/router-plugin` and the generated `routeTree.gen.ts`; route code splitting is no longer
   automatic.
 - "Updated just now" and the Refresh button under lists.
