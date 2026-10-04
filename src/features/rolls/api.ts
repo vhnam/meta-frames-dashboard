@@ -99,7 +99,7 @@ function toApiRow(r: ApiRoll): RollRow {
       description: "",
       createdAt: "",
     },
-    stockName: r.stockName,
+    stockName: [r.stockBrand, r.stockName].filter(Boolean).join(" "),
     boxIso: 0,
     cameraName: r.cameraName ?? null,
     negativesAtLab: r.negativesAtLab,
@@ -196,6 +196,10 @@ export const rollQueries = {
     }),
 };
 
+/** The API reads a nested `expiry`; flat `expiryYear`/`expiryMonth` are silently ignored. */
+const toApiExpiry = (i: { expiryYear?: number | null; expiryMonth?: number | null }) =>
+  i.expiryYear ? { year: i.expiryYear, month: i.expiryMonth ?? undefined } : undefined;
+
 export const addRolls = async (input: AddRollsInput) => {
   await http.post("/rolls/bulk", {
     filmStockId: input.stockId,
@@ -203,8 +207,7 @@ export const addRolls = async (input: AddRollsInput) => {
     exposures: input.exposures,
     quantity: input.quantity,
     price: input.price ?? undefined,
-    expiryYear: input.expiryYear ?? undefined,
-    expiryMonth: input.expiryMonth ?? undefined,
+    expiry: toApiExpiry(input),
   });
   return input.quantity;
 };
@@ -216,8 +219,7 @@ export const updateRoll = async (v: { row: RollRow; input: UpdateRollInput }) =>
     format: Number(input.format),
     exposures: input.exposures,
     price: input.price ?? undefined,
-    expiryYear: input.expiryYear ?? undefined,
-    expiryMonth: input.expiryMonth ?? undefined,
+    expiry: toApiExpiry(input),
   });
 };
 

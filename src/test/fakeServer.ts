@@ -270,7 +270,7 @@ export function installFakeServer() {
           format: body.format,
           exposures: body.exposures,
           price: body.price,
-          expiry: body.expiryYear ? { year: body.expiryYear, month: body.expiryMonth } : undefined,
+          expiry: body.expiry,
         });
       }
       return respond(201, {});
@@ -296,7 +296,7 @@ export function installFakeServer() {
           format: body.format,
           exposures: body.exposures,
           price: body.price,
-          expiry: body.expiryYear ? { year: body.expiryYear, month: body.expiryMonth } : undefined,
+          expiry: body.expiry,
         });
         return respond(200, {});
       }

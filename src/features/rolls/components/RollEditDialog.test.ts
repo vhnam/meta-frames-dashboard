@@ -42,11 +42,11 @@ describe("RollEditDialog", () => {
     await flushPromises();
     (document.body.querySelector("button[type=submit]") as HTMLButtonElement).click();
     await vi.waitFor(() => expect(server.rolls[0].exposures).toBe(24));
-    // the API reads expiryYear / expiryMonth, not a nested expiry object
+    // the API reads a nested expiry object and ignores flat expiryYear / expiryMonth
     const put = server.requests.find((r) => r.method === "put")!.body as Record<string, unknown>;
-    expect(put).toMatchObject({ expiryYear: 2028 });
+    expect(put).toMatchObject({ expiry: { year: 2028 } });
     expect(Object.keys(put).sort((a, b) => a.localeCompare(b))).toEqual([
-      "expiryYear",
+      "expiry",
       "exposures",
       "filmStockId",
       "format",
