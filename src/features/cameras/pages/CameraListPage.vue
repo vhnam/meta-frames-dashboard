@@ -48,6 +48,7 @@ const columns: DataTableColumn<CameraRow>[] = [
   },
   {
     id: "mount",
+    enableSorting: false,
     meta: { filter: { label: "Mount", placeholder: "All mounts" } },
     header: "Mount",
     accessorFn: ({ camera: c }) => (c.fixedLens ? "Fixed lens" : c.mount),
@@ -60,6 +61,7 @@ const columns: DataTableColumn<CameraRow>[] = [
   },
   {
     id: "description",
+    enableSorting: false,
     header: "Description",
     accessorFn: ({ camera: c }) => c.description,
     cell: ({ row }) =>
@@ -67,6 +69,7 @@ const columns: DataTableColumn<CameraRow>[] = [
   },
   {
     id: "status",
+    enableSorting: false,
     meta: { filter: { label: "Status", placeholder: "Any status" } },
     header: "Active",
     accessorFn: ({ camera: c }) => (c.active ? "Active" : "Inactive"),

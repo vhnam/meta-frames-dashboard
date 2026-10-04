@@ -59,6 +59,7 @@ const columns: DataTableColumn<RollRow>[] = [
   },
   {
     id: "format",
+    enableSorting: false,
     header: "Format",
     accessorFn: (r) => r.roll.format,
     filterFn: "equalsString",
@@ -74,6 +75,7 @@ const columns: DataTableColumn<RollRow>[] = [
   },
   {
     id: "status",
+    enableSorting: false,
     header: "Status",
     accessorFn: (r) => STATUS_LABELS[r.roll.status],
     filterFn: "equalsString",
