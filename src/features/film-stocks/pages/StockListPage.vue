@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { stockName } from "../format";
+import { PACKAGING_TONE, PROCESS_TONE, TYPE_TONE, stockName } from "../format";
 import { useDeleteStock, useStockList } from "../queries";
-import { FILM_TYPE_LABELS, PACKAGING_LABELS } from "../types";
+import { FILM_TYPE_LABELS, PACKAGING_LABELS, PROCESS_LABELS } from "../types";
 import type { StockRow } from "../types";
 import { Link } from "@tanstack/vue-router";
 import { h, ref } from "vue";
@@ -47,7 +47,11 @@ const columns: DataTableColumn<StockRow>[] = [
     enableGlobalFilter: false,
     filterFn: "equalsString",
     cell: ({ row }) =>
-      h(Badge, { variant: "secondary" }, () => FILM_TYPE_LABELS[row.original.stock.type]),
+      h(
+        Badge,
+        { variant: "secondary", class: TYPE_TONE[row.original.stock.type] },
+        () => FILM_TYPE_LABELS[row.original.stock.type],
+      ),
   },
   {
     id: "iso",
@@ -59,9 +63,15 @@ const columns: DataTableColumn<StockRow>[] = [
     id: "process",
     meta: { filter: { label: "Process", placeholder: "All processes" } },
     header: "Process",
-    accessorFn: (r) => r.stock.process,
+    accessorFn: (r) => PROCESS_LABELS[r.stock.process],
     enableGlobalFilter: false,
     filterFn: "equalsString",
+    cell: ({ row }) =>
+      h(
+        Badge,
+        { variant: "secondary", class: PROCESS_TONE[row.original.stock.process] },
+        () => PROCESS_LABELS[row.original.stock.process],
+      ),
   },
   {
     id: "packaging",
@@ -70,6 +80,12 @@ const columns: DataTableColumn<StockRow>[] = [
     accessorFn: (r) => PACKAGING_LABELS[r.stock.packaging],
     enableGlobalFilter: false,
     filterFn: "equalsString",
+    cell: ({ row }) =>
+      h(
+        Badge,
+        { variant: "secondary", class: PACKAGING_TONE[row.original.stock.packaging] },
+        () => PACKAGING_LABELS[row.original.stock.packaging],
+      ),
   },
   { id: "base", header: "Base stock", accessorFn: (r) => r.baseName ?? "—" },
   {

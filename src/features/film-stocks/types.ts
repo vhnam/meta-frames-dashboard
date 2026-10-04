@@ -12,6 +12,13 @@ export const FILM_TYPE_LABELS: Record<FilmType, string> = {
   slide: "Slide",
 };
 
+export const PROCESS_LABELS: Record<Process, string> = {
+  "C-41": "C-41",
+  "E-6": "E-6",
+  BW: "B&W",
+  "ECN-2": "ECN-2",
+};
+
 export const PACKAGING_LABELS: Record<Packaging, string> = {
   factory: "Factory",
   repack: "Repack",

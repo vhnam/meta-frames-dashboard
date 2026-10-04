@@ -22,7 +22,7 @@ const stocks = useStockList();
 const save = useSaveStock();
 const form = useForm({
   schema: StockSchema,
-  initialInput: { type: "color", process: "C-41", packaging: "factory", boxIso: 400 },
+  initialInput: { type: "color", process: "C-41", packaging: "factory" },
 });
 const baseOpen = ref(false);
 
@@ -34,7 +34,7 @@ watch(open, (isOpen) => {
       brand: s?.brand ?? "",
       name: s?.name ?? "",
       type: s?.type ?? "color",
-      boxIso: s?.boxIso ?? 400,
+      boxIso: s?.boxIso,
       process: s?.process ?? "C-41",
       packaging: s?.packaging ?? "factory",
       stockOrigin: s?.stockOrigin ?? "",
