@@ -14,7 +14,9 @@ import type {
   ExpiryReport,
   RollDetail,
   RollFilters,
+  LoadRollInput,
   RollRow,
+  SendToLabInput,
   RollStatus,
   UpdateRollInput,
 } from "./types";
@@ -221,6 +223,35 @@ export const updateRoll = async (v: { row: RollRow; input: UpdateRollInput }) =>
     price: input.price ?? undefined,
     expiry: toApiExpiry(input),
   });
+};
+
+export const loadRoll = async (v: { id: string; input: LoadRollInput }) => {
+  await http.put(`/rolls/${v.id}/load`, {
+    cameraId: v.input.cameraId,
+    startedAt: v.input.startedAt || undefined,
+    shotIso: v.input.shotIso ?? undefined,
+  });
+};
+
+/** The API upserts a processing job at a client-chosen id. */
+export const sendToLab = async (v: { rollId: string; input: SendToLabInput }) => {
+  const { input } = v;
+  await http.put(`/rolls/${v.rollId}/processing/${crypto.randomUUID()}`, {
+    type: input.type,
+    labId: input.labId || undefined,
+    process: input.process,
+    price: input.price ?? undefined,
+    sentAt: input.sentAt || undefined,
+    notes: input.notes || undefined,
+  });
+};
+
+export const finishRoll = async (id: string) => {
+  await http.put(`/rolls/${id}/finish`, {});
+};
+
+export const setRollLenses = async (v: { id: string; lensIds: string[] }) => {
+  await http.put(`/rolls/${v.id}/lenses`, { lensIds: v.lensIds });
 };
 
 export const deleteRoll = async (id: string) => {

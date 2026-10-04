@@ -48,6 +48,7 @@ interface RollRec {
   status: string;
   cameraId?: string;
   startedAt?: string;
+  lensIds?: string[];
 }
 interface LabRec {
   id: string;
@@ -275,6 +276,38 @@ export function installFakeServer() {
       }
       return respond(201, {});
     }
+    r = m(/^\/rolls\/([^/]+)\/lenses$/);
+    if (r && method === "put") {
+      const roll = server.rolls.find((x) => x.id === r![1]);
+      if (!roll) return notFound("roll");
+      roll.lensIds = body.lensIds;
+      return respond(200, {});
+    }
+    r = m(/^\/rolls\/([^/]+)\/processing\/([^/]+)$/);
+    if (r && method === "put") {
+      const roll = server.rolls.find((x) => x.id === r![1]);
+      if (!roll) return notFound("roll");
+      roll.status = "at_lab";
+      return respond(200, {});
+    }
+    r = m(/^\/rolls\/([^/]+)\/finish$/);
+    if (r && method === "put") {
+      const roll = server.rolls.find((x) => x.id === r![1]);
+      if (!roll) return notFound("roll");
+      roll.status = "done_shooting";
+      return respond(200, {});
+    }
+    r = m(/^\/rolls\/([^/]+)\/load$/);
+    if (r && method === "put") {
+      const roll = server.rolls.find((x) => x.id === r![1]);
+      if (!roll) return notFound("roll");
+      Object.assign(roll, {
+        status: "in_camera",
+        cameraId: body.cameraId,
+        startedAt: body.startedAt ?? "2026-10-05",
+      });
+      return respond(200, {});
+    }
     r = m(/^\/rolls\/([^/]+)$/);
     if (r) {
       const roll = server.rolls.find((x) => x.id === r![1]);
@@ -284,7 +317,7 @@ export function installFakeServer() {
         return respond(200, {
           roll: apiRoll(roll),
           stock: st,
-          lenses: [],
+          lenses: server.lenses.filter((l) => roll.lensIds?.includes(l.id)),
           frames: [],
           processing: [],
           totals: { total: roll.price ?? 0, incomplete: roll.price == null },

@@ -2,8 +2,19 @@ import { keepPreviousData, useQuery } from "@tanstack/vue-query";
 import { toValue, type MaybeRefOrGetter } from "vue";
 import { useApiMutation } from "#/shared/api/mutation";
 import { cameraKeys } from "#/features/cameras";
+import { labKeys } from "#/features/labs";
 import { stockKeys } from "#/features/film-stocks";
-import { addRolls, deleteRoll, rollKeys, rollQueries, updateRoll } from "./api";
+import {
+  addRolls,
+  deleteRoll,
+  finishRoll,
+  loadRoll,
+  rollKeys,
+  rollQueries,
+  sendToLab,
+  setRollLenses,
+  updateRoll,
+} from "./api";
 import type { RollFilters } from "./types";
 
 export const useRollList = (filters: MaybeRefOrGetter<RollFilters>) =>
@@ -31,6 +42,45 @@ export const useUpdateRoll = () =>
       cameraKeys.lists(),
     ],
     success: "Roll updated",
+  });
+
+export const useLoadRoll = () =>
+  useApiMutation({
+    fn: loadRoll,
+    invalidates: (v) => [
+      rollKeys.detail(v.id),
+      rollKeys.lists(),
+      rollKeys.expiry(),
+      stockKeys.all,
+      cameraKeys.all,
+    ],
+    success: "Roll loaded into camera",
+  });
+
+export const useSendToLab = () =>
+  useApiMutation({
+    fn: sendToLab,
+    invalidates: (v) => [
+      rollKeys.detail(v.rollId),
+      rollKeys.lists(),
+      rollKeys.expiry(),
+      labKeys.all,
+    ],
+    success: "Roll sent to lab",
+  });
+
+export const useFinishRoll = () =>
+  useApiMutation({
+    fn: finishRoll,
+    invalidates: (id) => [rollKeys.detail(id), rollKeys.lists(), stockKeys.all, cameraKeys.all],
+    success: "Roll marked as finished",
+  });
+
+export const useSetRollLenses = () =>
+  useApiMutation({
+    fn: setRollLenses,
+    invalidates: (v) => [rollKeys.detail(v.id)],
+    success: "Lenses updated",
   });
 
 export const useDeleteRoll = () =>

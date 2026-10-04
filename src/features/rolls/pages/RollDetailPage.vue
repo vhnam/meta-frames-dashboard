@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { cameraName } from "#/features/cameras";
 import { stockName } from "#/features/film-stocks";
-import { lensName } from "#/features/lenses";
 import { formatVnd } from "#/shared/lib/format";
 import { formatExpiry } from "../format";
-import { useDeleteRoll, useRollDetail } from "../queries";
+import { useDeleteRoll, useFinishRoll, useRollDetail } from "../queries";
 import type { RollDetail, RollRow } from "../types";
 import { useRouter } from "@tanstack/vue-router";
 import { computed, ref } from "vue";
@@ -12,6 +11,9 @@ import PageHeader from "#/shared/components/PageHeader.vue";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import RollStatusBadge from "../components/RollStatusBadge.vue";
 import RollEditDialog from "../components/RollEditDialog.vue";
+import RollLensesDialog from "../components/RollLensesDialog.vue";
+import SendToLabDialog from "../components/SendToLabDialog.vue";
+import LoadRollDialog from "../components/LoadRollDialog.vue";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
@@ -21,8 +23,12 @@ const props = defineProps<{ rollId: string }>();
 const router = useRouter();
 const detail = useRollDetail(() => props.rollId);
 const deleteRoll = useDeleteRoll();
+const finishRoll = useFinishRoll();
 
 const editOpen = ref(false);
+const loadOpen = ref(false);
+const lensesOpen = ref(false);
+const labOpen = ref(false);
 
 async function doDelete() {
   if (ask("Delete this roll?") && (await attempt(deleteRoll.mutateAsync(props.rollId))))
@@ -45,7 +51,6 @@ const kv = computed(() => {
     ["Format", `${d.roll.format} · ${d.roll.exposures} exp`],
     ["Price", formatVnd(d.roll.price)],
     ["Expiry", formatExpiry(d.roll)],
-    ["Camera", d.camera ? cameraName(d.camera) : "—"],
     ["Box ISO", String(d.stock.boxIso)],
     ["Started", d.roll.startDate ?? "—"],
     ["Total cost", formatVnd(d.cost.total) + (d.cost.incomplete ? " (incomplete)" : "")],
@@ -67,6 +72,19 @@ const showNegBadge = (status: string, atLab: boolean) =>
           <Badge v-if="showNegBadge(d.roll.status, d.negativesAtLab)" variant="outline">
             Negatives at lab
           </Badge>
+          <Button v-if="d.roll.status === 'in_stock'" @click="loadOpen = true">
+            Load into camera
+          </Button>
+          <Button
+            v-if="d.roll.status === 'in_camera'"
+            :disabled="finishRoll.isPending.value"
+            @click="attempt(finishRoll.mutateAsync(d.roll.id))"
+          >
+            Mark as finished
+          </Button>
+          <Button v-if="d.roll.status === 'done_shooting'" @click="labOpen = true">
+            Send to lab
+          </Button>
           <Button variant="outline" @click="editOpen = true">Edit</Button>
           <Button v-if="d.roll.status === 'in_stock'" variant="ghost" @click="doDelete"
             >Delete</Button
@@ -81,13 +99,38 @@ const showNegBadge = (status: string, atLab: boolean) =>
               <div class="text-muted-foreground text-xs">{{ k }}</div>
               {{ val }}
             </div>
-            <div class="sm:col-span-2">
-              <div class="text-muted-foreground text-xs">Lenses</div>
-              {{ d.lenses.length ? d.lenses.map((l) => lensName(l)).join(", ") : "—" }}
-            </div>
             <div v-if="d.roll.description" class="sm:col-span-2 lg:col-span-4">
               <div class="text-muted-foreground text-xs">Description</div>
               {{ d.roll.description }}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader class="flex flex-row items-center justify-between">
+            <CardTitle>Camera &amp; lenses</CardTitle>
+            <Button
+              v-if="d.camera && !d.camera.fixedLens"
+              type="button"
+              variant="outline"
+              size="sm"
+              @click="lensesOpen = true"
+            >
+              Manage lenses
+            </Button>
+          </CardHeader>
+          <CardContent class="grid gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <div class="text-muted-foreground text-xs">Camera</div>
+              {{ d.camera ? cameraName(d.camera) : "—" }}
+            </div>
+            <div>
+              <div class="text-muted-foreground text-xs">Lenses</div>
+              <p v-if="!d.lenses.length">—</p>
+              <div v-for="l in d.lenses" :key="l.id" class="grid">
+                <span>{{ [l.brand, l.model].filter(Boolean).join(" ") }}</span>
+                <span class="text-muted-foreground text-xs">{{ l.mount }} mount</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -133,6 +176,20 @@ const showNegBadge = (status: string, atLab: boolean) =>
       </div>
 
       <RollEditDialog v-model:open="editOpen" :row="rowOf(d)" />
+      <RollLensesDialog
+        v-model:open="lensesOpen"
+        :roll-id="d.roll.id"
+        :camera-name="d.camera ? cameraName(d.camera) : undefined"
+        :candidates="d.cameraLenses"
+        :selected-ids="d.lenses.map((l) => l.id)"
+      />
+      <SendToLabDialog
+        v-model:open="labOpen"
+        :row="rowOf(d)"
+        :process="d.stock.process"
+        :finished-on="d.roll.finishDate"
+      />
+      <LoadRollDialog v-model:open="loadOpen" :row="rowOf(d)" />
     </template>
   </QueryBoundary>
 </template>

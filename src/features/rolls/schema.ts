@@ -1,6 +1,7 @@
 import * as v from "valibot";
 import { integer, picklist, required } from "#/shared/lib/schema";
-import { FORMATS } from "./types";
+import { PROCESSES } from "#/features/film-stocks/types";
+import { FORMATS, PROCESSING_TYPES } from "./types";
 
 const expiryYear = v.optional(integer(1900, "Enter a valid year."));
 const expiryMonth = v.optional(
@@ -54,3 +55,18 @@ export const RollSchema = v.pipe(
     ["expiryMonth"],
   ),
 );
+
+export const LoadRollSchema = v.object({
+  cameraId: required("Select a camera."),
+  startedAt: v.optional(v.string()),
+  shotIso: v.optional(integer(1, "ISO must be at least 1.")),
+});
+
+export const SendToLabSchema = v.object({
+  labId: v.optional(v.string()),
+  type: picklist(PROCESSING_TYPES),
+  process: picklist(PROCESSES),
+  price,
+  sentAt: v.optional(v.string()),
+  notes: v.optional(v.string()),
+});

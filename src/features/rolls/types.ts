@@ -122,3 +122,31 @@ export const MONTH_OPTIONS = [
   "November",
   "December",
 ].map((label, i) => ({ value: String(i + 1), label }));
+
+export interface LoadRollInput {
+  cameraId: string;
+  /** Date loaded (ISO date). The API picks the day when omitted. */
+  startedAt?: string;
+  /** Omitted when shot at box ISO. */
+  shotIso?: number;
+}
+
+export const PROCESSING_TYPES = ["develop", "develop_scan", "scan", "print"] as const;
+export const PROCESSING_TYPE_LABELS: Record<(typeof PROCESSING_TYPES)[number], string> = {
+  develop: "Develop",
+  develop_scan: "Develop + scan",
+  scan: "Scan",
+  print: "Print",
+};
+
+export interface SendToLabInput {
+  /** Empty when developed at home. */
+  labId?: string;
+  type: (typeof PROCESSING_TYPES)[number];
+  process: Process;
+  /** VND. */
+  price?: number;
+  /** Date sent (ISO date). */
+  sentAt?: string;
+  notes?: string;
+}
