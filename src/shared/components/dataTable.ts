@@ -4,10 +4,12 @@ import {
   createFacetedRowModel,
   createFacetedUniqueValues,
   createFilteredRowModel,
+  createPaginatedRowModel,
   createSortedRowModel,
   filterFn_equalsString,
   filterFn_includesString,
   globalFilteringFeature,
+  rowPaginationFeature,
   rowSortingFeature,
   sortFn_alphanumeric,
   tableFeatures,
@@ -25,6 +27,8 @@ export interface DataTableColumnMeta {
   };
 }
 
+export const PAGE_SIZES = [10, 20, 50] as const;
+
 export const dataTableFeatures = tableFeatures({
   columnMeta: {} as DataTableColumnMeta,
   columnFacetingFeature,
@@ -34,6 +38,8 @@ export const dataTableFeatures = tableFeatures({
   globalFilteringFeature,
   filteredRowModel: createFilteredRowModel(),
   filterFns: { includesString: filterFn_includesString, equalsString: filterFn_equalsString },
+  rowPaginationFeature,
+  paginatedRowModel: createPaginatedRowModel(),
   rowSortingFeature,
   sortedRowModel: createSortedRowModel(),
   sortFns: { alphanumeric: sortFn_alphanumeric },

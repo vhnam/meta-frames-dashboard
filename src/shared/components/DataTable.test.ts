@@ -111,4 +111,17 @@ describe("DataTable", () => {
     expect(wrapper.find("thead").text()).toContain("Name");
     expect(wrapper.find("tbody").text()).toContain("No rows yet.");
   });
+
+  it("paginates 10 rows per page by default", async () => {
+    const many = Array.from({ length: 25 }, (_, i) => ({ name: `r${i}`, n: i }));
+    const wrapper = mount(DataTable, { props: { columns, data: many } as never });
+    expect(wrapper.findAll("tbody tr")).toHaveLength(10);
+    await wrapper.find('[data-slot="pagination-next"]').trigger("click");
+    expect(wrapper.find("tbody td").text()).toBe("r10");
+  });
+
+  it("hides pagination when rows fit one page", () => {
+    const wrapper = mount(DataTable, { props: { columns, data } as never });
+    expect(wrapper.find('[data-slot="pagination"]').exists()).toBe(false);
+  });
 });
