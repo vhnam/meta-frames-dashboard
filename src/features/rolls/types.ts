@@ -107,3 +107,18 @@ export interface ExpiryReport {
   dated: (RollRow & { expired: boolean })[];
   undated: RollRow[];
 }
+
+export const MONTH_OPTIONS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+].map((label, i) => ({ value: String(i + 1), label }));

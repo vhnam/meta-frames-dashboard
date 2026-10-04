@@ -2,7 +2,7 @@
 import { stockName, useStockList } from "#/features/film-stocks";
 import { useAddRolls } from "../queries";
 import { AddRollsSchema } from "../schema";
-import { FORMATS } from "../types";
+import { FORMATS, MONTH_OPTIONS } from "../types";
 import { reset, setInput, useForm } from "@formisch/vue";
 import type * as v from "valibot";
 import { computed, ref, watch } from "vue";
@@ -121,15 +121,14 @@ async function submit(o: v.InferOutput<typeof AddRollsSchema>) {
         min="1900"
         placeholder="e.g. 2027"
       />
-      <FormInput
+      <FormSelect
         :of="form"
         :path="['expiryMonth']"
         label="Expiry month"
         optional
-        type="number"
-        min="1"
-        max="12"
-        placeholder="e.g. 6"
+        numeric
+        placeholder="Select month"
+        :options="MONTH_OPTIONS"
       />
     </div>
     <StockFormDialog

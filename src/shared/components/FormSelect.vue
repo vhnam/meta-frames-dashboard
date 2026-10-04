@@ -15,6 +15,8 @@ defineProps<{
   optional?: boolean;
   hint?: string;
   disabled?: boolean;
+  /** Store the option value as a number (undefined when cleared). */
+  numeric?: boolean;
 }>();
 </script>
 
@@ -23,13 +25,15 @@ defineProps<{
     <FormField :label="label" :optional="optional" :hint="hint" :error="field.errors?.[0]">
       <div class="flex gap-2">
         <Select
-          :model-value="(field.input as string | undefined) ?? ''"
+          :model-value="field.input == null ? '' : String(field.input)"
           v-bind="field.props"
           :options="options"
           :placeholder="placeholder"
           :allow-empty="!!optional"
           :disabled="disabled"
-          @update:model-value="(x) => (field.input = x as never)"
+          @update:model-value="
+            (x) => (field.input = (numeric ? (x === '' ? undefined : Number(x)) : x) as never)
+          "
         />
         <slot name="action" />
       </div>
