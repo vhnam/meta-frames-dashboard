@@ -56,11 +56,12 @@ describe("LoadRollDialog", () => {
       global: { plugins: [[VueQueryPlugin, { queryClient }]] },
     });
     await flushPromises();
-    const options = () =>
-      wrapper
+    const options = () => {
+      const fields = wrapper
         .findAllComponents(FormSelect)
-        .find((s) => s.props("label") === "Camera")
-        ?.props("options") as { value: string; label: string }[] | undefined;
+        .map((s) => s.props() as { label: string; options: { value: string; label: string }[] });
+      return fields.find((p) => p.label === "Camera")?.options;
+    };
     await vi.waitFor(() => expect(options()?.map((o) => o.value)).toEqual([free.id]));
     expect(options()?.some((o) => o.value === busy.id)).toBe(false);
     wrapper.unmount();
