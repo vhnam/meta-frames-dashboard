@@ -15,6 +15,7 @@ import RollEditDialog from "../components/RollEditDialog.vue";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { Card, CardContent } from "#/shared/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/shared/ui/tabs";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "#/shared/ui/empty";
 import { ask } from "#/shared/lib/ui";
 
@@ -26,6 +27,16 @@ const STATUS_LABELS: Record<RollStatus, string> = {
   developed: "Developed",
   scanned: "Scanned",
 };
+
+type RollTab = "all" | RollStatus;
+/** "All" first, then every status in lifecycle order. */
+const TABS: { value: RollTab; label: string }[] = [
+  { value: "all", label: "All" },
+  ...ROLL_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+];
+const tab = ref<RollTab>("all");
+const inTab = (rows: RollRow[], t: RollTab) =>
+  t === "all" ? rows : rows.filter((r) => r.roll.status === t);
 
 const view = ref<"board" | "list">("list");
 const addOpen = ref(false);
@@ -80,7 +91,6 @@ const columns: DataTableColumn<RollRow>[] = [
     accessorFn: (r) => STATUS_LABELS[r.roll.status],
     filterFn: "equalsString",
     enableGlobalFilter: false,
-    meta: { filter: { label: "Status", placeholder: "Any status" } },
     cell: ({ row: { original: r } }) =>
       h("div", { class: "flex flex-wrap items-center gap-2" }, [
         h(RollStatusBadge, { status: r.roll.status }),
@@ -163,16 +173,32 @@ const columns: DataTableColumn<RollRow>[] = [
           </div>
         </CardContent>
       </Card>
-      <DataTable
-        v-else
-        filter-label="Roll"
-        filter-placeholder="Search stock or camera…"
-        empty-title="No rolls"
-        :empty-text="'No rolls yet. Add rolls to get started.'"
-        :columns="columns"
-        :data="data"
-        :get-row-id="(r) => r.roll.id"
-      />
+      <Tabs v-else v-model="tab">
+        <TabsList>
+          <TabsTrigger v-for="t in TABS" :key="t.value" :value="t.value">
+            {{ t.label }}
+            <Badge variant="outline" class="bg-background px-1.5 tabular-nums">
+              {{ inTab(data, t.value).length }}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+        <!-- one DataTable per tab: each keeps its own pager, reset when the tab changes -->
+        <TabsContent v-for="t in TABS" :key="t.value" :value="t.value">
+          <DataTable
+            filter-label="Roll"
+            filter-placeholder="Search stock or camera…"
+            empty-title="No rolls"
+            :empty-text="
+              t.value === 'all'
+                ? 'No rolls yet. Add rolls to get started.'
+                : `No rolls ${STATUS_LABELS[t.value].toLowerCase()}.`
+            "
+            :columns="columns"
+            :data="inTab(data, t.value)"
+            :get-row-id="(r) => r.roll.id"
+          />
+        </TabsContent>
+      </Tabs>
     </template>
   </QueryBoundary>
   <AddRollsDialog v-model:open="addOpen" />
