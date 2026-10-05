@@ -23,7 +23,9 @@ watch(open, (isOpen) => {
 });
 
 const cameraOptions = computed(() =>
-  (cameras.data.value ?? []).map((r) => ({ value: r.camera.id, label: cameraName(r.camera) })),
+  (cameras.data.value ?? [])
+    .filter((r) => !r.loaded)
+    .map((r) => ({ value: r.camera.id, label: cameraName(r.camera) })),
 );
 
 async function submit(o: v.InferOutput<typeof LoadRollSchema>) {
@@ -52,6 +54,7 @@ async function submit(o: v.InferOutput<typeof LoadRollSchema>) {
       :path="['cameraId']"
       label="Camera"
       placeholder="Select a camera"
+      hint="A camera that already has a roll loaded is not listed."
       :options="cameraOptions"
     />
     <FormInput :of="form" :path="['startedAt']" label="Date loaded" optional type="date" />

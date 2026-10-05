@@ -301,6 +301,14 @@ export function installFakeServer() {
     if (r && method === "put") {
       const roll = server.rolls.find((x) => x.id === r![1]);
       if (!roll) return notFound("roll");
+      const camera = server.cameras.find((c) => c.id === body.cameraId);
+      if (!camera) return notFound("camera");
+      const busy = server.rolls.find((x) => x.cameraId === camera.id && x.status === "in_camera");
+      if (busy)
+        return respond(409, {
+          code: "conflict",
+          message: "This camera already has a roll loaded.",
+        });
       Object.assign(roll, {
         status: "in_camera",
         cameraId: body.cameraId,

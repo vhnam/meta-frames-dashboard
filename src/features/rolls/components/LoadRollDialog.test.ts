@@ -5,6 +5,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { queryClient } from "#/shared/api/client";
 import { installFakeServer, server } from "#/test/fakeServer";
+import FormSelect from "#/shared/components/FormSelect.vue";
 import LoadRollDialog from "./LoadRollDialog.vue";
 
 installFakeServer();
@@ -37,6 +38,31 @@ describe("LoadRollDialog", () => {
     await flushPromises();
     expect(document.body.textContent).toContain("Select a camera.");
     expect(server.requests.some((r) => r.method === "put")).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("leaves out a camera that already has a roll loaded", async () => {
+    const stock = server.addStock({ name: "Portra", brand: "Kodak" });
+    const free = server.addCamera({ brand: "Nikon", model: "FM" });
+    const busy = server.addCamera({ brand: "Nikon", model: "S2" });
+    server.addRoll({ filmStockId: stock.id, cameraId: busy.id, status: "in_camera" });
+    const rec = server.addRoll({ filmStockId: stock.id, status: "in_stock" });
+    const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
+      (r) => r.roll.id === rec.id,
+    )!;
+    const wrapper = mount(LoadRollDialog, {
+      attachTo: document.body,
+      props: { open: true, row },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]] },
+    });
+    await flushPromises();
+    const options = () =>
+      wrapper
+        .findAllComponents(FormSelect)
+        .find((s) => s.props("label") === "Camera")
+        ?.props("options") as { value: string; label: string }[] | undefined;
+    await vi.waitFor(() => expect(options()?.map((o) => o.value)).toEqual([free.id]));
+    expect(options()?.some((o) => o.value === busy.id)).toBe(false);
     wrapper.unmount();
   });
 });
