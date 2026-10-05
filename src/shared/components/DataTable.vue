@@ -9,6 +9,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconFilter,
+  IconFilterFilled,
 } from "@tabler/icons-vue";
 import { dataTableFeatures, PAGE_SIZES, type DataTableColumn } from "./dataTable";
 import { computed, ref, toRef } from "vue";
@@ -137,7 +138,7 @@ defineExpose({ table });
     <Card>
       <CardContent>
         <Table>
-          <TableHeader>
+          <TableHeader class="bg-muted/60 [&_th]:font-semibold">
             <TableRow v-for="group in table.getHeaderGroups()" :key="group.id">
               <TableHead v-for="header in group.headers" :key="header.id">
                 <div v-if="!header.isPlaceholder" class="flex items-center gap-1">
@@ -166,7 +167,8 @@ defineExpose({ table });
                         "
                         :aria-label="`Filter ${header.column.columnDef.meta.filter.label}`"
                       >
-                        <IconFilter class="size-3.5" />
+                        <IconFilterFilled v-if="header.column.getIsFiltered()" class="size-3.5" />
+                        <IconFilter v-else class="size-3.5" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
