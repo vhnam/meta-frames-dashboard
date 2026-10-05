@@ -15,6 +15,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (expiry is sent as a nested `expiry: { year, month }` object) and delete with `DELETE /rolls/{id}`.
 - Roll detail page backed by `GET /rolls/{id}`, including the camera, its lenses, the base stock,
   processing history, frames and cost totals.
+- Processing history on the roll detail page: each job shows its ordered scanners (Noritsu HS-1800,
+  Frontier SP-3000, Other) with a hi-res flag and scan count, and offers Scans received, Negatives
+  returned, Edit and Delete. The card shows the roll's finished date (`finishedAt`) when the API
+  sends one. The roll status follows the API. Send to lab picks the scanners for scan and
+  develop + scan jobs and sends `scanOrders` (Meta-Frame API 0.4.0).
+- Roll list view groups rolls into status tabs (All, In stock, In camera, Done shooting, At lab,
+  Developed, Scanned), each with a count.
 - `DataTable` built on TanStack Table with sortable columns, a `SearchField`, column filters in the
   table headers, a Reset button and an empty state built on `Empty`.
 - Edit and Delete actions for cameras, lenses, film stocks, labs and rolls.
@@ -26,13 +33,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Pagination on every list: a "Result per page" select (10, 20 or 50, default 10), the visible
   range with the total, and first, previous, page number, next and last controls.
 - Roll actions through the API, from Roll detail:
-  - Load into camera (`PUT /rolls/{id}/load`) with camera, date loaded and shot ISO; shown for
-    in-stock rolls.
+  - Load into camera (`PUT /rolls/{id}/load`) with camera, date loaded and shot ISO; shown in the
+    Camera & lenses card for in-stock rolls. A camera that already has a roll loaded is left out
+    of the list, because a camera can hold only one roll.
   - Manage lenses (`PUT /rolls/{id}/lenses`) with the lenses linked to the roll's camera; shown
     for rolls on a camera that is not fixed-lens.
-  - Mark as finished (`PUT /rolls/{id}/finish`); shown for rolls in a camera.
+  - Mark as finished (`PUT /rolls/{id}/finish`); shown in Processing history for rolls in a camera.
   - Send to lab (`PUT /rolls/{id}/processing/{jobId}`) with lab (or self-develop), service,
-    process, price, date sent and notes; shown for rolls that are done shooting.
+    process, price, date sent, notes and scanners; shown on Processing history while the roll can
+    still be sent (done shooting, or scan and print once it has been developed).
 - Roll detail has a separate "Camera & lenses" card.
 - Expiry month is picked by name (January to December) in Add roll and Edit roll.
 - Colored badges for film type, process and packaging on the film stock list.
@@ -51,6 +60,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Cameras, Lenses, Film Stocks, Inventory, Labs, Expiry and Rolls use the same filterable list
   layout. Cameras and Lenses only manage gear information; rolls are managed from Rolls.
 - The roll list "Stock" column and the board cards show brand and name.
+- The roll list Status column filter is replaced by the status tabs.
+- `DataTable` headers are emphasized, and the column filter icon fills in while that filter is
+  active.
 - Sorting is off for Mount, Description and Active on Cameras, and for Format and Status on Rolls.
 - Page title is "Meta Frames | Dashboard".
 - Select dropdowns use the shadcn-vue `Select` instead of the native element.
