@@ -28,3 +28,8 @@ dist-ssr
 
 # Local environment and generated cache
 .env
+
+# Agent skills
+.agents/
+.claude/skills/
+skills-lock.json
