@@ -6,13 +6,17 @@ import { labKeys } from "#/features/labs";
 import { stockKeys } from "#/features/film-stocks";
 import {
   addRolls,
+  deleteJob,
   deleteRoll,
   finishRoll,
   loadRoll,
+  recordNegativesReturned,
+  recordScansReceived,
   rollKeys,
   rollQueries,
   sendToLab,
   setRollLenses,
+  updateJob,
   updateRoll,
 } from "./api";
 import type { RollFilters } from "./types";
@@ -68,6 +72,34 @@ export const useSendToLab = () =>
     ],
     success: "Roll sent to lab",
   });
+
+/** A job change moves the roll status and the lab's in-progress list. */
+const jobInvalidates = (v: { rollId: string }) => [
+  rollKeys.detail(v.rollId),
+  rollKeys.lists(),
+  rollKeys.expiry(),
+  labKeys.all,
+];
+
+export const useUpdateJob = () =>
+  useApiMutation({ fn: updateJob, invalidates: jobInvalidates, success: "Processing job updated" });
+
+export const useRecordScansReceived = () =>
+  useApiMutation({
+    fn: recordScansReceived,
+    invalidates: jobInvalidates,
+    success: "Scans marked as received",
+  });
+
+export const useRecordNegativesReturned = () =>
+  useApiMutation({
+    fn: recordNegativesReturned,
+    invalidates: jobInvalidates,
+    success: "Negatives marked as returned",
+  });
+
+export const useDeleteJob = () =>
+  useApiMutation({ fn: deleteJob, invalidates: jobInvalidates, success: "Processing job deleted" });
 
 export const useFinishRoll = () =>
   useApiMutation({

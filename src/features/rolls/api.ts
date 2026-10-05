@@ -17,7 +17,9 @@ import type {
   LoadRollInput,
   RollRow,
   SendToLabInput,
+  ProcessingType,
   RollStatus,
+  Scanner,
   UpdateRollInput,
 } from "./types";
 
@@ -52,6 +54,7 @@ interface ApiRoll {
   cameraId?: string;
   cameraName?: string;
   startedAt?: string;
+  finishedAt?: string;
   negativesAtLab: boolean;
 }
 
@@ -68,15 +71,17 @@ interface ApiRollDetail {
   }[];
   processing: {
     id: string;
+    labId?: string;
     labName?: string;
-    type?: string;
-    process?: Process;
-    sentDate?: string;
-    sentAt?: string;
+    type: ProcessingType;
+    process: Process;
+    sentAt: string;
+    scansReceivedAt?: string;
+    negativesReturnedAt?: string;
     price?: number;
     notes?: string;
-    negativesReturnedDate?: string;
-    negativesReturnedAt?: string;
+    scanOrders?: { scanner: Scanner; hiRes: boolean; scanCount: number }[];
+    isOpen: boolean;
   }[];
   totals: { total: number; incomplete: boolean };
 }
@@ -93,11 +98,11 @@ function toApiRow(r: ApiRoll): RollRow {
       expiryMonth: r.expiry?.month ?? null,
       status: r.status,
       cameraId: r.cameraId ?? null,
-      // TODO: lenses, shot ISO, finish date and notes are not on the list endpoint
+      // TODO: lenses, shot ISO and notes are not on the list endpoint
       lensIds: [],
       shotIso: null,
       startDate: r.startedAt ?? null,
-      finishDate: null,
+      finishDate: r.finishedAt ?? null,
       description: "",
       createdAt: "",
     },
@@ -156,16 +161,19 @@ export const rollQueries = {
           camera: camera ? toCamera(camera.data) : null,
           lenses: data.lenses.map((l) => toLens(l)),
           cameraLenses: (linked?.data ?? []).map((l) => toLens(l, fixedLens ?? null)),
-          // TODO: job and frame field names are guesses; the spec for them was not available
           jobs: data.processing.map((j) => ({
             id: j.id,
+            labId: j.labId ?? null,
             labName: j.labName ?? "Home",
-            type: j.type ?? "",
-            process: j.process ?? stock.process,
-            sentDate: j.sentDate ?? j.sentAt ?? "",
+            type: j.type,
+            process: j.process,
+            sentDate: j.sentAt,
+            scansReceivedDate: j.scansReceivedAt ?? null,
+            negativesReturnedDate: j.negativesReturnedAt ?? null,
             price: j.price ?? null,
             notes: j.notes ?? "",
-            open: !(j.negativesReturnedDate ?? j.negativesReturnedAt),
+            scanOrders: j.scanOrders ?? [],
+            open: j.isOpen,
           })),
           frames: data.frames.map((f) => ({
             frame: { id: f.id, rollId: id, number: f.number, notes: f.notes ?? "" },
@@ -234,16 +242,40 @@ export const loadRoll = async (v: { id: string; input: LoadRollInput }) => {
 };
 
 /** The API upserts a processing job at a client-chosen id. */
-export const sendToLab = async (v: { rollId: string; input: SendToLabInput }) => {
-  const { input } = v;
-  await http.put(`/rolls/${v.rollId}/processing/${crypto.randomUUID()}`, {
+const putJob = async (rollId: string, jobId: string, input: SendToLabInput) => {
+  await http.put(`/rolls/${rollId}/processing/${jobId}`, {
     type: input.type,
     labId: input.labId || undefined,
     process: input.process,
     price: input.price ?? undefined,
     sentAt: input.sentAt || undefined,
     notes: input.notes || undefined,
+    scanOrders: input.scanOrders,
   });
+};
+
+export const sendToLab = (v: { rollId: string; input: SendToLabInput }) =>
+  putJob(v.rollId, crypto.randomUUID(), v.input);
+
+/** A job's roll and type cannot change; the rest, scanners included, can. */
+export const updateJob = (v: { rollId: string; jobId: string; input: SendToLabInput }) =>
+  putJob(v.rollId, v.jobId, v.input);
+
+/** Without a date the API records today. */
+export const recordScansReceived = async (v: { rollId: string; jobId: string; date?: string }) => {
+  await http.put(`/processing/${v.jobId}/scans-received`, { date: v.date || undefined });
+};
+
+export const recordNegativesReturned = async (v: {
+  rollId: string;
+  jobId: string;
+  date?: string;
+}) => {
+  await http.put(`/processing/${v.jobId}/negatives-returned`, { date: v.date || undefined });
+};
+
+export const deleteJob = async (v: { rollId: string; jobId: string }) => {
+  await http.delete(`/processing/${v.jobId}`);
 };
 
 export const finishRoll = async (id: string) => {

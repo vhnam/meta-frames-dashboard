@@ -13,7 +13,11 @@ beforeEach(() => {
 describe("roll detail", () => {
   it("maps GET /rolls/{id} into the detail view model", async () => {
     const stock = server.addStock({ name: "ColorPlus 200", boxIso: 200 });
-    const roll = server.addRoll({ filmStockId: stock.id, price: 341000 });
+    const roll = server.addRoll({
+      filmStockId: stock.id,
+      price: 341000,
+      finishedAt: "2026-10-05",
+    });
     const detail = await queryClient.fetchQuery(rollQueries.detail(roll.id));
     expect(detail?.stock.name).toBe("ColorPlus 200");
     expect(detail?.roll).toMatchObject({
@@ -21,6 +25,7 @@ describe("roll detail", () => {
       format: "135",
       exposures: 36,
       price: 341000,
+      finishDate: "2026-10-05",
     });
     expect(detail?.cost).toEqual({ total: 341000, incomplete: false });
     expect(detail?.camera).toBeNull();

@@ -69,4 +69,6 @@ export const SendToLabSchema = v.object({
   price,
   sentAt: v.optional(v.string()),
   notes: v.optional(v.string()),
+  scansReceivedAt: v.optional(v.string()),
+  negativesReturnedAt: v.optional(v.string()),
 });

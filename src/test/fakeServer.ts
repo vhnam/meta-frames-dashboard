@@ -48,6 +48,7 @@ interface RollRec {
   status: string;
   cameraId?: string;
   startedAt?: string;
+  finishedAt?: string;
   lensIds?: string[];
 }
 interface LabRec {
@@ -295,6 +296,7 @@ export function installFakeServer() {
       const roll = server.rolls.find((x) => x.id === r![1]);
       if (!roll) return notFound("roll");
       roll.status = "done_shooting";
+      roll.finishedAt ??= "2026-10-05";
       return respond(200, {});
     }
     r = m(/^\/rolls\/([^/]+)\/load$/);

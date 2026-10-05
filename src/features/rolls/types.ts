@@ -79,14 +79,38 @@ export interface RollRow {
   cameraName: string | null;
   negativesAtLab: boolean;
 }
+export const SCANNERS = ["noritsu", "frontier", "other"] as const;
+export type Scanner = (typeof SCANNERS)[number];
+/** Display names are client-side labels; the API only knows the ids. */
+export const SCANNER_LABELS: Record<Scanner, string> = {
+  noritsu: "Noritsu HS-1800",
+  frontier: "Frontier SP-3000",
+  other: "Other scanner",
+};
+
+export interface ScanOrder {
+  scanner: Scanner;
+  hiRes: boolean;
+}
+
+export interface RollJobScanOrder extends ScanOrder {
+  /** Scans imported for this scanner so far. */
+  scanCount: number;
+}
+
 export interface RollJob {
   id: string;
+  /** Absent when developed at home. */
+  labId: string | null;
   labName: string;
-  type: string;
+  type: ProcessingType;
   process: Process;
   sentDate: string;
+  scansReceivedDate: string | null;
+  negativesReturnedDate: string | null;
   price: number | null;
   notes: string;
+  scanOrders: RollJobScanOrder[];
   open: boolean;
 }
 export interface RollDetail {
@@ -132,6 +156,18 @@ export interface LoadRollInput {
 }
 
 export const PROCESSING_TYPES = ["develop", "develop_scan", "scan", "print"] as const;
+export type ProcessingType = (typeof PROCESSING_TYPES)[number];
+/** Job types that produce scans, and so need at least one scanner. */
+export const producesScans = (type: ProcessingType) => type === "develop_scan" || type === "scan";
+/**
+ * Services a roll can be sent for now. Developing happens once: after the first job only scan and
+ * print remain, and none while the roll is still at the lab or not yet finished.
+ */
+export const sendableTypes = (status: RollStatus, jobCount: number): ProcessingType[] => {
+  if (status === "done_shooting") return jobCount ? ["scan", "print"] : [...PROCESSING_TYPES];
+  if (status === "scanned" || status === "developed") return ["scan", "print"];
+  return [];
+};
 export const PROCESSING_TYPE_LABELS: Record<(typeof PROCESSING_TYPES)[number], string> = {
   develop: "Develop",
   develop_scan: "Develop + scan",
@@ -142,11 +178,13 @@ export const PROCESSING_TYPE_LABELS: Record<(typeof PROCESSING_TYPES)[number], s
 export interface SendToLabInput {
   /** Empty when developed at home. */
   labId?: string;
-  type: (typeof PROCESSING_TYPES)[number];
+  type: ProcessingType;
   process: Process;
   /** VND. */
   price?: number;
   /** Date sent (ISO date). */
   sentAt?: string;
   notes?: string;
+  /** Replaces the job's scanner set; empty for develop and print. */
+  scanOrders: ScanOrder[];
 }
