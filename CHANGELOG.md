@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Audit log page (`/audit`) backed by `GET /audit-logs`, showing the last 200 changes with the
+  changed fields. Set `VITE_ACTOR` to send an `X-Actor` header that attributes your changes.
+- Expected dates on processing jobs: `scansExpectedAt` for scan and develop + scan jobs, and
+  `negativesExpectedAt` for lab jobs that develop (develop, develop + scan). Each shows in
+  Processing history and turns red with "(overdue)" until the scans are received or the
+  negatives are returned.
+- `Idempotency-Key` on bulk roll adds so a retried request does not create the rolls twice.
+- The list page and page size are kept in the URL, and Back from a detail page returns to the
+  same page of its list.
 - Meta-Frame API integration through axios (`VITE_API_URL`, default `http://localhost:8080`) for
   cameras, lenses, film stocks, inventory, labs and rolls. API errors keep their HTTP status and
   show the server message.
@@ -16,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Roll detail page backed by `GET /rolls/{id}`, including the camera, its lenses, the base stock,
   processing history, frames and cost totals.
 - Processing history on the roll detail page: each job shows its ordered scanners (Noritsu HS-1800,
-  Frontier SP-3000, Other) with a hi-res flag and scan count, and offers Scans received, Negatives
+  Frontier SP-3000, Other) with a hi-res flag, and offers Scans received, Negatives
   returned, Edit and Delete. The card shows the roll's finished date (`finishedAt`) when the API
   sends one. The roll status follows the API. Send to lab picks the scanners for scan and
   develop + scan jobs and sends `scanOrders` (Meta-Frame API 0.4.0).
@@ -79,9 +88,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   automatic.
 - "Updated just now" and the Refresh button under lists.
 - The Camera and Lens filters on Rolls.
+- The scan count column in Processing history.
 
 ### Fixed
 
+- Editing a roll cleared its shot ISO, dates and description, because the API replaces the roll
+  on `PUT /rolls/{id}`. The list now reads `shotIso` and `description`, and the edit resends them.
 - Edit camera form opened empty when its details had not loaded yet.
 - Toast notifications were unstyled because the `vue-sonner` stylesheet was not loaded.
 - The select arrow sat against the edge of the field.
