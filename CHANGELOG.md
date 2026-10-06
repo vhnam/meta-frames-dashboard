@@ -2,9 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-10-06
 
 ### Added
 
@@ -109,3 +112,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their HTTP status.
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
+
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/vhnam/meta-frames-dashboard/releases/tag/v1.0.0
