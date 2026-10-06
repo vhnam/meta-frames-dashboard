@@ -82,7 +82,7 @@ function syncListSearch() {
   const next = toListSearch(page, pageSize);
   const current = parseListSearch(router.state.location.search);
   if (current.page === next.page && current.pageSize === next.pageSize) return;
-  void router.navigate({ search: next, replace: true });
+  void router.navigate({ to: ".", search: next, replace: true });
 }
 
 watch(pagination, syncListSearch, { deep: true });
