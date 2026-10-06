@@ -49,6 +49,20 @@ export const navSections: NavSection[] = [
 ];
 
 const flat = navSections.flatMap((s) => s.items.flatMap((i) => [i, ...(i.children ?? [])]));
+const listPaths = new Set(flat.map((i) => i.to));
+
+/** A nav destination that renders a list, such as `/rolls` or `/expiry`. */
+export function isListingPath(path: string) {
+  return listPaths.has(path);
+}
+
+/** Longest listing path that is a strict parent of `path`, such as `/rolls` for a roll detail. */
+export function listingPath(path: string) {
+  return [...listPaths]
+    .filter((to) => path.startsWith(`${to}/`))
+    .sort((a, b) => b.length - a.length)[0];
+}
+
 /** Title for the current path, matching the longest nav prefix. */
 export function titleForPath(path: string) {
   const hit = flat

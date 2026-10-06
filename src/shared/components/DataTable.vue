@@ -12,7 +12,9 @@ import {
   IconFilterFilled,
 } from "@tabler/icons-vue";
 import { dataTableFeatures, PAGE_SIZES, type DataTableColumn } from "./dataTable";
-import { computed, ref, toRef } from "vue";
+import { useRouter } from "@tanstack/vue-router";
+import { computed, onMounted, ref, toRef, watch } from "vue";
+import { parseListSearch, rememberList, toListSearch } from "#/shared/lib/listSearch";
 import FilterCard from "./FilterCard.vue";
 import SearchField from "./SearchField.vue";
 import { Button } from "#/shared/ui/button";
@@ -64,7 +66,27 @@ const props = defineProps<{
 }>();
 
 const filter = ref("");
-const pagination = ref({ pageIndex: 0, pageSize: PAGE_SIZES[0] as number });
+const router = useRouter({ warn: false });
+const initial = router ? parseListSearch(router.state.location.search) : {};
+const pagination = ref({
+  pageIndex: Math.max(0, (initial.page ?? 1) - 1),
+  pageSize: initial.pageSize ?? PAGE_SIZES[0],
+});
+
+function syncListSearch() {
+  if (!router) return;
+  const page = pagination.value.pageIndex + 1;
+  const pageSize = pagination.value.pageSize;
+  const path = router.state.location.pathname;
+  rememberList(path, page, pageSize);
+  const next = toListSearch(page, pageSize);
+  const current = parseListSearch(router.state.location.search);
+  if (current.page === next.page && current.pageSize === next.pageSize) return;
+  void router.navigate({ search: next, replace: true });
+}
+
+watch(pagination, syncListSearch, { deep: true });
+onMounted(syncListSearch);
 
 const table = useTable({
   features: dataTableFeatures,
@@ -80,6 +102,16 @@ const table = useTable({
     filter.value = String(typeof next === "function" ? next(filter.value) : (next ?? ""));
   },
 });
+
+/** A restored page past the end of the list falls back to the last page that has rows. */
+watch(
+  () => table.getPageCount(),
+  (count) => {
+    if (count > 0 && pagination.value.pageIndex > count - 1)
+      pagination.value = { ...pagination.value, pageIndex: count - 1 };
+  },
+  { immediate: true },
+);
 
 /** Columns that declare `meta.filter` get a dropdown backed by their TanStack column filter. */
 const filterColumns = computed(() =>
