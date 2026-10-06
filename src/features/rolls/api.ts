@@ -79,6 +79,8 @@ interface ApiRollDetail {
     process: Process;
     sentAt: string;
     scansReceivedAt?: string;
+    scansExpectedAt?: string;
+    negativesExpectedAt?: string;
     negativesReturnedAt?: string;
     price?: number;
     notes?: string;
@@ -170,6 +172,8 @@ export const rollQueries = {
             type: j.type,
             process: j.process,
             sentDate: j.sentAt,
+            scansExpectedDate: j.scansExpectedAt ?? null,
+            negativesExpectedDate: j.negativesExpectedAt ?? null,
             scansReceivedDate: j.scansReceivedAt ?? null,
             negativesReturnedDate: j.negativesReturnedAt ?? null,
             price: j.price ?? null,
@@ -237,6 +241,11 @@ export const updateRoll = async (v: { row: RollRow; input: UpdateRollInput }) =>
     exposures: input.exposures,
     price: input.price ?? undefined,
     expiry: toApiExpiry(input),
+    // the PUT replaces the roll: resend what this form does not edit so it is not cleared
+    shotIso: row.roll.shotIso ?? undefined,
+    startedAt: row.roll.startDate ?? undefined,
+    finishedAt: row.roll.finishDate ?? undefined,
+    description: row.roll.description || undefined,
   });
 };
 
@@ -246,11 +255,6 @@ export const loadRoll = async (v: { id: string; input: LoadRollInput }) => {
     startedAt: v.input.startedAt || undefined,
     shotIso: v.input.shotIso ?? undefined,
   });
-    // the PUT replaces the roll: resend what this form does not edit so it is not cleared
-    shotIso: row.roll.shotIso ?? undefined,
-    startedAt: row.roll.startDate ?? undefined,
-    finishedAt: row.roll.finishDate ?? undefined,
-    description: row.roll.description || undefined,
 };
 
 /** The API upserts a processing job at a client-chosen id. */
@@ -261,6 +265,8 @@ const putJob = async (rollId: string, jobId: string, input: SendToLabInput) => {
     process: input.process,
     price: input.price ?? undefined,
     sentAt: input.sentAt || undefined,
+    scansExpectedAt: input.scansExpectedAt || undefined,
+    negativesExpectedAt: input.negativesExpectedAt || undefined,
     notes: input.notes || undefined,
     scanOrders: input.scanOrders,
   });

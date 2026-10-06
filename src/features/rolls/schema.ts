@@ -68,6 +68,8 @@ export const SendToLabSchema = v.object({
   process: picklist(PROCESSES),
   price,
   sentAt: v.optional(v.string()),
+  scansExpectedAt: v.optional(v.string()),
+  negativesExpectedAt: v.optional(v.string()),
   notes: v.optional(v.string()),
   scansReceivedAt: v.optional(v.string()),
   negativesReturnedAt: v.optional(v.string()),

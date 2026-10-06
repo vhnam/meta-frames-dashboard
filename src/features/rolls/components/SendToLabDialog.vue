@@ -10,7 +10,7 @@ import {
   useUpdateJob,
 } from "../queries";
 import { SendToLabSchema } from "../schema";
-import { PROCESSING_TYPES, PROCESSING_TYPE_LABELS, producesScans } from "../types";
+import { PROCESSING_TYPES, PROCESSING_TYPE_LABELS, developsFilm, producesScans } from "../types";
 import type { ProcessingType, RollJob, RollRow, ScanOrder } from "../types";
 import { getInput, reset, useForm } from "@formisch/vue";
 import type * as v from "valibot";
@@ -59,6 +59,8 @@ watch(open, (isOpen) => {
         process: job.process,
         price: job.price ?? undefined,
         sentAt: job.sentDate,
+        scansExpectedAt: job.scansExpectedDate ?? undefined,
+        negativesExpectedAt: job.negativesExpectedDate ?? undefined,
         notes: job.notes || undefined,
         scansReceivedAt: job.scansReceivedDate ?? undefined,
         negativesReturnedAt: job.negativesReturnedDate ?? undefined,
@@ -78,6 +80,11 @@ const lockedScanners = computed(
   () => props.job?.scanOrders.filter((o) => o.scanCount > 0).map((o) => o.scanner) ?? [],
 );
 const needsScanners = computed(() => !!type.value && producesScans(type.value));
+const labId = computed(() => getInput(form, { path: ["labId"] }));
+/** A lab that develops the film returns the negatives; home and scan-only or print jobs do not. */
+const expectsNegatives = computed(
+  () => !!type.value && developsFilm(type.value) && !!labId.value && labId.value !== SELF,
+);
 watch(needsScanners, (needs) => {
   if (needs && !scanOrders.value.length) scanOrders.value = [{ scanner: "noritsu", hiRes: false }];
 });
@@ -108,6 +115,9 @@ async function submit(o: v.InferOutput<typeof SendToLabSchema>) {
   const { scansReceivedAt, negativesReturnedAt, ...fields } = o;
   const input = {
     ...fields,
+    // scans are only expected from a scanning job; negatives from a lab that develops
+    scansExpectedAt: needsScanners.value ? fields.scansExpectedAt : undefined,
+    negativesExpectedAt: expectsNegatives.value ? fields.negativesExpectedAt : undefined,
     labId: o.labId === SELF ? undefined : o.labId,
     scanOrders: needsScanners.value ? scanOrders.value : [],
   };
@@ -181,6 +191,22 @@ async function submit(o: v.InferOutput<typeof SendToLabSchema>) {
       :locked="lockedScanners"
     />
     <FormInput :of="form" :path="['sentAt']" label="Date sent" optional type="date" />
+    <FormInput
+      v-if="needsScanners"
+      :of="form"
+      :path="['scansExpectedAt']"
+      label="Scans expected back"
+      optional
+      type="date"
+    />
+    <FormInput
+      v-if="expectsNegatives"
+      :of="form"
+      :path="['negativesExpectedAt']"
+      label="Negatives expected back"
+      optional
+      type="date"
+    />
     <div v-if="job" class="grid gap-3">
       <FormInput
         v-if="needsScanners"

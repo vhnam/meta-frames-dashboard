@@ -106,6 +106,8 @@ export interface RollJob {
   type: ProcessingType;
   process: Process;
   sentDate: string;
+  scansExpectedDate: string | null;
+  negativesExpectedDate: string | null;
   scansReceivedDate: string | null;
   negativesReturnedDate: string | null;
   price: number | null;
@@ -159,6 +161,8 @@ export const PROCESSING_TYPES = ["develop", "develop_scan", "scan", "print"] as 
 export type ProcessingType = (typeof PROCESSING_TYPES)[number];
 /** Job types that produce scans, and so need at least one scanner. */
 export const producesScans = (type: ProcessingType) => type === "develop_scan" || type === "scan";
+/** Job types that develop the film, so the lab returns negatives. */
+export const developsFilm = (type: ProcessingType) => type === "develop" || type === "develop_scan";
 /**
  * Services a roll can be sent for now. Developing happens once: after the first job only scan and
  * print remain, and none while the roll is still at the lab or not yet finished.
@@ -184,6 +188,10 @@ export interface SendToLabInput {
   price?: number;
   /** Date sent (ISO date). */
   sentAt?: string;
+  /** When the lab expects to return the scans (ISO date, not before sentAt). */
+  scansExpectedAt?: string;
+  /** Jobs without scans: when the lab expects to return the negatives (not before sentAt). */
+  negativesExpectedAt?: string;
   notes?: string;
   /** Replaces the job's scanner set; empty for develop and print. */
   scanOrders: ScanOrder[];

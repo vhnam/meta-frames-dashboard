@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatVnd } from "#/shared/lib/format";
 import { useDeleteJob } from "../queries";
-import { PROCESSING_TYPE_LABELS, SCANNER_LABELS } from "../types";
+import { PROCESSING_TYPE_LABELS, SCANNER_LABELS, developsFilm } from "../types";
 import type { RollJob, RollRow } from "../types";
 import type { Process } from "#/features/film-stocks/types";
 import { ref } from "vue";
@@ -35,11 +35,42 @@ async function remove(job: RollJob) {
     await attempt(deleteJob.mutateAsync({ rollId: rollId(), jobId: job.id }));
 }
 
+/** ISO dates compare as strings. */
+const isOverdue = (job: RollJob) =>
+  !job.scansReceivedDate &&
+  !!job.scansExpectedDate &&
+  job.scansExpectedDate < new Date().toLocaleDateString("en-CA");
+
+const isNegativesOverdue = (job: RollJob) =>
+  !job.negativesReturnedDate &&
+  !!job.negativesExpectedDate &&
+  job.negativesExpectedDate < new Date().toLocaleDateString("en-CA");
+
 function jobFacts(job: RollJob) {
   return [
     { label: "Type", value: PROCESSING_TYPE_LABELS[job.type] },
     { label: "Process", value: job.process },
     { label: "Sent", value: job.sentDate },
+    // a scanning job always shows when its scans are due, even before a date is set
+    ...(job.scanOrders.length || job.scansExpectedDate
+      ? [
+          {
+            label: "Scans expected",
+            value: job.scansExpectedDate ?? "—",
+            overdue: isOverdue(job),
+          },
+        ]
+      : []),
+    // a lab that develops keeps the negatives until they are returned: show when they are due
+    ...((developsFilm(job.type) && job.labId) || job.negativesExpectedDate
+      ? [
+          {
+            label: "Negatives expected",
+            value: job.negativesExpectedDate ?? "—",
+            overdue: isNegativesOverdue(job),
+          },
+        ]
+      : []),
     { label: "Scans received", value: job.scansReceivedDate ?? "—" },
     { label: "Negatives returned", value: job.negativesReturnedDate ?? "—" },
   ];
@@ -80,7 +111,13 @@ function jobFacts(job: RollJob) {
                 >
                   {{ fact.label }}
                 </TableHead>
-                <TableCell class="px-2 py-1.5 tabular-nums">{{ fact.value }}</TableCell>
+                <TableCell
+                  class="px-2 py-1.5 tabular-nums"
+                  :class="fact.overdue && 'text-destructive font-medium'"
+                >
+                  {{ fact.value }}
+                  <span v-if="fact.overdue" class="text-xs">(overdue)</span>
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -93,19 +130,17 @@ function jobFacts(job: RollJob) {
               <TableRow class="hover:bg-transparent">
                 <TableHead class="h-8 px-2">Scanner</TableHead>
                 <TableHead class="h-8 px-2">Resolution</TableHead>
-                <TableHead class="h-8 px-2 text-right">Scans</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-if="!j.scanOrders.length" class="hover:bg-transparent">
-                <TableCell colspan="3" class="text-muted-foreground px-2 py-1.5">None</TableCell>
+                <TableCell colspan="2" class="text-muted-foreground px-2 py-1.5">None</TableCell>
               </TableRow>
               <TableRow v-for="o in j.scanOrders" :key="o.scanner" class="hover:bg-transparent">
                 <TableCell class="px-2 py-1.5 whitespace-normal">
                   {{ SCANNER_LABELS[o.scanner] }}
                 </TableCell>
                 <TableCell class="px-2 py-1.5">{{ o.hiRes ? "Hi-res" : "Standard" }}</TableCell>
-                <TableCell class="px-2 py-1.5 text-right tabular-nums">{{ o.scanCount }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
