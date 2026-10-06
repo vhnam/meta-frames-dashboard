@@ -63,6 +63,14 @@ const props = defineProps<{
   emptyText?: string;
   /** Hide the built-in search and dropdown filters (the page supplies its own). */
   hideFilters?: boolean;
+  /** Extra classes on the `<table>` (for example `table-fixed`). */
+  tableClass?: string;
+  /** Makes each body row activatable. Rows become keyboard-focusable. */
+  onSelect?: (row: TData) => void;
+  /** `getRowId` value of the row shown as selected. */
+  selectedRowId?: string;
+  /** Accessible name for an activatable row. */
+  rowLabel?: (row: TData) => string;
 }>();
 
 const filter = ref("");
@@ -169,10 +177,14 @@ defineExpose({ table });
   <div class="space-y-4">
     <Card>
       <CardContent>
-        <Table>
+        <Table :class="tableClass">
           <TableHeader class="bg-muted/60 [&_th]:font-semibold">
             <TableRow v-for="group in table.getHeaderGroups()" :key="group.id">
-              <TableHead v-for="header in group.headers" :key="header.id">
+              <TableHead
+                v-for="header in group.headers"
+                :key="header.id"
+                :class="header.column.columnDef.meta?.class"
+              >
                 <div v-if="!header.isPlaceholder" class="flex items-center gap-1">
                   <button
                     v-if="header.column.getCanSort()"
@@ -233,9 +245,25 @@ defineExpose({ table });
             <TableRow
               v-for="row in table.getRowModel().rows"
               :key="row.id"
-              :class="rowClass?.(row.original)"
+              :data-state="
+                selectedRowId != null && row.id === selectedRowId ? 'selected' : undefined
+              "
+              :tabindex="onSelect ? 0 : undefined"
+              :aria-label="onSelect ? (rowLabel?.(row.original) ?? 'View details') : undefined"
+              :class="[
+                rowClass?.(row.original),
+                onSelect &&
+                  'cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset',
+              ]"
+              @click="onSelect?.(row.original)"
+              @keydown.enter.prevent="onSelect?.(row.original)"
+              @keydown.space.prevent="onSelect?.(row.original)"
             >
-              <TableCell v-for="cell in row.getAllCells()" :key="cell.id">
+              <TableCell
+                v-for="cell in row.getAllCells()"
+                :key="cell.id"
+                :class="cell.column.columnDef.meta?.class"
+              >
                 <FlexRender :cell="cell" />
               </TableCell>
             </TableRow>

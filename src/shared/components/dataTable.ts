@@ -25,6 +25,8 @@ export interface DataTableColumnMeta {
     placeholder: string;
     format?: (value: string) => string;
   };
+  /** Width and overflow classes applied to the header and body cells. */
+  class?: string;
 }
 
 export const PAGE_SIZES = [10, 20, 50] as const;

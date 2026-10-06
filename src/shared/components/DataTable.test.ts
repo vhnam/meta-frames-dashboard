@@ -120,6 +120,22 @@ describe("DataTable", () => {
     expect(wrapper.find("tbody td").text()).toBe("r10");
   });
 
+  it("activates a row from click and keyboard when onSelect is set", async () => {
+    const onSelect = vi.fn();
+    const wrapper = mount(DataTable, {
+      props: { columns, data, onSelect, selectedRowId: "0", rowLabel: (r: Row) => r.name } as never,
+    });
+    const row = wrapper.find("tbody tr");
+    expect(row.attributes("tabindex")).toBe("0");
+    expect(row.attributes("aria-label")).toBe("b");
+    expect(row.attributes("data-state")).toBe("selected");
+    await row.trigger("click");
+    expect(onSelect).toHaveBeenCalledWith(data[0]);
+    await row.trigger("keydown", { key: "Enter" });
+    await row.trigger("keydown", { key: " " });
+    expect(onSelect).toHaveBeenCalledTimes(3);
+  });
+
   it("hides pagination when rows fit one page", () => {
     const wrapper = mount(DataTable, { props: { columns, data } as never });
     expect(wrapper.find('[data-slot="pagination"]').exists()).toBe(false);
