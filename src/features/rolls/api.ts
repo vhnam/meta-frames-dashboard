@@ -53,6 +53,8 @@ interface ApiRoll {
   status: RollStatus;
   cameraId?: string;
   cameraName?: string;
+  shotIso?: number;
+  description?: string;
   startedAt?: string;
   finishedAt?: string;
   negativesAtLab: boolean;
@@ -98,12 +100,12 @@ function toApiRow(r: ApiRoll): RollRow {
       expiryMonth: r.expiry?.month ?? null,
       status: r.status,
       cameraId: r.cameraId ?? null,
-      // TODO: lenses, shot ISO and notes are not on the list endpoint
+      // TODO: lenses are not on the list endpoint
       lensIds: [],
-      shotIso: null,
+      shotIso: r.shotIso ?? null,
       startDate: r.startedAt ?? null,
       finishDate: r.finishedAt ?? null,
-      description: "",
+      description: r.description ?? "",
       createdAt: "",
     },
     stockName: [r.stockBrand, r.stockName].filter(Boolean).join(" "),
@@ -239,6 +241,11 @@ export const loadRoll = async (v: { id: string; input: LoadRollInput }) => {
     startedAt: v.input.startedAt || undefined,
     shotIso: v.input.shotIso ?? undefined,
   });
+    // the PUT replaces the roll: resend what this form does not edit so it is not cleared
+    shotIso: row.roll.shotIso ?? undefined,
+    startedAt: row.roll.startDate ?? undefined,
+    finishedAt: row.roll.finishDate ?? undefined,
+    description: row.roll.description || undefined,
 };
 
 /** The API upserts a processing job at a client-chosen id. */
