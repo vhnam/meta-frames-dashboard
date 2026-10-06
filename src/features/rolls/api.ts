@@ -213,14 +213,19 @@ const toApiExpiry = (i: { expiryYear?: number | null; expiryMonth?: number | nul
   i.expiryYear ? { year: i.expiryYear, month: i.expiryMonth ?? undefined } : undefined;
 
 export const addRolls = async (input: AddRollsInput) => {
-  await http.post("/rolls/bulk", {
-    filmStockId: input.stockId,
-    format: Number(input.format),
-    exposures: input.exposures,
-    quantity: input.quantity,
-    price: input.price ?? undefined,
-    expiry: toApiExpiry(input),
-  });
+  await http.post(
+    "/rolls/bulk",
+    {
+      filmStockId: input.stockId,
+      format: Number(input.format),
+      exposures: input.exposures,
+      quantity: input.quantity,
+      price: input.price ?? undefined,
+      expiry: toApiExpiry(input),
+    },
+    // one key per submit: a retry of the same request must not add the rolls twice
+    { headers: { "Idempotency-Key": crypto.randomUUID() } },
+  );
   return input.quantity;
 };
 

@@ -3,7 +3,11 @@ import axios, { isAxiosError } from "axios";
 /** Shared axios instance for the Meta-Frame REST API. */
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8080",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    // attributes every change in the audit trail (GET /audit-logs)
+    ...(import.meta.env.VITE_ACTOR ? { "X-Actor": import.meta.env.VITE_ACTOR } : {}),
+  },
 });
 
 // API errors always look like `{ code, message }`: surface the message.
