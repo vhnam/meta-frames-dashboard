@@ -68,7 +68,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   point at `src/shared/`.
 - Cameras, Lenses, Film Stocks, Inventory, Labs, Expiry and Rolls use the same filterable list
   layout. Cameras and Lenses only manage gear information; rolls are managed from Rolls.
-- The roll list "Stock" column and the board cards show brand and name.
+- The roll list "Stock" column shows brand and name.
+- The audit log table stays within the page. A row opens a sheet from the right with the full
+  change. Create, update and delete each have their own color.
+- shadcn-vue style in `components.json` is `reka-nova`.
 - The roll list Status column filter is replaced by the status tabs.
 - `DataTable` headers are emphasized, and the column filter icon fills in while that filter is
   active.
@@ -80,6 +83,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- Board view on the rolls list. Rolls stay in the status-tab list.
 - Offline mode: the browser-stored data layer, the artificial-latency setting, the CSV import and
   the `idb-keyval` dependency.
 - Screens and actions that have no API endpoints yet: Overview, Negatives at Lab, Statistics,
@@ -92,6 +96,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Saving the list page in the URL stays on the current route, so the pager's search params
+  type-check.
 - Editing a roll cleared its shot ISO, dates and description, because the API replaces the roll
   on `PUT /rolls/{id}`. The list now reads `shotIso` and `description`, and the edit resends them.
 - Edit camera form opened empty when its details had not loaded yet.
