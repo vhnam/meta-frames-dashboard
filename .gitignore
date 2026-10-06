@@ -26,8 +26,10 @@ dist-ssr
 !.vscode/settings.json
 !.vscode/extensions.json
 
-src/routeTree.gen.ts
-
 # Local environment and generated cache
 .env
-.tanstack
+
+# Agent skills
+.agents/
+.claude/skills/
+skills-lock.json
