@@ -5,6 +5,7 @@ import {
   IconBuildingStore,
   IconCalendarTime,
   IconCamera,
+  IconHistory,
   IconCameraCog,
   IconMovie,
   IconStack2,
@@ -45,6 +46,10 @@ export const navSections: NavSection[] = [
       { title: "Expiry", to: "/expiry", icon: IconCalendarTime },
       { title: "Labs", to: "/labs", icon: IconBuildingStore },
     ],
+  },
+  {
+    label: "System",
+    items: [{ title: "Audit log", to: "/audit", icon: IconHistory }],
   },
 ];
 

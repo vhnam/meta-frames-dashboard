@@ -1,5 +1,6 @@
 import { createRoute, createRouter, redirect } from "@tanstack/vue-router";
 import { rootRoute } from "#/layouts/rootRoute";
+import { auditRoutes } from "#/features/audit/routes";
 import { camerasRoutes } from "#/features/cameras/routes";
 import { filmStocksRoutes } from "#/features/film-stocks/routes";
 import { labsRoutes } from "#/features/labs/routes";
@@ -21,6 +22,7 @@ const routeTree = rootRoute.addChildren([
   ...lensesRoutes,
   ...filmStocksRoutes,
   ...labsRoutes,
+  ...auditRoutes,
 ]);
 
 export const router = createRouter({ routeTree });
