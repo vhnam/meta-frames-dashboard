@@ -50,14 +50,14 @@ describe("Film & Lab screens", () => {
     await vi.waitFor(() => expect(labs.text()).toContain("Saigon Lab"));
   });
 
-  it("rolls open as a list table, with a Board toggle", async () => {
+  it("rolls open as a list table", async () => {
     const stock = server.addStock({ name: "UltraMax" });
     server.addRoll({ filmStockId: stock.id });
     server.addRoll({ filmStockId: stock.id });
     const w = render(RollsView);
     await vi.waitFor(() => expect(w.text()).toContain("UltraMax"));
     await vi.waitFor(() => expect(w.findAll("tbody tr")).toHaveLength(2));
-    expect(w.findAll("button").some((b) => b.text() === "Board view")).toBe(true);
+    expect(w.findAll("button").some((b) => b.text() === "Board view")).toBe(false);
   });
 
   it("expiry lists in-stock rolls that expire soon, and those without a date", async () => {
