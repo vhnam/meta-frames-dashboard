@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- New look for the dashboard: a warm paper theme with a darkroom-orange accent, Space Grotesk
+  headings over Geist Mono, a dotted content background and larger page titles.
+- Restyled sidebar: an aperture logo with "Film tracker" under the name, upper-case section
+  labels, a bordered active item, the roll count next to Rolls, dot bullets for Cameras and
+  Lenses, and the signed-in user in a card at the bottom. Labs has a flask icon.
+- The header has an Alerts button that counts in-stock rolls expired or expiring within 6
+  months and opens the Expiry page.
 - The dashboard moved under `/app` (for example `/app/rolls`) and needs a session. Visitors are
   sent to `/auth/login` and return to the page they asked for after logging in. `/` is reserved
   for public pages and opens the app for now (breaking: old links such as `/rolls` no longer

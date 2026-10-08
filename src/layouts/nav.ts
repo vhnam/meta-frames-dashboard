@@ -2,11 +2,10 @@ import type { Component } from "vue";
 import {
   IconAperture,
   IconArchive,
-  IconBuildingStore,
   IconCalendarTime,
   IconCamera,
+  IconFlask,
   IconHistory,
-  IconCameraCog,
   IconMovie,
   IconStack2,
 } from "@tabler/icons-vue";
@@ -30,7 +29,7 @@ export const navSections: NavSection[] = [
       {
         title: "Gear",
         to: "/app/cameras",
-        icon: IconCameraCog,
+        icon: IconCamera,
         children: [
           { title: "Cameras", to: "/app/cameras", icon: IconCamera },
           { title: "Lenses", to: "/app/lenses", icon: IconAperture },
@@ -44,7 +43,7 @@ export const navSections: NavSection[] = [
       { title: "Film Stocks", to: "/app/stocks", icon: IconStack2 },
       { title: "Inventory", to: "/app/inventory", icon: IconArchive },
       { title: "Expiry", to: "/app/expiry", icon: IconCalendarTime },
-      { title: "Labs", to: "/app/labs", icon: IconBuildingStore },
+      { title: "Labs", to: "/app/labs", icon: IconFlask },
     ],
   },
   {
