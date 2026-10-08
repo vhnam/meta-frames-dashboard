@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { lensName, useLensList } from "#/features/lenses";
+import { useLensList } from "#/features/lenses";
 import { useCameraDetail, useSetCameraLenses } from "../queries";
 import { computed, ref, watch } from "vue";
 import PlainDialog from "#/shared/components/PlainDialog.vue";
@@ -45,12 +45,16 @@ async function submit() {
     <p v-if="!candidates.length" class="text-muted-foreground text-sm">
       No lenses yet. Add lenses first.
     </p>
-    <label v-for="l in candidates" :key="l.id" class="flex items-center gap-2 text-sm">
-      <input v-model="selected" type="checkbox" :value="l.id" />
-      <span>{{ lensName(l) }}</span>
-      <span class="text-muted-foreground text-xs"
-        >{{ l.mount }}{{ l.active ? "" : " · inactive" }}</span
-      >
+    <label v-for="l in candidates" :key="l.id" class="flex items-start gap-2 text-sm">
+      <input v-model="selected" type="checkbox" :value="l.id" class="mt-0.5" />
+      <span class="grid gap-0.5">
+        <span class="font-medium">{{ [l.brand, l.model].filter(Boolean).join(" ") }}</span>
+        <span class="text-muted-foreground text-xs">
+          {{ l.focalLength }}mm f/{{ l.maxAperture.toFixed(1) }} · {{ l.mount }} mount{{
+            l.active ? "" : " · inactive"
+          }}
+        </span>
+      </span>
     </label>
   </PlainDialog>
 </template>

@@ -260,6 +260,7 @@ export function installFakeServer() {
           .filter((x) => !params.status || x.status === params.status)
           .filter((x) => !params.filmStockId || x.filmStockId === params.filmStockId)
           .filter((x) => !params.cameraId || x.cameraId === params.cameraId)
+          .filter((x) => !params.lensId || !!x.lensIds?.includes(params.lensId as string))
           .map(apiRoll),
       );
     }
