@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restyled sidebar: an aperture logo with "Film tracker" under the name, upper-case section
   labels, a bordered active item, the roll count next to Rolls, dot bullets for Cameras and
   Lenses, and the signed-in user in a card at the bottom. Labs has a flask icon.
+- The sidebar header and top bar are shorter (56px instead of 76px), with a smaller logo.
 - The header has an Alerts button that counts in-stock rolls expired or expiring within 6
   months and opens the Expiry page.
 - Account pages (log in, sign up, forgot and reset password) match the new look: the logo above
@@ -66,6 +67,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `VITE_ACTOR` and the `X-Actor` header. The API names the signed-in user as the actor of
   audit entries.
+
+### Fixed
+
+- The collapsed sidebar: icons, the logo and the user avatar are centred in a wider (64px) rail
+  instead of overflowing their 32px buttons.
+- In the collapsed sidebar, Gear opens a menu with Cameras and Lenses. Before, it could not be
+  clicked.
 
 ## [1.0.0] - 2026-10-06
 
