@@ -31,7 +31,7 @@ function edit(job: RollJob) {
 }
 
 async function remove(job: RollJob) {
-  if (ask("Delete this processing job?"))
+  if (await ask("Delete this processing job?"))
     await attempt(deleteJob.mutateAsync({ rollId: rollId(), jobId: job.id }));
 }
 

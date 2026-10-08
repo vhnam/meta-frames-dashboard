@@ -1,18 +1,27 @@
 <script setup lang="ts">
+import { useStockList, type FilmStock, type FilmType } from "#/features/film-stocks";
 import { useDeleteRoll, useRollList } from "../queries";
 import { ROLL_STATUSES } from "../types";
 import type { RollRow, RollStatus } from "../types";
 import { Link } from "@tanstack/vue-router";
-import { h, ref } from "vue";
+import { computed, h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
+import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import {
+  PRIMARY_LINK,
+  actionsColumn,
+  numberCell,
+  stackCell,
+  tagCell,
+} from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import RollStatusBadge from "../components/RollStatusBadge.vue";
 import AddRollsDialog from "../components/AddRollsDialog.vue";
 import RollEditDialog from "../components/RollEditDialog.vue";
+import { cn } from "#/shared/lib/utils";
 import { Badge } from "#/shared/ui/badge";
-import { Button } from "#/shared/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/shared/ui/tabs";
 import { ask } from "#/shared/lib/ui";
 
@@ -45,6 +54,39 @@ function edit(row: RollRow) {
   editOpen.value = true;
 }
 
+// the list endpoint names the stock only; type and box ISO come from the stock list
+const stocks = useStockList();
+const stockById = computed(
+  () => new Map((stocks.data.value ?? []).map(({ stock }) => [stock.id, stock])),
+);
+
+const TYPE_TEXT: Record<FilmType, string> = {
+  color: "Color Negative",
+  bw: "B&W Negative",
+  slide: "Color Slide",
+};
+function stockMeta(r: RollRow, st: FilmStock | undefined) {
+  const iso = r.roll.shotIso ?? st?.boxIso;
+  return [st && TYPE_TEXT[st.type], `${r.roll.exposures} Exp`, iso && `ISO ${iso}`]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+const FORMAT_SIZE: Record<string, string> = {
+  "135": "35mm",
+  "120": "6cm",
+  "110": "16mm",
+  "4x5": "sheet",
+};
+const formatLabel = (f: string) => (FORMAT_SIZE[f] ? `${f} / ${FORMAT_SIZE[f]}` : f);
+
+const tabCountClass = (t: RollTab, n: number) =>
+  n === 0
+    ? "text-muted-foreground/70 text-[0.7rem]"
+    : t === "at_lab"
+      ? "bg-destructive/15 text-destructive rounded-full px-1.5 text-xs font-semibold"
+      : "bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold";
+
 const negativesBadge = (r: RollRow) =>
   (r.roll.status === "scanned" || r.roll.status === "developed") && r.negativesAtLab;
 
@@ -53,16 +95,17 @@ const columns: DataTableColumn<RollRow>[] = [
     id: "stock",
     header: "Stock",
     accessorFn: (r) => r.stockName,
-    cell: ({ row: { original: r } }) =>
-      h(
-        Link,
-        {
-          to: "/rolls/$rollId",
-          params: { rollId: r.roll.id },
-          class: "font-medium hover:underline",
-        },
-        () => r.stockName,
-      ),
+    cell: ({ row: { original: r } }) => {
+      const st = stockById.value.get(r.roll.stockId);
+      return stackCell(
+        h(
+          Link,
+          { to: "/app/rolls/$rollId", params: { rollId: r.roll.id }, class: PRIMARY_LINK },
+          () => r.stockName,
+        ),
+        stockMeta(r, st),
+      );
+    },
   },
   {
     id: "format",
@@ -71,14 +114,29 @@ const columns: DataTableColumn<RollRow>[] = [
     accessorFn: (r) => r.roll.format,
     filterFn: "equalsString",
     enableGlobalFilter: false,
-    meta: { filter: { label: "Format", placeholder: "All formats" } },
+    meta: { filter: { label: "Format", placeholder: "All formats", format: formatLabel } },
+    cell: ({ row: { original: r } }) => tagCell(formatLabel(r.roll.format)),
   },
-  { id: "camera", header: "Camera", accessorFn: (r) => r.cameraName ?? "—" },
+  {
+    id: "camera",
+    header: "Camera",
+    accessorFn: (r) => r.cameraName ?? "—",
+    cell: ({ row: { original: r } }) =>
+      stackCell(
+        h(
+          "span",
+          { class: r.cameraName ? "font-medium" : "text-muted-foreground" },
+          r.cameraName ?? "—",
+        ),
+        r.roll.description,
+      ),
+  },
   {
     id: "started",
     header: "Started",
     accessorFn: (r) => r.roll.startDate ?? "—",
     enableGlobalFilter: false,
+    cell: ({ row: { original: r } }) => numberCell(r.roll.startDate),
   },
   {
     id: "status",
@@ -93,49 +151,43 @@ const columns: DataTableColumn<RollRow>[] = [
         negativesBadge(r) ? h(Badge, { variant: "outline" }, () => "Negatives at lab") : null,
       ]),
   },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row: { original: r } }) =>
-      h("div", { class: "space-x-1 text-right" }, [
-        h(Button, { size: "sm", variant: "outline", onClick: () => edit(r) }, () => "Edit"),
-        h(
-          Button,
-          {
-            size: "sm",
-            variant: "ghost",
-            onClick: () => ask("Delete this roll?") && deleteRoll.mutate(r.roll.id),
-          },
-          () => "Delete",
-        ),
-      ]),
-  },
+  actionsColumn((r) => ({
+    onEdit: () => edit(r),
+    onDelete: async () => (await ask("Delete this roll?")) && deleteRoll.mutate(r.roll.id),
+  })),
 ];
 </script>
 
 <template>
   <PageHeader title="Rolls" description="Every physical roll and where it is in its lifecycle.">
     <template #actions>
-      <Button @click="addOpen = true">Add rolls</Button>
+      <AddButton @click="addOpen = true">Add rolls</AddButton>
     </template>
   </PageHeader>
 
   <QueryBoundary :query="rolls" :is-empty="() => false">
     <template #default="{ data }">
-      <Tabs v-model="tab">
-        <TabsList>
-          <TabsTrigger v-for="t in TABS" :key="t.value" :value="t.value">
+      <Tabs v-model="tab" class="gap-6">
+        <TabsList
+          class="bg-muted h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border p-1.5"
+        >
+          <TabsTrigger
+            v-for="t in TABS"
+            :key="t.value"
+            :value="t.value"
+            class="text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground h-10 flex-none gap-2.5 px-4 data-[state=active]:font-semibold"
+          >
             {{ t.label }}
-            <Badge variant="outline" class="bg-background px-1.5 tabular-nums">
+            <span :class="cn('tabular-nums', tabCountClass(t.value, inTab(data, t.value).length))">
               {{ inTab(data, t.value).length }}
-            </Badge>
+            </span>
           </TabsTrigger>
         </TabsList>
         <!-- one DataTable per tab: each keeps its own pager, reset when the tab changes -->
         <TabsContent v-for="t in TABS" :key="t.value" :value="t.value">
           <DataTable
             filter-label="Roll"
-            filter-placeholder="Search stock or camera…"
+            filter-placeholder="Search by stock or camera..."
             empty-title="No rolls"
             :empty-text="
               t.value === 'all'

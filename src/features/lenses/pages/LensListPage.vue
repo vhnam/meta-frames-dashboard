@@ -4,11 +4,17 @@ import type { LensRow } from "../types";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
+import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import {
+  actionsColumn,
+  numberCell,
+  primaryText,
+  stackCell,
+  tagCell,
+} from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import LensFormDialog from "../components/LensFormDialog.vue";
-import { Badge } from "#/shared/ui/badge";
-import { Button } from "#/shared/ui/button";
 import { Switch } from "#/shared/ui/switch";
 import { ask } from "#/shared/lib/ui";
 
@@ -27,13 +33,18 @@ function open(id?: string) {
 const sameValue: NonNullable<DataTableColumn<LensRow>["filterFn"]> = (row, columnId, value) =>
   String(row.getValue(columnId)) === String(value);
 
+const lensName = (r: LensRow) => [r.lens.brand, r.lens.model].filter(Boolean).join(" ");
+
 const columns: DataTableColumn<LensRow>[] = [
   {
     id: "lens",
-    accessorFn: (r) => [r.lens.brand, r.lens.model].filter(Boolean).join(" "),
+    accessorFn: lensName,
     header: "Lens",
     cell: ({ row: { original: r } }) =>
-      h("span", { class: "font-medium" }, [r.lens.brand, r.lens.model].filter(Boolean).join(" ")),
+      stackCell(
+        primaryText(lensName(r)),
+        r.cameraName ? `Built into ${r.cameraName}` : r.lens.description,
+      ),
   },
   {
     id: "focal",
@@ -44,7 +55,7 @@ const columns: DataTableColumn<LensRow>[] = [
     header: "Focal",
     enableGlobalFilter: false,
     filterFn: sameValue,
-    cell: ({ row }) => `${row.original.lens.focalLength}mm`,
+    cell: ({ row }) => numberCell(`${row.original.lens.focalLength}mm`),
   },
   {
     id: "aperture",
@@ -59,7 +70,7 @@ const columns: DataTableColumn<LensRow>[] = [
     header: "Aperture",
     enableGlobalFilter: false,
     filterFn: sameValue,
-    cell: ({ row }) => `f/${row.original.lens.maxAperture.toFixed(1)}`,
+    cell: ({ row }) => numberCell(`f/${row.original.lens.maxAperture.toFixed(1)}`),
   },
   {
     id: "mount",
@@ -69,14 +80,15 @@ const columns: DataTableColumn<LensRow>[] = [
     enableGlobalFilter: false,
     filterFn: "equalsString",
     cell: ({ row: { original: r } }) =>
-      r.cameraName
-        ? h(Badge, { variant: "secondary" }, () => `Built-in · ${r.cameraName}`)
-        : r.lens.mount,
+      tagCell(r.lens.builtInCameraId ? "Built-in" : r.lens.mount || "—"),
   },
   {
     id: "active",
-    meta: { filter: { label: "Status", placeholder: "Any status" } },
+    meta: {
+      filter: { label: "Status", placeholder: "Any status", options: ["Active", "Inactive"] },
+    },
     header: "Active",
+    enableSorting: false,
     accessorFn: (r) => (r.lens.active ? "Active" : "Inactive"),
     enableGlobalFilter: false,
     filterFn: "equalsString",
@@ -84,28 +96,17 @@ const columns: DataTableColumn<LensRow>[] = [
       h(Switch, {
         modelValue: r.lens.active,
         disabled: !!r.lens.builtInCameraId,
+        "aria-label": r.lens.active ? "Deactivate lens" : "Activate lens",
         "onUpdate:modelValue": (v: boolean) => setActive.mutate({ id: r.lens.id, active: v }),
       }),
   },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row: { original: r } }) =>
-      h("div", { class: "space-x-1 text-right" }, [
-        h(Button, { size: "sm", variant: "outline", onClick: () => open(r.lens.id) }, () => "Edit"),
-        r.lens.builtInCameraId
-          ? null
-          : h(
-              Button,
-              {
-                size: "sm",
-                variant: "ghost",
-                onClick: () => ask("Delete this lens?") && deleteLens.mutate(r.lens.id),
-              },
-              () => "Delete",
-            ),
-      ]),
-  },
+  // a built-in lens goes with its camera, so it has no Delete
+  actionsColumn((r) => ({
+    onEdit: () => open(r.lens.id),
+    onDelete: r.lens.builtInCameraId
+      ? undefined
+      : async () => (await ask("Delete this lens?")) && deleteLens.mutate(r.lens.id),
+  })),
 ];
 </script>
 
@@ -114,7 +115,7 @@ const columns: DataTableColumn<LensRow>[] = [
     title="Lenses"
     description="Prime lenses, including built-in lenses of fixed-lens cameras."
   >
-    <template #actions><Button @click="open()">Add lens</Button></template>
+    <template #actions><AddButton @click="open()">Add lens</AddButton></template>
   </PageHeader>
   <QueryBoundary :query="lenses" :is-empty="() => false">
     <template #default="{ data }">
@@ -122,7 +123,7 @@ const columns: DataTableColumn<LensRow>[] = [
         empty-title="No lenses"
         empty-text="No lenses yet."
         filter-label="Lens"
-        filter-placeholder="Search brand or model…"
+        filter-placeholder="Search by brand or model..."
         :columns="columns"
         :data="data"
         :get-row-id="(r) => r.lens.id"

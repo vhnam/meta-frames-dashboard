@@ -19,6 +19,7 @@ defineProps<{
   list?: string;
   multiline?: boolean;
   placeholder?: string;
+  autocomplete?: string;
   disabled?: boolean;
 }>();
 </script>
@@ -44,6 +45,7 @@ defineProps<{
         :step="step"
         :list="list"
         :placeholder="placeholder"
+        :autocomplete="autocomplete"
         :disabled="disabled"
         :aria-invalid="!!field.errors"
         @update:model-value="(x) => (field.input = x as never)"

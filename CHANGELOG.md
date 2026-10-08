@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Accounts under `/auth`: log in (`/auth/login`), sign up (`/auth/register`), forgot password
+  (`/auth/recover`) and set a new password from the emailed link (`/auth/recover/end`), backed by
+  the API's `/auth/*` endpoints. Passwords are checked against the API's rule (8+ characters
+  with upper and lower case, a digit and a symbol) before they are sent.
+- Sign in with Google from the login and sign-up pages. Failed Google sign-ins show the reason
+  on the login page.
+- A user menu in the sidebar footer with the signed-in name and email, and Log out.
+- `/login` and `/recover/end` forward to their `/auth` pages, so the API's Google error redirect
+  and recovery email links work.
+
+### Changed
+
+- New look for the dashboard: a warm paper theme with a darkroom-orange accent, Space Grotesk
+  headings over Geist Mono, a dotted content background and larger page titles.
+- Restyled sidebar: an aperture logo with "Film tracker" under the name, upper-case section
+  labels, a bordered active item, the roll count next to Rolls, dot bullets for Cameras and
+  Lenses, and the signed-in user in a card at the bottom. Labs has a flask icon.
+- The sidebar header and top bar are shorter (56px instead of 76px), with a smaller logo.
+- The header has an Alerts bell with a red count of in-stock rolls expired or expiring within 6
+  months. It opens a panel that lists them, most overdue first, with how long ago each roll
+  expired or how soon it expires. Each alert opens its roll, and "See all" opens the Expiry page.
+  Hovering or focusing the bell shows a tooltip with the count.
+- Account pages (log in, sign up, forgot and reset password) match the new look: the logo above
+  a card with a film-strip edge, upper-case field labels, a show/hide toggle on password fields,
+  a full-colour Google button, and errors and notices with an icon.
+- Sign-up requires a full name.
+- Delete prompts open a confirmation dialog in the app's style instead of the browser's
+  `confirm` box.
+- Fonts (Geist Mono and Space Grotesk) are bundled from Fontsource instead of loaded from
+  Google Fonts, so they work offline and need no third-party request.
+- Every list screen (rolls, cameras, lenses, film stocks, inventory, expiry, labs, audit log)
+  shares one table style: the name in bold with a detail line under it, values such as mount,
+  type and format in small tags, status badges with a dot, aligned digits for numbers, upper-case
+  headers, an Actions column with Edit and Delete, and an "Add …" button with a + icon.
+- Table search runs on Apply (or Enter) instead of while typing. The button then reads Applied
+  until the keyword changes, and an X inside the search box clears it. This replaces the Reset
+  button.
+- The rows-per-page select and page controls sit in the table footer and show on every list
+  that has rows; the first and last page buttons are gone.
+- Rolls list: the stock cell shows film type, exposures and ISO; the format shows its size
+  (`135 / 35mm`); the roll description shows under the camera; status tabs show empty counts
+  as a plain zero and the At lab count in red.
+- Cameras list: the description shows under the camera name, and inactive cameras are listed
+  too (dimmed) instead of behind a "Show inactive" button.
+- Lenses list: a built-in lens shows "Built into <camera>" under its name and a "Built-in" mount
+  tag.
+- The Active filter on Cameras and Lenses always offers Any status, Active and Inactive, even
+  when every row has the same status.
+- Expiry lists rolls without an expiry date in their own table.
+- The dashboard moved under `/app` (for example `/app/rolls`) and needs a session. Visitors are
+  sent to `/auth/login` and return to the page they asked for after logging in. `/` is reserved
+  for public pages and opens the app for now (breaking: old links such as `/rolls` no longer
+  work).
+- Requests send the session cookie (`withCredentials`). When the API answers `401`, the app
+  returns to the login page and drops the previous user's cached data, as Log out does.
+
+### Removed
+
+- `VITE_ACTOR` and the `X-Actor` header. The API names the signed-in user as the actor of
+  audit entries.
+
+### Fixed
+
+- The collapsed sidebar: icons, the logo and the user avatar are centred in a wider (64px) rail
+  instead of overflowing their 32px buttons.
+- In the collapsed sidebar, Gear opens a menu with Cameras and Lenses. Before, it could not be
+  clicked.
+
 ## [1.0.0] - 2026-10-06
 
 ### Added

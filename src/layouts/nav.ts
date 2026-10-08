@@ -2,11 +2,10 @@ import type { Component } from "vue";
 import {
   IconAperture,
   IconArchive,
-  IconBuildingStore,
   IconCalendarTime,
   IconCamera,
+  IconFlask,
   IconHistory,
-  IconCameraCog,
   IconMovie,
   IconStack2,
 } from "@tabler/icons-vue";
@@ -26,14 +25,14 @@ export const navSections: NavSection[] = [
   {
     label: "Shooting",
     items: [
-      { title: "Rolls", to: "/rolls", icon: IconMovie },
+      { title: "Rolls", to: "/app/rolls", icon: IconMovie },
       {
         title: "Gear",
-        to: "/cameras",
-        icon: IconCameraCog,
+        to: "/app/cameras",
+        icon: IconCamera,
         children: [
-          { title: "Cameras", to: "/cameras", icon: IconCamera },
-          { title: "Lenses", to: "/lenses", icon: IconAperture },
+          { title: "Cameras", to: "/app/cameras", icon: IconCamera },
+          { title: "Lenses", to: "/app/lenses", icon: IconAperture },
         ],
       },
     ],
@@ -41,27 +40,27 @@ export const navSections: NavSection[] = [
   {
     label: "Film & Lab",
     items: [
-      { title: "Film Stocks", to: "/stocks", icon: IconStack2 },
-      { title: "Inventory", to: "/inventory", icon: IconArchive },
-      { title: "Expiry", to: "/expiry", icon: IconCalendarTime },
-      { title: "Labs", to: "/labs", icon: IconBuildingStore },
+      { title: "Film Stocks", to: "/app/stocks", icon: IconStack2 },
+      { title: "Inventory", to: "/app/inventory", icon: IconArchive },
+      { title: "Expiry", to: "/app/expiry", icon: IconCalendarTime },
+      { title: "Labs", to: "/app/labs", icon: IconFlask },
     ],
   },
   {
     label: "System",
-    items: [{ title: "Audit log", to: "/audit", icon: IconHistory }],
+    items: [{ title: "Audit log", to: "/app/audit", icon: IconHistory }],
   },
 ];
 
 const flat = navSections.flatMap((s) => s.items.flatMap((i) => [i, ...(i.children ?? [])]));
 const listPaths = new Set(flat.map((i) => i.to));
 
-/** A nav destination that renders a list, such as `/rolls` or `/expiry`. */
+/** A nav destination that renders a list, such as `/app/rolls` or `/expiry`. */
 export function isListingPath(path: string) {
   return listPaths.has(path);
 }
 
-/** Longest listing path that is a strict parent of `path`, such as `/rolls` for a roll detail. */
+/** Longest listing path that is a strict parent of `path`, such as `/app/rolls` for a roll detail. */
 export function listingPath(path: string) {
   return [...listPaths]
     .filter((to) => path.startsWith(`${to}/`))

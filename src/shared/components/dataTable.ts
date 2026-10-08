@@ -24,9 +24,13 @@ export interface DataTableColumnMeta {
     /** Text of the empty ("no filter") option. */
     placeholder: string;
     format?: (value: string) => string;
+    /** Fixed choices, listed even when no row has them; otherwise the column's values are used. */
+    options?: readonly string[];
   };
   /** Width and overflow classes applied to the header and body cells. */
   class?: string;
+  /** Right-align the header and cells (for example an actions column). */
+  align?: "right";
 }
 
 export const PAGE_SIZES = [10, 20, 50] as const;
