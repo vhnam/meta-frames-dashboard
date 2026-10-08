@@ -3,10 +3,10 @@ import { Form, useForm } from "@formisch/vue";
 import { Link, useRouter } from "@tanstack/vue-router";
 import type * as v from "valibot";
 import { computed } from "vue";
-import FormInput from "#/shared/components/FormInput.vue";
 import { errorMessage } from "#/shared/api/client";
-import { Button } from "#/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/shared/ui/card";
+import AuthCard from "../components/AuthCard.vue";
+import AuthInput from "../components/AuthInput.vue";
+import AuthSubmit from "../components/AuthSubmit.vue";
 import FormAlert from "../components/FormAlert.vue";
 import GoogleSignIn from "../components/GoogleSignIn.vue";
 import { useRegister } from "../queries";
@@ -34,62 +34,58 @@ async function submit({ name, email, password }: v.InferOutput<typeof RegisterSc
 </script>
 
 <template>
-  <Card>
-    <CardHeader class="text-center">
-      <CardTitle class="text-xl">Create an account</CardTitle>
-      <CardDescription>Track every roll, from stock to scan</CardDescription>
-    </CardHeader>
-    <CardContent class="grid gap-6">
-      <GoogleSignIn :redirect="target" />
-      <Form :of="form" class="grid gap-4" @submit="submit">
-        <FormAlert v-if="registerUser.isError.value">
-          {{ errorMessage(registerUser.error.value) }}
-        </FormAlert>
-        <FormInput
-          :of="form"
-          :path="['name']"
-          label="Name"
-          optional
-          autocomplete="name"
-          placeholder="e.g. Ansel"
-        />
-        <FormInput
-          :of="form"
-          :path="['email']"
-          label="Email"
-          type="email"
-          autocomplete="email"
-          placeholder="you@example.com"
-        />
-        <FormInput
-          :of="form"
-          :path="['password']"
-          label="Password"
-          type="password"
-          autocomplete="new-password"
-          :hint="PASSWORD_HINT"
-        />
-        <FormInput
-          :of="form"
-          :path="['confirmPassword']"
-          label="Confirm password"
-          type="password"
-          autocomplete="new-password"
-        />
-        <Button type="submit" class="w-full" :disabled="registerUser.isPending.value">
-          {{ registerUser.isPending.value ? "Creating account…" : "Create account" }}
-        </Button>
-      </Form>
-      <p class="text-muted-foreground text-center text-sm">
-        Already have an account?
-        <Link
-          to="/auth/login"
-          :search="{ redirect: props.redirect }"
-          class="text-foreground underline underline-offset-4"
-        >
-          Log in
-        </Link>
-      </p>
-    </CardContent>
-  </Card>
+  <AuthCard title="Create an account" description="Track every roll, from stock to scan.">
+    <GoogleSignIn :redirect="target" />
+    <Form :of="form" class="grid gap-5" @submit="submit">
+      <FormAlert v-if="registerUser.isError.value">
+        {{ errorMessage(registerUser.error.value) }}
+      </FormAlert>
+      <AuthInput
+        :of="form"
+        :path="['name']"
+        label="Name"
+        optional
+        autocomplete="name"
+        placeholder="e.g. Ansel"
+      />
+      <AuthInput
+        :of="form"
+        :path="['email']"
+        label="Email"
+        type="email"
+        autocomplete="email"
+        placeholder="you@example.com"
+      />
+      <AuthInput
+        :of="form"
+        :path="['password']"
+        label="Password"
+        type="password"
+        autocomplete="new-password"
+        placeholder="At least 8 characters"
+        :hint="PASSWORD_HINT"
+      />
+      <AuthInput
+        :of="form"
+        :path="['confirmPassword']"
+        label="Confirm password"
+        type="password"
+        autocomplete="new-password"
+        placeholder="Repeat the password"
+      />
+      <AuthSubmit :pending="registerUser.isPending.value">
+        {{ registerUser.isPending.value ? "Creating account…" : "Create account" }}
+      </AuthSubmit>
+    </Form>
+    <p class="text-muted-foreground text-center text-sm">
+      Already have an account?
+      <Link
+        to="/auth/login"
+        :search="{ redirect: props.redirect }"
+        class="text-primary ml-1 text-xs font-semibold tracking-[0.12em] uppercase underline-offset-4 hover:underline"
+      >
+        Log in
+      </Link>
+    </p>
+  </AuthCard>
 </template>
