@@ -45,13 +45,15 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({ routeTree });
 
-// The session ended on the server (logout elsewhere, password reset): back to login.
+// The session ended on the server (logout elsewhere, password reset): back to login,
+// dropping every cached record of the previous user as Log out does.
 setUnauthorizedHandler(() => {
   queryClient.setQueryData(authKeys.me(), null);
   const { pathname, href } = router.state.location;
-  if (pathname.startsWith("/app")) {
-    void router.navigate({ to: "/auth/login", search: { redirect: href } });
-  }
+  const leave = pathname.startsWith("/app")
+    ? router.navigate({ to: "/auth/login", search: { redirect: href } })
+    : Promise.resolve();
+  void leave.then(() => queryClient.clear());
 });
 
 declare module "@tanstack/vue-router" {
