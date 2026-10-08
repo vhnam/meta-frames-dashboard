@@ -29,6 +29,14 @@ export const PACKAGING_TONE: Record<Packaging, string> = {
   respooled: tone.violet,
 };
 
+/** What each process is: "C-41" reads as "Color negative". */
+export const PROCESS_NAMES: Record<Process, string> = {
+  "C-41": "Color negative",
+  "E-6": "Color reversal",
+  BW: "Black & white",
+  "ECN-2": "Motion picture",
+};
+
 export const stockName = (s: Pick<FilmStock, "brand" | "name"> | undefined) =>
   s ? `${s.brand} ${s.name}` : "—";
 
