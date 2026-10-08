@@ -90,7 +90,7 @@ const columns: DataTableColumn<StockRow>[] = [
   },
   actionsColumn((r) => ({
     onEdit: () => show(r.stock.id),
-    onDelete: () => ask("Delete this film stock?") && deleteStock.mutate(r.stock.id),
+    onDelete: async () => (await ask("Delete this film stock?")) && deleteStock.mutate(r.stock.id),
   })),
 ];
 </script>

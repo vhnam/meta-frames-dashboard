@@ -25,7 +25,10 @@ const editOpen = ref(false);
 const lensesOpen = ref(false);
 
 async function doDelete() {
-  if (ask("Delete this camera?") && (await attempt(deleteCamera.mutateAsync(props.cameraId))))
+  if (
+    (await ask("Delete this camera?")) &&
+    (await attempt(deleteCamera.mutateAsync(props.cameraId)))
+  )
     router.navigate({ to: "/app/cameras" });
 }
 </script>

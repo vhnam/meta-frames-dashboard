@@ -21,7 +21,7 @@ const deleteStock = useDeleteStock();
 const editOpen = ref(false);
 
 async function doDelete() {
-  if (ask("Delete this stock?") && (await attempt(deleteStock.mutateAsync(props.stockId))))
+  if ((await ask("Delete this stock?")) && (await attempt(deleteStock.mutateAsync(props.stockId))))
     router.navigate({ to: "/app/stocks" });
 }
 </script>
