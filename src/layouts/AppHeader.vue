@@ -22,7 +22,7 @@ const back = computed(() => backToListing(location.value.pathname, location.valu
 
 <template>
   <header
-    class="bg-sidebar sticky top-0 z-10 flex h-[4.75rem] shrink-0 items-center gap-3 border-b px-4 md:px-8"
+    class="bg-sidebar sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b px-4 md:px-8"
   >
     <SidebarTrigger class="-ml-1" />
     <Separator orientation="vertical" class="data-[orientation=vertical]:h-4 rotate-12" />

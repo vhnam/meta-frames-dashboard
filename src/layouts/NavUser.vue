@@ -35,18 +35,23 @@ const initials = computed(() =>
         <DropdownMenuTrigger as-child>
           <SidebarMenuButton
             size="lg"
-            class="bg-card h-14 border shadow-xs data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            class="bg-card h-14 border shadow-xs data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
           >
-            <Avatar class="size-9 rounded-md">
+            <Avatar class="size-9 rounded-md group-data-[collapsible=icon]:size-8">
               <AvatarFallback class="bg-secondary rounded-md text-xs font-semibold">
                 {{ initials }}
               </AvatarFallback>
             </Avatar>
-            <div class="grid flex-1 text-left text-sm leading-tight">
+            <div
+              class="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden"
+            >
               <span class="font-heading truncate font-medium">{{ displayName }}</span>
               <span class="text-muted-foreground truncate text-xs">{{ me.data.value.email }}</span>
             </div>
-            <IconSelector class="ml-auto size-4" aria-hidden="true" />
+            <IconSelector
+              class="ml-auto size-4 group-data-[collapsible=icon]:hidden"
+              aria-hidden="true"
+            />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent
