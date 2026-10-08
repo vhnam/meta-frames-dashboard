@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for public pages and opens the app for now (breaking: old links such as `/rolls` no longer
   work).
 - Requests send the session cookie (`withCredentials`). When the API answers `401`, the app
-  returns to the login page.
+  returns to the login page and drops the previous user's cached data, as Log out does.
 
 ### Removed
 

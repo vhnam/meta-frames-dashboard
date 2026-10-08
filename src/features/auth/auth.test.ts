@@ -102,10 +102,13 @@ describe("session", () => {
     signedIn = true;
     await router.navigate({ to: "/app/rolls" });
     expect(router.state.location.pathname).toBe("/app/rolls");
+    queryClient.setQueryData(["rolls"], [{ id: "r1" }]);
     signedIn = false;
     await http.get("/rolls").catch(() => {});
     await vi.waitFor(() => expect(router.state.location.pathname).toBe("/auth/login"));
-    expect(queryClient.getQueryData(authKeys.me())).toBeNull();
+    // the previous user's records are gone, as after Log out
+    await vi.waitFor(() => expect(queryClient.getQueryData(["rolls"])).toBeUndefined());
+    expect(queryClient.getQueryData(authKeys.me())).not.toEqual(expect.objectContaining(user));
   });
 
   it("forwards the API's legacy /login link with its query", async () => {
