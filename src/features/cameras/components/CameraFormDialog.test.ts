@@ -32,9 +32,9 @@ describe("CameraFormDialog", () => {
       expect(values).toContain("S2");
     });
     await flushPromises();
-    // every dialog needs a description for screen readers, even when none is shown
+    // every dialog needs a description for screen readers
     const description = document.body.querySelector('[data-slot="dialog-description"]');
-    expect(description?.className).toContain("sr-only");
+    expect(description?.textContent).toContain("Update the body");
     wrapper.unmount();
   });
 });
