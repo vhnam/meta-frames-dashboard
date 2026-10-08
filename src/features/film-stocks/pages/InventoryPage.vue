@@ -3,7 +3,7 @@ import { PROCESS_TONE, TYPE_TONE, stockName } from "../format";
 import { useInventory } from "../queries";
 import { FILM_TYPE_LABELS, PROCESS_LABELS } from "../types";
 import type { InventoryRow } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
@@ -16,8 +16,13 @@ import {
   tagCell,
 } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
+import { plainText } from "#/shared/lib/format";
 
 const inventory = useInventory({});
+
+const router = useRouter();
+const openStock = (r: InventoryRow) =>
+  router.navigate({ to: "/app/stocks/$stockId", params: { stockId: r.stock.id } });
 
 const columns: DataTableColumn<InventoryRow>[] = [
   {
@@ -31,7 +36,7 @@ const columns: DataTableColumn<InventoryRow>[] = [
           { to: "/app/stocks/$stockId", params: { stockId: r.stock.id }, class: PRIMARY_LINK },
           () => stockName(r.stock),
         ),
-        r.stock.description,
+        plainText(r.stock.description),
       ),
   },
   {
@@ -95,6 +100,8 @@ const columns: DataTableColumn<InventoryRow>[] = [
         :columns="columns"
         :data="data"
         :get-row-id="(r) => r.stock.id"
+        :on-select="openStock"
+        :row-label="(r) => `Open ${stockName(r.stock)}`"
       />
     </template>
   </QueryBoundary>

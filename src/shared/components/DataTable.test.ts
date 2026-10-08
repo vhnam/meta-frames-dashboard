@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { h } from "vue";
 import { tableOf } from "#/test/tableOf";
 import DataTable from "./DataTable.vue";
 import type { DataTableColumn } from "./dataTable";
@@ -173,6 +174,28 @@ describe("DataTable", () => {
     await row.trigger("keydown", { key: "Enter" });
     await row.trigger("keydown", { key: " " });
     expect(onSelect).toHaveBeenCalledTimes(3);
+  });
+
+  it("leaves clicks and keys on controls inside a row to those controls", async () => {
+    const onSelect = vi.fn();
+    const onToggle = vi.fn();
+    const withButton: DataTableColumn<Row>[] = [
+      ...columns,
+      {
+        id: "toggle",
+        header: "",
+        cell: () => h("button", { type: "button", onClick: onToggle }, "Toggle"),
+      },
+    ];
+    const wrapper = mount(DataTable, { props: { columns: withButton, data, onSelect } as never });
+    const row = wrapper.find("tbody tr");
+    const button = row.find("button");
+    await button.trigger("click");
+    await button.trigger("keydown", { key: "Enter" });
+    expect(onToggle).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
+    // a chevron cell marks the row as opening something
+    expect(row.findAll("td")).toHaveLength(withButton.length + 1);
   });
 
   it("shows the pager footer with the row range, and hides it without rows", () => {

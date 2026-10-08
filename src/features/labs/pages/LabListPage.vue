@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { useDeleteLab, useLabList } from "../queries";
+import { useLabList } from "../queries";
 import type { Lab } from "../types";
 import { ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
-import { actionsColumn, mutedCell, primaryText } from "#/shared/components/tableCells";
+import { mutedCell, primaryText } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import LabFormDialog from "../components/LabFormDialog.vue";
-import { ask } from "#/shared/lib/ui";
 
 const labs = useLabList();
-const deleteLab = useDeleteLab();
 const open = ref(false);
 const editing = ref<string>();
 function show(id?: string) {
@@ -33,11 +31,6 @@ const columns: DataTableColumn<Lab>[] = [
     accessorFn: (l) => l.address || "No address",
     cell: ({ row }) => mutedCell(row.original.address || "No address"),
   },
-  actionsColumn((l) => ({
-    onEdit: () => show(l.id),
-    onDelete: async () => (await ask("Delete this lab?")) && deleteLab.mutate(l.id),
-    deleteDisabled: deleteLab.isPending.value,
-  })),
 ];
 </script>
 
@@ -55,6 +48,8 @@ const columns: DataTableColumn<Lab>[] = [
         :columns="columns"
         :data="data"
         :get-row-id="(l) => l.id"
+        :on-select="(l) => show(l.id)"
+        :row-label="(l) => `Edit ${l.name}`"
       />
     </template>
   </QueryBoundary>

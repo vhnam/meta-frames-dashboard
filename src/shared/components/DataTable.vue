@@ -64,7 +64,8 @@ const props = defineProps<{
   hideFilters?: boolean;
   /** Extra classes on the `<table>` (for example `table-fixed`). */
   tableClass?: string;
-  /** Makes each body row activatable. Rows become keyboard-focusable. */
+  /** Makes each body row activatable: click or Enter/Space, with a chevron at the end.
+   * Rows become keyboard-focusable. Clicks on links, buttons and menus inside stay theirs. */
   onSelect?: (row: TData) => void;
   /** `getRowId` value of the row shown as selected. */
   selectedRowId?: string;
@@ -173,6 +174,21 @@ function setPageSize(value: unknown) {
 }
 
 defineExpose({ table });
+
+/** Controls inside a row that handle their own clicks, so the row must not also open. */
+const INTERACTIVE = "a, button, input, select, textarea, label, [role='menuitem'], [role='switch']";
+
+function activate(event: MouseEvent | KeyboardEvent, row: TData) {
+  if (!props.onSelect) return;
+  const target = event.target as Element;
+  if (event instanceof KeyboardEvent) {
+    if (target !== event.currentTarget) return; // keys on a control inside the row
+    event.preventDefault();
+  } else if (target.closest(INTERACTIVE)) {
+    return;
+  }
+  props.onSelect(row);
+}
 </script>
 
 <template>
@@ -289,6 +305,9 @@ defineExpose({ table });
               </DropdownMenu>
             </div>
           </TableHead>
+          <TableHead v-if="onSelect" class="w-px pr-6 pl-0"
+            ><span class="sr-only">Open</span></TableHead
+          >
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -301,11 +320,11 @@ defineExpose({ table });
           :class="[
             rowClass?.(row.original),
             onSelect &&
-              'cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset',
+              'group/row cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset',
           ]"
-          @click="onSelect?.(row.original)"
-          @keydown.enter.prevent="onSelect?.(row.original)"
-          @keydown.space.prevent="onSelect?.(row.original)"
+          @click="activate($event, row.original)"
+          @keydown.enter="activate($event, row.original)"
+          @keydown.space="activate($event, row.original)"
         >
           <TableCell
             v-for="cell in row.getAllCells()"
@@ -314,8 +333,17 @@ defineExpose({ table });
           >
             <FlexRender :cell="cell" />
           </TableCell>
+          <TableCell v-if="onSelect" class="w-px py-4 pr-6 pl-0">
+            <IconChevronRight
+              class="text-muted-foreground group-hover/row:text-foreground size-4 transition-transform group-hover/row:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </TableCell>
         </TableRow>
-        <TableEmpty v-if="!table.getRowModel().rows.length" :colspan="columns.length">
+        <TableEmpty
+          v-if="!table.getRowModel().rows.length"
+          :colspan="columns.length + (onSelect ? 1 : 0)"
+        >
           <Empty class="p-0 md:p-0">
             <EmptyHeader>
               <EmptyTitle>{{
