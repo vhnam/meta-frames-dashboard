@@ -7,11 +7,18 @@ import { Link } from "@tanstack/vue-router";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
+import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import {
+  PRIMARY_LINK,
+  actionsColumn,
+  mutedCell,
+  numberCell,
+  stackCell,
+  tagCell,
+} from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import StockFormDialog from "../components/StockFormDialog.vue";
-import { Badge } from "#/shared/ui/badge";
-import { Button } from "#/shared/ui/button";
 import { ask } from "#/shared/lib/ui";
 
 const stocks = useStockList();
@@ -29,14 +36,13 @@ const columns: DataTableColumn<StockRow>[] = [
     header: "Stock",
     accessorFn: (r) => stockName(r.stock),
     cell: ({ row: { original: r } }) =>
-      h(
-        Link,
-        {
-          to: "/app/stocks/$stockId",
-          params: { stockId: r.stock.id },
-          class: "font-medium hover:underline",
-        },
-        () => stockName(r.stock),
+      stackCell(
+        h(
+          Link,
+          { to: "/app/stocks/$stockId", params: { stockId: r.stock.id }, class: PRIMARY_LINK },
+          () => stockName(r.stock),
+        ),
+        r.stock.description,
       ),
   },
   {
@@ -46,18 +52,15 @@ const columns: DataTableColumn<StockRow>[] = [
     accessorFn: (r) => FILM_TYPE_LABELS[r.stock.type],
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row }) =>
-      h(
-        Badge,
-        { variant: "secondary", class: TYPE_TONE[row.original.stock.type] },
-        () => FILM_TYPE_LABELS[row.original.stock.type],
-      ),
+    cell: ({ row: { original: r } }) =>
+      tagCell(FILM_TYPE_LABELS[r.stock.type], TYPE_TONE[r.stock.type]),
   },
   {
     id: "iso",
     header: "ISO",
     accessorFn: (r) => r.stock.boxIso,
     enableGlobalFilter: false,
+    cell: ({ row }) => numberCell(row.original.stock.boxIso),
   },
   {
     id: "process",
@@ -66,12 +69,8 @@ const columns: DataTableColumn<StockRow>[] = [
     accessorFn: (r) => PROCESS_LABELS[r.stock.process],
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row }) =>
-      h(
-        Badge,
-        { variant: "secondary", class: PROCESS_TONE[row.original.stock.process] },
-        () => PROCESS_LABELS[row.original.stock.process],
-      ),
+    cell: ({ row: { original: r } }) =>
+      tagCell(PROCESS_LABELS[r.stock.process], PROCESS_TONE[r.stock.process]),
   },
   {
     id: "packaging",
@@ -80,35 +79,19 @@ const columns: DataTableColumn<StockRow>[] = [
     accessorFn: (r) => PACKAGING_LABELS[r.stock.packaging],
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row }) =>
-      h(
-        Badge,
-        { variant: "secondary", class: PACKAGING_TONE[row.original.stock.packaging] },
-        () => PACKAGING_LABELS[row.original.stock.packaging],
-      ),
-  },
-  { id: "base", header: "Base stock", accessorFn: (r) => r.baseName ?? "—" },
-  {
-    id: "actions",
-    header: "",
     cell: ({ row: { original: r } }) =>
-      h("div", { class: "space-x-1 text-right" }, [
-        h(
-          Button,
-          { size: "sm", variant: "outline", onClick: () => show(r.stock.id) },
-          () => "Edit",
-        ),
-        h(
-          Button,
-          {
-            size: "sm",
-            variant: "ghost",
-            onClick: () => ask("Delete this film stock?") && deleteStock.mutate(r.stock.id),
-          },
-          () => "Delete",
-        ),
-      ]),
+      tagCell(PACKAGING_LABELS[r.stock.packaging], PACKAGING_TONE[r.stock.packaging]),
   },
+  {
+    id: "base",
+    header: "Base stock",
+    accessorFn: (r) => r.baseName ?? "—",
+    cell: ({ row }) => mutedCell(row.original.baseName),
+  },
+  actionsColumn((r) => ({
+    onEdit: () => show(r.stock.id),
+    onDelete: () => ask("Delete this film stock?") && deleteStock.mutate(r.stock.id),
+  })),
 ];
 </script>
 
@@ -117,7 +100,7 @@ const columns: DataTableColumn<StockRow>[] = [
     title="Film stocks"
     description="Catalog of film products. A stock can exist without rolls."
   >
-    <template #actions><Button @click="show()">Add film stock</Button></template>
+    <template #actions><AddButton @click="show()">Add film stock</AddButton></template>
   </PageHeader>
   <QueryBoundary :query="stocks" :is-empty="() => false">
     <template #default="{ data }">
@@ -125,7 +108,7 @@ const columns: DataTableColumn<StockRow>[] = [
         empty-title="No film stocks"
         empty-text="No film stocks yet."
         filter-label="Stock"
-        filter-placeholder="Search stock name…"
+        filter-placeholder="Search by stock name..."
         :columns="columns"
         :data="data"
         :get-row-id="(r) => r.stock.id"

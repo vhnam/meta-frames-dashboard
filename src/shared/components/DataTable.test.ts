@@ -31,12 +31,20 @@ describe("DataTable", () => {
     expect(names()).toEqual(["b", "a"]);
   });
 
-  it("filters rows by the search box", async () => {
+  /** Types into the search box and presses Apply (submits the search form). */
+  async function search(wrapper: ReturnType<typeof mount>, text: string) {
+    await wrapper.find("input").setValue(text);
+    await wrapper.find('form[role="search"]').trigger("submit");
+  }
+
+  it("filters rows by the search box once applied", async () => {
     const wrapper = mount(DataTable, { props: { columns, data } as never });
     await wrapper.find("input").setValue("a");
+    expect(wrapper.findAll("tbody tr")).toHaveLength(2); // not applied yet
+    await wrapper.find('form[role="search"]').trigger("submit");
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
     expect(wrapper.find("tbody").text()).toContain("a");
-    await wrapper.find("input").setValue("zzz");
+    await search(wrapper, "zzz");
     await vi.waitFor(() => expect(wrapper.find("tbody").text()).toContain("No matches"));
   });
 
@@ -65,21 +73,27 @@ describe("DataTable", () => {
     expect(wrapper.find("tbody td").text()).toBe("a");
   });
 
-  it("Reset clears the search and the column filters", async () => {
-    const wrapper = mount(DataTable, {
-      props: { columns: [...columns.slice(0, 1), kindColumn], data } as never,
-    });
-    const reset = () => wrapper.findAll("button").find((b) => b.text() === "Reset")!;
-    expect(reset().attributes("disabled")).toBeDefined();
+  it("marks the search Applied until the keyword changes, and X clears it", async () => {
+    const wrapper = mount(DataTable, { props: { columns, data } as never });
+    const apply = () => wrapper.find('button[type="submit"]');
+    const clear = () => wrapper.find('button[aria-label="Clear search"]');
+    expect(apply().text()).toBe("Apply");
+    expect(clear().exists()).toBe(false);
 
-    await wrapper.find("input").setValue("a");
-    tableOf(wrapper).getColumn("kind")!.setFilterValue("big");
-    await vi.waitFor(() => expect(reset().attributes("disabled")).toBeUndefined());
+    await search(wrapper, "a");
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
+    expect(apply().text()).toBe("Applied");
+    expect(apply().attributes("disabled")).toBeDefined();
 
-    await reset().trigger("click");
+    await wrapper.find("input").setValue("b");
+    expect(apply().text()).toBe("Apply");
+    expect(apply().attributes("disabled")).toBeUndefined();
+
+    await clear().trigger("click");
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
     expect((wrapper.find("input").element as HTMLInputElement).value).toBe("");
-    expect(reset().attributes("disabled")).toBeDefined();
+    expect(clear().exists()).toBe(false);
+    expect(apply().text()).toBe("Apply");
   });
 
   it("searches only columns that allow global filtering", async () => {
@@ -100,8 +114,33 @@ describe("DataTable", () => {
       },
     ];
     const wrapper = mount(DataTable, { props: { columns: cols, data } as never });
-    await wrapper.find("input").setValue("2"); // matches n, which is not searchable
+    await search(wrapper, "2"); // matches n, which is not searchable
     await vi.waitFor(() => expect(wrapper.find("tbody").text()).toContain("No matches"));
+  });
+
+  it("lists fixed filter options even when no row has them", async () => {
+    const wrapper = mount(DataTable, {
+      props: {
+        columns: [
+          ...columns.slice(0, 1),
+          {
+            ...kindColumn,
+            meta: { filter: { label: "Kind", placeholder: "Any kind", options: ["big", "huge"] } },
+          },
+        ],
+        data,
+      } as never,
+      attachTo: document.body,
+    });
+    await wrapper
+      .find('thead button[aria-label="Filter Kind"]')
+      .trigger("keydown", { key: "Enter" });
+    await vi.waitFor(() =>
+      expect(
+        [...document.querySelectorAll('[role="menuitemradio"]')].map((e) => e.textContent?.trim()),
+      ).toEqual(["Any kind", "big", "huge"]),
+    );
+    wrapper.unmount();
   });
 
   it("keeps headers and shows the empty text when there is no data", () => {
@@ -136,8 +175,11 @@ describe("DataTable", () => {
     expect(onSelect).toHaveBeenCalledTimes(3);
   });
 
-  it("hides pagination when rows fit one page", () => {
+  it("shows the pager footer with the row range, and hides it without rows", () => {
     const wrapper = mount(DataTable, { props: { columns, data } as never });
-    expect(wrapper.find('[data-slot="pagination"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="pagination"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain("1-2 of 2");
+    const empty = mount(DataTable, { props: { columns, data: [] } as never });
+    expect(empty.find('[data-slot="pagination"]').exists()).toBe(false);
   });
 });
