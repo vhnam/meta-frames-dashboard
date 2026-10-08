@@ -144,3 +144,47 @@
   background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: 16px 16px;
 }
+
+/* Markdown notes from RichTextEditor / RichText: no typography plugin, so the basics here. */
+@layer components {
+  .rich-text > * + * {
+    @apply mt-2;
+  }
+  .rich-text h2 {
+    @apply text-lg font-semibold tracking-tight;
+  }
+  .rich-text h3 {
+    @apply font-semibold;
+  }
+  .rich-text ul {
+    @apply list-disc pl-6;
+  }
+  .rich-text ol {
+    @apply list-decimal pl-6;
+  }
+  .rich-text li > p {
+    @apply m-0;
+  }
+  .rich-text blockquote {
+    @apply border-primary/40 text-muted-foreground border-l-2 pl-3;
+  }
+  .rich-text code {
+    @apply bg-secondary rounded-sm px-1 py-0.5 font-sans text-[0.85em];
+  }
+  .rich-text pre {
+    @apply bg-secondary overflow-x-auto rounded-md p-3 font-sans text-sm;
+  }
+  .rich-text pre code {
+    @apply bg-transparent p-0;
+  }
+  .rich-text a {
+    @apply text-primary underline underline-offset-2;
+  }
+  .rich-text hr {
+    @apply border-border my-4;
+  }
+  .rich-text p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground pointer-events-none float-left h-0;
+    content: attr(data-placeholder);
+  }
+}

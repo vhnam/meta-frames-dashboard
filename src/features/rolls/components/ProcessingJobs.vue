@@ -6,6 +6,7 @@ import type { RollJob, RollRow } from "../types";
 import type { Process } from "#/features/film-stocks/types";
 import { ref } from "vue";
 import EmptyState from "#/shared/components/EmptyState.vue";
+import { RichText } from "#/shared/components/richText";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#/shared/ui/table";
@@ -84,12 +85,11 @@ function jobFacts(job: RollJob) {
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <p class="text-base leading-snug font-semibold text-balance">{{ j.labName }}</p>
-          <p
+          <RichText
             v-if="j.notes"
-            class="text-muted-foreground mt-1 line-clamp-3 text-sm leading-relaxed whitespace-pre-line"
-          >
-            {{ j.notes }}
-          </p>
+            :markdown="j.notes"
+            class="text-muted-foreground mt-1 text-sm leading-relaxed"
+          />
         </div>
         <div class="flex shrink-0 flex-col items-end gap-1">
           <Badge :variant="j.open ? 'destructive' : 'secondary'">

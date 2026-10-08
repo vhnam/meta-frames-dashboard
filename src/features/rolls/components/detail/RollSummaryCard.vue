@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RichText } from "#/shared/components/richText";
 import { formatVnd } from "#/shared/lib/format";
 import { formatExpiry } from "../../format";
 import type { RollDetail } from "../../types";
@@ -49,7 +50,7 @@ const processingCost = computed(() =>
       </dl>
       <div v-if="detail.roll.description">
         <div class="text-muted-foreground text-xs">Description</div>
-        <p>{{ detail.roll.description }}</p>
+        <RichText :markdown="detail.roll.description" />
       </div>
       <div class="bg-muted/50 grid gap-1 rounded-lg px-4 py-3">
         <div class="text-muted-foreground text-xs">Total cost</div>

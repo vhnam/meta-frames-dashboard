@@ -18,6 +18,7 @@ import { computed, ref, watch } from "vue";
 import ScanOrderPicker from "./ScanOrderPicker.vue";
 import FormDialog from "#/shared/components/FormDialog.vue";
 import FormInput from "#/shared/components/FormInput.vue";
+import FormRichText from "#/shared/components/FormRichText.vue";
 import FormSelect from "#/shared/components/FormSelect.vue";
 import { attempt } from "#/shared/lib/ui";
 
@@ -231,12 +232,11 @@ async function submit(o: v.InferOutput<typeof SendToLabSchema>) {
         type="date"
       />
     </div>
-    <FormInput
+    <FormRichText
       :of="form"
       :path="['notes']"
       label="Notes"
       optional
-      multiline
       placeholder="Push/pull, scan resolution, tracking number…"
     />
     <p v-if="!job" class="text-muted-foreground text-xs">
