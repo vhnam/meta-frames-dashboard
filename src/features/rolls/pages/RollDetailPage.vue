@@ -29,7 +29,7 @@ const lensesOpen = ref(false);
 
 async function doDelete() {
   if (ask("Delete this roll?") && (await attempt(deleteRoll.mutateAsync(props.rollId))))
-    router.navigate({ to: "/rolls" });
+    router.navigate({ to: "/app/rolls" });
 }
 
 const rowOf = (d: RollDetail): RollRow => ({

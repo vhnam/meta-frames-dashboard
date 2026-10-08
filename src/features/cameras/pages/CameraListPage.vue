@@ -39,7 +39,7 @@ const columns: DataTableColumn<CameraRow>[] = [
       h(
         Link,
         {
-          to: "/cameras/$cameraId",
+          to: "/app/cameras/$cameraId",
           params: { cameraId: c.id },
           class: "font-medium hover:underline",
         },

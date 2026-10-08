@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Accounts under `/auth`: log in (`/auth/login`), sign up (`/auth/register`), forgot password
+  (`/auth/recover`) and set a new password from the emailed link (`/auth/recover/end`), backed by
+  the API's `/auth/*` endpoints. Passwords are checked against the API's rule (8+ characters
+  with upper and lower case, a digit and a symbol) before they are sent.
+- Sign in with Google from the login and sign-up pages. Failed Google sign-ins show the reason
+  on the login page.
+- A user menu in the sidebar footer with the signed-in name and email, and Log out.
+- `/login` and `/recover/end` forward to their `/auth` pages, so the API's Google error redirect
+  and recovery email links work.
+
+### Changed
+
+- The dashboard moved under `/app` (for example `/app/rolls`) and needs a session. Visitors are
+  sent to `/auth/login` and return to the page they asked for after logging in. `/` is reserved
+  for public pages and opens the app for now (breaking: old links such as `/rolls` no longer
+  work).
+- Requests send the session cookie (`withCredentials`). When the API answers `401`, the app
+  returns to the login page.
+
+### Removed
+
+- `VITE_ACTOR` and the `X-Actor` header. The API names the signed-in user as the actor of
+  audit entries.
+
 ## [1.0.0] - 2026-10-06
 
 ### Added

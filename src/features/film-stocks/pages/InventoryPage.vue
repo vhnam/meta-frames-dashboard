@@ -21,7 +21,7 @@ const columns: DataTableColumn<InventoryRow>[] = [
       h(
         Link,
         {
-          to: "/stocks/$stockId",
+          to: "/app/stocks/$stockId",
           params: { stockId: r.stock.id },
           class: "font-medium hover:underline",
         },

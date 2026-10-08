@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Outlet } from "@tanstack/vue-router";
-import { Toaster } from "#/shared/ui/sonner";
 import { SidebarInset, SidebarProvider } from "#/shared/ui/sidebar";
 import AppSidebar from "./AppSidebar.vue";
 import AppHeader from "./AppHeader.vue";
@@ -15,6 +14,5 @@ import AppHeader from "./AppHeader.vue";
         <Outlet />
       </main>
     </SidebarInset>
-    <Toaster />
   </SidebarProvider>
 </template>

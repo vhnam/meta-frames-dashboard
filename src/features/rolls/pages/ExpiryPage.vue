@@ -24,7 +24,7 @@ const columns: DataTableColumn<DatedRow>[] = [
       h(
         Link,
         {
-          to: "/rolls/$rollId",
+          to: "/app/rolls/$rollId",
           params: { rollId: r.roll.id },
           class: "font-medium hover:underline",
         },
@@ -73,7 +73,7 @@ const columns: DataTableColumn<DatedRow>[] = [
           <Link
             v-for="r in data.undated"
             :key="r.roll.id"
-            to="/rolls/$rollId"
+            to="/app/rolls/$rollId"
             :params="{ rollId: r.roll.id }"
             class="text-sm hover:underline"
           >

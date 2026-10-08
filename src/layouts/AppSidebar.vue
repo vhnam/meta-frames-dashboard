@@ -5,6 +5,7 @@ import { computed } from "vue";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -18,6 +19,7 @@ import {
   SidebarRail,
 } from "#/shared/ui/sidebar";
 import { navSections } from "./nav";
+import NavUser from "./NavUser.vue";
 
 const pathname = useRouterState({ select: (s) => s.location.pathname });
 const isActive = computed(
@@ -34,7 +36,7 @@ const isActive = computed(
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
-            <Link to="/">
+            <Link to="/app">
               <div
                 class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
               >
@@ -85,6 +87,9 @@ const isActive = computed(
         </SidebarGroupContent>
       </SidebarGroup>
     </SidebarContent>
+    <SidebarFooter>
+      <NavUser />
+    </SidebarFooter>
     <SidebarRail />
   </Sidebar>
 </template>

@@ -1,8 +1,8 @@
 import { createRootRoute } from "@tanstack/vue-router";
 import { parseListSearch } from "#/shared/lib/listSearch";
-import DashboardLayout from "./DashboardLayout.vue";
+import RootLayout from "./RootLayout.vue";
 
 export const rootRoute = createRootRoute({
-  component: DashboardLayout,
+  component: RootLayout,
   validateSearch: parseListSearch,
 });

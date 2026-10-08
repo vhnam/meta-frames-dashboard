@@ -57,7 +57,7 @@ const columns: DataTableColumn<RollRow>[] = [
       h(
         Link,
         {
-          to: "/rolls/$rollId",
+          to: "/app/rolls/$rollId",
           params: { rollId: r.roll.id },
           class: "font-medium hover:underline",
         },
