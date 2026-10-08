@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Account pages (log in, sign up, forgot and reset password) match the new look: the logo above
   a card with a film-strip edge, upper-case field labels, a show/hide toggle on password fields,
   a full-colour Google button, and errors and notices with an icon.
+- Sign-up requires a full name.
 - Delete prompts open a confirmation dialog in the app's style instead of the browser's
   `confirm` box.
 - Fonts (Geist Mono and Space Grotesk) are bundled from Fontsource instead of loaded from

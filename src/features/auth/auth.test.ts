@@ -58,10 +58,21 @@ describe("password schemas", () => {
     );
   });
 
+  it("requires a full name", () => {
+    expect(
+      v.safeParse(RegisterSchema, {
+        name: "   ",
+        email: "ansel@example.com",
+        password: "Zone-System5",
+        confirmPassword: "Zone-System5",
+      }).issues?.[0]?.message,
+    ).toBe("Full name is required.");
+  });
+
   it("requires the confirmation to match", () => {
     expect(
       v.safeParse(RegisterSchema, {
-        name: "",
+        name: "Ansel Adams",
         email: "ansel@example.com",
         password: "Zone-System5",
         confirmPassword: "Zone-System6",
