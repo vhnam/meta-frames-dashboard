@@ -95,6 +95,14 @@ const labOptions = computed(() => [
   { value: SELF, label: "Self-develop" },
   ...(labs.data.value ?? []).map((l) => ({ value: l.id, label: l.name })),
 ]);
+// built here: inline in the template, vue-tsc reported a `.value` access on the label maps
+const typeOptions = computed(() =>
+  (props.job ? [props.job.type] : offered.value).map((t) => ({
+    value: t,
+    label: PROCESSING_TYPE_LABELS[t],
+  })),
+);
+const processOptions = PROCESSES.map((p) => ({ value: p, label: PROCESS_LABELS[p] }));
 
 const summary = computed(() =>
   [
@@ -162,9 +170,7 @@ async function submit(o: v.InferOutput<typeof SendToLabSchema>) {
       :path="['type']"
       label="Service"
       :disabled="!!job"
-      :options="
-        (job ? [job.type] : offered).map((t) => ({ value: t, label: PROCESSING_TYPE_LABELS[t] }))
-      "
+      :options="typeOptions"
     />
     <div class="grid grid-cols-2 gap-3">
       <FormSelect
@@ -172,7 +178,7 @@ async function submit(o: v.InferOutput<typeof SendToLabSchema>) {
         :path="['process']"
         label="Process"
         :disabled="!!job"
-        :options="PROCESSES.map((p) => ({ value: p, label: PROCESS_LABELS[p] }))"
+        :options="processOptions"
       />
       <FormInput
         :of="form"
