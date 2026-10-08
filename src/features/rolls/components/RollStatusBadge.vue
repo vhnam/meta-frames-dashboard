@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { RollStatus } from "../types";
-import { computed } from "vue";
-import { Badge } from "#/shared/ui/badge";
+import StatusBadge, { type StatusTone } from "#/shared/components/StatusBadge.vue";
 
-const props = defineProps<{ status: RollStatus }>();
+defineProps<{ status: RollStatus }>();
 
 const LABELS: Record<RollStatus, string> = {
   in_stock: "In stock",
@@ -13,16 +12,18 @@ const LABELS: Record<RollStatus, string> = {
   developed: "Developed",
   scanned: "Scanned",
 };
-const label = computed(() => LABELS[props.status]);
-const variant = computed(() =>
-  props.status === "in_camera"
-    ? "default"
-    : props.status === "at_lab"
-      ? "destructive"
-      : "secondary",
-);
+
+/** At lab stands out (the roll is away); in camera uses the accent; the rest stay quiet. */
+const TONE: Record<RollStatus, StatusTone> = {
+  in_stock: "muted",
+  in_camera: "accent",
+  done_shooting: "warning",
+  at_lab: "danger",
+  developed: "success",
+  scanned: "neutral",
+};
 </script>
 
 <template>
-  <Badge :variant="variant">{{ label }}</Badge>
+  <StatusBadge :tone="TONE[status]">{{ LABELS[status] }}</StatusBadge>
 </template>

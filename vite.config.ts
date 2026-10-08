@@ -10,6 +10,10 @@ export default defineConfig({
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },
   },
+  // staged-file checks for the pre-commit hook (.vite-hooks/pre-commit runs `vp staged`)
+  staged: {
+    "*.{ts,js,vue,css,json,md,yaml,yml}": "vp check --fix",
+  },
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {

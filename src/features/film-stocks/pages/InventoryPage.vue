@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { stockName } from "../format";
+import { PROCESS_TONE, TYPE_TONE, stockName } from "../format";
 import { useInventory } from "../queries";
-import { FILM_TYPE_LABELS } from "../types";
+import { FILM_TYPE_LABELS, PROCESS_LABELS } from "../types";
 import type { InventoryRow } from "../types";
 import { Link } from "@tanstack/vue-router";
 import { h } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import {
+  PRIMARY_LINK,
+  mutedCell,
+  numberCell,
+  stackCell,
+  tagCell,
+} from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 
 const inventory = useInventory({});
@@ -18,14 +25,13 @@ const columns: DataTableColumn<InventoryRow>[] = [
     header: "Stock",
     accessorFn: (r) => stockName(r.stock),
     cell: ({ row: { original: r } }) =>
-      h(
-        Link,
-        {
-          to: "/stocks/$stockId",
-          params: { stockId: r.stock.id },
-          class: "font-medium hover:underline",
-        },
-        () => stockName(r.stock),
+      stackCell(
+        h(
+          Link,
+          { to: "/app/stocks/$stockId", params: { stockId: r.stock.id }, class: PRIMARY_LINK },
+          () => stockName(r.stock),
+        ),
+        r.stock.description,
       ),
   },
   {
@@ -35,6 +41,8 @@ const columns: DataTableColumn<InventoryRow>[] = [
     enableGlobalFilter: false,
     filterFn: "equalsString",
     meta: { filter: { label: "Type", placeholder: "All types" } },
+    cell: ({ row: { original: r } }) =>
+      tagCell(FILM_TYPE_LABELS[r.stock.type], TYPE_TONE[r.stock.type]),
   },
   {
     id: "process",
@@ -43,6 +51,8 @@ const columns: DataTableColumn<InventoryRow>[] = [
     enableGlobalFilter: false,
     filterFn: "equalsString",
     meta: { filter: { label: "Process", placeholder: "All processes" } },
+    cell: ({ row: { original: r } }) =>
+      tagCell(PROCESS_LABELS[r.stock.process], PROCESS_TONE[r.stock.process]),
   },
   {
     id: "iso",
@@ -51,16 +61,25 @@ const columns: DataTableColumn<InventoryRow>[] = [
     enableGlobalFilter: false,
     filterFn: (row, columnId, value) => String(row.getValue(columnId)) === String(value),
     meta: { filter: { label: "ISO", placeholder: "Any ISO" } },
+    cell: ({ row }) => numberCell(row.original.stock.boxIso),
   },
   {
     id: "formats",
     header: "Rolls per format",
+    enableSorting: false,
     cell: ({ row }) =>
-      Object.entries(row.original.byFormat)
-        .map(([k, n]) => `${n} × ${k}`)
-        .join(", "),
+      h(
+        "div",
+        { class: "flex flex-wrap gap-1.5" },
+        Object.entries(row.original.byFormat).map(([format, n]) => tagCell(`${n} × ${format}`)),
+      ),
   },
-  { id: "expiry", header: "Soonest expiry", accessorFn: (r) => r.expiryLabel },
+  {
+    id: "expiry",
+    header: "Soonest expiry",
+    accessorFn: (r) => r.expiryLabel,
+    cell: ({ row }) => mutedCell(row.original.expiryLabel),
+  },
 ];
 </script>
 
@@ -70,7 +89,7 @@ const columns: DataTableColumn<InventoryRow>[] = [
     <template #default="{ data }">
       <DataTable
         filter-label="Stock"
-        filter-placeholder="Search stock name…"
+        filter-placeholder="Search by stock name..."
         empty-title="No inventory"
         empty-text="No unused rolls on hand."
         :columns="columns"

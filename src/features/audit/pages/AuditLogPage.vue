@@ -8,6 +8,7 @@ import AuditLogSheet from "../components/AuditLogSheet.vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import { PRIMARY_TEXT } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 
 const log = useAuditLog();
@@ -43,7 +44,7 @@ const columns: DataTableColumn<AuditEntry>[] = [
     id: "time",
     header: "When",
     accessorFn: (e) => e.createdAt,
-    meta: { class: "w-36" },
+    meta: { class: "w-40" },
     cell: ({ row }) =>
       h("span", { class: "tabular-nums" }, when.format(new Date(row.original.createdAt))),
   },
@@ -54,7 +55,7 @@ const columns: DataTableColumn<AuditEntry>[] = [
     meta: { class: "w-[26%] overflow-hidden" },
     cell: ({ row: { original: e } }) =>
       h("div", { class: "min-w-0" }, [
-        h("div", { class: "truncate font-medium" }, e.entityType),
+        h("div", { class: `truncate ${PRIMARY_TEXT}` }, e.entityType),
         h("div", { class: "text-muted-foreground truncate font-mono text-xs" }, e.entityId),
       ]),
   },
@@ -62,7 +63,7 @@ const columns: DataTableColumn<AuditEntry>[] = [
     id: "action",
     header: "Action",
     accessorFn: (e) => e.action,
-    meta: { class: "w-28" },
+    meta: { class: "w-32" },
     cell: ({ row }) => h(AuditActionBadge, { action: row.original.action }),
   },
   {
@@ -98,7 +99,7 @@ const columns: DataTableColumn<AuditEntry>[] = [
         empty-title="No changes"
         empty-text="Nothing has been changed yet."
         filter-label="Entry"
-        filter-placeholder="Search record, action, actor or change…"
+        filter-placeholder="Search by record, action, actor or change..."
         table-class="table-fixed"
         :columns="columns"
         :data="data"

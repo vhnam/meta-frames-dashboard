@@ -3,22 +3,23 @@ import { FlexRender, useTable, type RowData } from "@tanstack/vue-table";
 import {
   IconArrowDown,
   IconArrowUp,
-  IconArrowsSort,
+  IconCheck,
   IconChevronLeft,
   IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
   IconFilter,
   IconFilterFilled,
+  IconSearch,
+  IconSelector,
+  IconX,
 } from "@tabler/icons-vue";
 import { dataTableFeatures, PAGE_SIZES, type DataTableColumn } from "./dataTable";
 import { useRouter } from "@tanstack/vue-router";
 import { computed, onMounted, ref, toRef, watch } from "vue";
 import { parseListSearch, rememberList, toListSearch } from "#/shared/lib/listSearch";
-import FilterCard from "./FilterCard.vue";
-import SearchField from "./SearchField.vue";
+import { cn } from "#/shared/lib/utils";
 import { Button } from "#/shared/ui/button";
 import { Card, CardContent } from "#/shared/ui/card";
+import { Input } from "#/shared/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,9 +34,7 @@ import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
-  PaginationFirst,
   PaginationItem,
-  PaginationLast,
   PaginationNext,
   PaginationPrevious,
 } from "#/shared/ui/pagination";
@@ -73,7 +72,9 @@ const props = defineProps<{
   rowLabel?: (row: TData) => string;
 }>();
 
+/** Search applied to the table; `draft` is what is typed, applied on Apply or Enter. */
 const filter = ref("");
+const draft = ref("");
 const router = useRouter({ warn: false });
 const initial = router ? parseListSearch(router.state.location.search) : {};
 const pagination = ref({
@@ -127,22 +128,31 @@ const filterColumns = computed(() =>
 );
 
 function optionsOf(column: (typeof filterColumns.value)[number]) {
-  const format = column.columnDef.meta?.filter?.format;
-  return [...column.getFacetedUniqueValues().keys()]
-    .map(String)
-    .filter(Boolean)
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-    .map((value) => ({ value, label: format?.(value) ?? value }));
+  const { format, options } = column.columnDef.meta?.filter ?? {};
+  const values = options
+    ? [...options]
+    : [...column.getFacetedUniqueValues().keys()]
+        .map(String)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  return values.map((value) => ({ value, label: format?.(value) ?? value }));
 }
 
-const isFiltered = computed(
-  () => filter.value !== "" || table.getAllLeafColumns().some((c) => c.getIsFiltered()),
-);
+function apply() {
+  draft.value = draft.value.trim();
+  filter.value = draft.value;
+}
 
-function reset() {
+/** The typed keyword is the one in effect: Apply has nothing left to do. */
+const applied = computed(() => filter.value !== "" && draft.value.trim() === filter.value);
+
+function clearSearch() {
+  draft.value = "";
   filter.value = "";
-  table.resetColumnFilters(true);
 }
+
+const alignClass = (meta: { align?: "right"; class?: string } | undefined) =>
+  cn(meta?.align === "right" && "text-right", meta?.class);
 
 const ALL = "__all__";
 const selected = (column: (typeof filterColumns.value)[number]) =>
@@ -166,132 +176,171 @@ defineExpose({ table });
 </script>
 
 <template>
-  <FilterCard v-if="!hideFilters">
-    <SearchField
-      v-model="filter"
-      :label="filterLabel ?? 'Search'"
-      :placeholder="filterPlaceholder"
-    />
-    <Button type="button" variant="outline" :disabled="!isFiltered" @click="reset">Reset</Button>
-  </FilterCard>
-  <div class="space-y-4">
-    <Card>
-      <CardContent>
-        <Table :class="tableClass">
-          <TableHeader class="bg-muted/60 [&_th]:font-semibold">
-            <TableRow v-for="group in table.getHeaderGroups()" :key="group.id">
-              <TableHead
-                v-for="header in group.headers"
-                :key="header.id"
-                :class="header.column.columnDef.meta?.class"
-              >
-                <div v-if="!header.isPlaceholder" class="flex items-center gap-1">
-                  <button
-                    v-if="header.column.getCanSort()"
-                    type="button"
-                    class="inline-flex items-center gap-1 hover:text-foreground"
-                    @click="header.column.getToggleSortingHandler()?.($event)"
-                  >
-                    <FlexRender :header="header" />
-                    <IconArrowUp v-if="header.column.getIsSorted() === 'asc'" class="size-3.5" />
-                    <IconArrowDown
-                      v-else-if="header.column.getIsSorted() === 'desc'"
-                      class="size-3.5"
-                    />
-                    <IconArrowsSort v-else class="size-3.5 opacity-40" />
-                  </button>
-                  <FlexRender v-else :header="header" />
-                  <DropdownMenu v-if="header.column.columnDef.meta?.filter">
-                    <DropdownMenuTrigger as-child>
-                      <button
-                        type="button"
-                        class="hover:bg-accent rounded p-0.5"
-                        :class="
-                          header.column.getIsFiltered() ? 'text-primary' : 'text-muted-foreground'
-                        "
-                        :aria-label="`Filter ${header.column.columnDef.meta.filter.label}`"
-                      >
-                        <IconFilterFilled v-if="header.column.getIsFiltered()" class="size-3.5" />
-                        <IconFilter v-else class="size-3.5" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuLabel>{{
-                        header.column.columnDef.meta.filter.label
-                      }}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup
-                        :model-value="selected(header.column)"
-                        @update:model-value="(v) => select(header.column, String(v))"
-                      >
-                        <DropdownMenuRadioItem :value="ALL">
-                          {{ header.column.columnDef.meta.filter.placeholder }}
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem
-                          v-for="o in optionsOf(header.column)"
-                          :key="o.value"
-                          :value="o.value"
-                        >
-                          {{ o.label }}
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow
-              v-for="row in table.getRowModel().rows"
-              :key="row.id"
-              :data-state="
-                selectedRowId != null && row.id === selectedRowId ? 'selected' : undefined
-              "
-              :tabindex="onSelect ? 0 : undefined"
-              :aria-label="onSelect ? (rowLabel?.(row.original) ?? 'View details') : undefined"
+  <Card v-if="!hideFilters" class="mb-4 py-5">
+    <CardContent class="px-5">
+      <form class="flex flex-wrap items-center gap-3" role="search" @submit.prevent="apply">
+        <div class="relative min-w-0 flex-1 basis-64">
+          <IconSearch
+            class="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <Input
+            v-model="draft"
+            type="text"
+            class="bg-background h-11 pr-11 pl-11"
+            :aria-label="filterLabel ?? 'Search'"
+            :placeholder="filterPlaceholder ?? 'Search…'"
+          />
+          <button
+            v-if="draft"
+            type="button"
+            class="text-muted-foreground hover:text-foreground hover:bg-accent absolute top-1/2 right-2.5 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
+            aria-label="Clear search"
+            @click="clearSearch"
+          >
+            <IconX class="size-4" aria-hidden="true" />
+          </button>
+        </div>
+        <Button
+          type="submit"
+          variant="secondary"
+          class="h-11 min-w-28 border px-6"
+          :disabled="applied"
+        >
+          <IconCheck v-if="applied" aria-hidden="true" />
+          {{ applied ? "Applied" : "Apply" }}
+        </Button>
+      </form>
+    </CardContent>
+  </Card>
+  <Card class="gap-0 overflow-hidden py-0">
+    <Table :class="tableClass">
+      <TableHeader class="bg-muted">
+        <TableRow
+          v-for="group in table.getHeaderGroups()"
+          :key="group.id"
+          class="hover:bg-transparent"
+        >
+          <TableHead
+            v-for="header in group.headers"
+            :key="header.id"
+            :class="
+              cn(
+                'text-foreground/80 h-12 px-3 text-xs font-semibold tracking-[0.08em] uppercase first:pl-6 last:pr-6',
+                alignClass(header.column.columnDef.meta),
+              )
+            "
+          >
+            <div
+              v-if="!header.isPlaceholder"
               :class="[
-                rowClass?.(row.original),
-                onSelect &&
-                  'cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset',
+                'flex items-center gap-1.5',
+                header.column.columnDef.meta?.align === 'right' && 'justify-end',
               ]"
-              @click="onSelect?.(row.original)"
-              @keydown.enter.prevent="onSelect?.(row.original)"
-              @keydown.space.prevent="onSelect?.(row.original)"
             >
-              <TableCell
-                v-for="cell in row.getAllCells()"
-                :key="cell.id"
-                :class="cell.column.columnDef.meta?.class"
+              <button
+                v-if="header.column.getCanSort()"
+                type="button"
+                class="hover:text-foreground inline-flex items-center gap-1.5 uppercase"
+                @click="header.column.getToggleSortingHandler()?.($event)"
               >
-                <FlexRender :cell="cell" />
-              </TableCell>
-            </TableRow>
-            <TableEmpty v-if="!table.getRowModel().rows.length" :colspan="columns.length">
-              <Empty class="p-0 md:p-0">
-                <EmptyHeader>
-                  <EmptyTitle>{{
-                    data.length ? "No matches" : (emptyTitle ?? "Nothing here yet")
-                  }}</EmptyTitle>
-                  <EmptyDescription>
-                    {{
-                      data.length
-                        ? "Try a different search or clear the filters."
-                        : (emptyText ?? "Add one to get started.")
-                    }}
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            </TableEmpty>
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-    <div v-if="rowCount > PAGE_SIZES[0]" class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2 text-sm">
-        <span>Result per page</span>
+                <FlexRender :header="header" />
+                <IconArrowUp v-if="header.column.getIsSorted() === 'asc'" class="size-3.5" />
+                <IconArrowDown
+                  v-else-if="header.column.getIsSorted() === 'desc'"
+                  class="size-3.5"
+                />
+                <IconSelector v-else class="size-3.5 opacity-60" />
+              </button>
+              <FlexRender v-else :header="header" />
+              <DropdownMenu v-if="header.column.columnDef.meta?.filter">
+                <DropdownMenuTrigger as-child>
+                  <button
+                    type="button"
+                    class="hover:bg-accent rounded p-0.5"
+                    :class="header.column.getIsFiltered() ? 'text-primary' : 'text-foreground/70'"
+                    :aria-label="`Filter ${header.column.columnDef.meta.filter.label}`"
+                  >
+                    <IconFilterFilled v-if="header.column.getIsFiltered()" class="size-3.5" />
+                    <IconFilter v-else class="size-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>{{
+                    header.column.columnDef.meta.filter.label
+                  }}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    :model-value="selected(header.column)"
+                    @update:model-value="(v) => select(header.column, String(v))"
+                  >
+                    <DropdownMenuRadioItem :value="ALL">
+                      {{ header.column.columnDef.meta.filter.placeholder }}
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      v-for="o in optionsOf(header.column)"
+                      :key="o.value"
+                      :value="o.value"
+                    >
+                      {{ o.label }}
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow
+          v-for="row in table.getRowModel().rows"
+          :key="row.id"
+          :data-state="selectedRowId != null && row.id === selectedRowId ? 'selected' : undefined"
+          :tabindex="onSelect ? 0 : undefined"
+          :aria-label="onSelect ? (rowLabel?.(row.original) ?? 'View details') : undefined"
+          :class="[
+            rowClass?.(row.original),
+            onSelect &&
+              'cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset',
+          ]"
+          @click="onSelect?.(row.original)"
+          @keydown.enter.prevent="onSelect?.(row.original)"
+          @keydown.space.prevent="onSelect?.(row.original)"
+        >
+          <TableCell
+            v-for="cell in row.getAllCells()"
+            :key="cell.id"
+            :class="cn('px-3 py-4 first:pl-6 last:pr-6', alignClass(cell.column.columnDef.meta))"
+          >
+            <FlexRender :cell="cell" />
+          </TableCell>
+        </TableRow>
+        <TableEmpty v-if="!table.getRowModel().rows.length" :colspan="columns.length">
+          <Empty class="p-0 md:p-0">
+            <EmptyHeader>
+              <EmptyTitle>{{
+                data.length ? "No matches" : (emptyTitle ?? "Nothing here yet")
+              }}</EmptyTitle>
+              <EmptyDescription>
+                {{
+                  data.length
+                    ? "Try a different search or clear the filters."
+                    : (emptyText ?? "Add one to get started.")
+                }}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </TableEmpty>
+      </TableBody>
+    </Table>
+    <div
+      v-if="rowCount"
+      class="bg-muted/40 flex flex-wrap items-center justify-between gap-3 border-t px-6 py-4 text-sm"
+    >
+      <div class="text-muted-foreground flex items-center gap-3">
+        <span>Rows per page:</span>
         <Select :model-value="String(pagination.pageSize)" @update:model-value="setPageSize">
-          <SelectTrigger size="sm" class="w-20" aria-label="Result per page">
+          <SelectTrigger size="sm" class="bg-card text-foreground w-18" aria-label="Rows per page">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -299,8 +348,10 @@ defineExpose({ table });
           </SelectContent>
         </Select>
       </div>
-      <div class="flex items-center gap-6 text-sm">
-        <span>{{ rangeStart }}-{{ rangeEnd }} of {{ rowCount.toLocaleString() }}</span>
+      <div class="flex items-center gap-6">
+        <span class="text-muted-foreground tabular-nums">
+          {{ rangeStart }}-{{ rangeEnd }} of {{ rowCount.toLocaleString() }}
+        </span>
         <Pagination
           class="mx-0 w-auto"
           :total="rowCount"
@@ -309,10 +360,7 @@ defineExpose({ table });
           @update:page="(p) => table.setPageIndex(p - 1)"
         >
           <PaginationContent v-slot="{ items }">
-            <PaginationFirst size="icon" aria-label="First page">
-              <IconChevronsLeft class="size-4" />
-            </PaginationFirst>
-            <PaginationPrevious size="icon" aria-label="Previous page">
+            <PaginationPrevious size="icon-sm" class="bg-card" aria-label="Previous page">
               <IconChevronLeft class="size-4" />
             </PaginationPrevious>
             <template v-for="(item, i) in items" :key="i">
@@ -320,20 +368,19 @@ defineExpose({ table });
                 v-if="item.type === 'page'"
                 :value="item.value"
                 :is-active="item.value === page"
+                size="icon-sm"
+                class="data-[selected=true]:bg-card"
               >
                 {{ item.value }}
               </PaginationItem>
               <PaginationEllipsis v-else :index="i" />
             </template>
-            <PaginationNext size="icon" aria-label="Next page">
+            <PaginationNext size="icon-sm" class="bg-card" aria-label="Next page">
               <IconChevronRight class="size-4" />
             </PaginationNext>
-            <PaginationLast size="icon" aria-label="Last page">
-              <IconChevronsRight class="size-4" />
-            </PaginationLast>
           </PaginationContent>
         </Pagination>
       </div>
     </div>
-  </div>
+  </Card>
 </template>

@@ -16,6 +16,17 @@ export const queryClient = new QueryClient({
     mutations: { retry: 0 },
   },
   mutationCache: new MutationCache({
-    onError: (error) => toast.error(errorMessage(error)),
+    onError: (error, _vars, _context, mutation) => {
+      if (!mutation.meta?.quiet) toast.error(errorMessage(error));
+    },
   }),
 });
+
+declare module "@tanstack/vue-query" {
+  interface Register {
+    mutationMeta: {
+      /** Skip the central error toast; the caller shows the error inline. */
+      quiet?: boolean;
+    };
+  }
+}

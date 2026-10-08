@@ -1,0 +1,2 @@
+# vue-tsc in `vp run build` catches template type errors that `vp check` misses
+vp test && vp run build

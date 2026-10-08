@@ -1,7 +1,7 @@
 import { createRoute } from "@tanstack/vue-router";
-import { rootRoute } from "#/layouts/rootRoute";
+import { appRoute } from "#/layouts/appRoute";
 import AuditLogPage from "./pages/AuditLogPage.vue";
 
 export const auditRoutes = [
-  createRoute({ getParentRoute: () => rootRoute, path: "/audit", component: AuditLogPage }),
+  createRoute({ getParentRoute: () => appRoute, path: "audit", component: AuditLogPage }),
 ];

@@ -13,6 +13,7 @@ import { titleForPath } from "./nav";
 import { backToListing } from "./listBack";
 import { Separator } from "#/shared/ui/separator";
 import { SidebarTrigger } from "#/shared/ui/sidebar";
+import AlertsButton from "./AlertsButton.vue";
 
 const location = useRouterState({ select: (s) => s.location });
 const title = computed(() => titleForPath(location.value.pathname));
@@ -20,9 +21,11 @@ const back = computed(() => backToListing(location.value.pathname, location.valu
 </script>
 
 <template>
-  <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+  <header
+    class="bg-sidebar sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b px-4 md:px-8"
+  >
     <SidebarTrigger class="-ml-1" />
-    <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
+    <Separator orientation="vertical" class="data-[orientation=vertical]:h-4 rotate-12" />
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
@@ -38,9 +41,10 @@ const back = computed(() => backToListing(location.value.pathname, location.valu
               {{ title }}
             </Link>
           </BreadcrumbLink>
-          <BreadcrumbPage v-else>{{ title }}</BreadcrumbPage>
+          <BreadcrumbPage v-else class="text-sm">{{ title }}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
+    <div class="ml-auto"><AlertsButton /></div>
   </header>
 </template>

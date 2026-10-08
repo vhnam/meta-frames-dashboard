@@ -5,6 +5,9 @@ and processing jobs. It is the front end for the Meta-Frame REST API.
 
 ## Features
 
+- **Accounts** (`/auth`): log in with email and password or with Google, sign up, and reset a
+  forgotten password by email. The dashboard lives under `/app` and needs a session; `/` is
+  kept for public pages.
 - **Rolls**: list grouped by status (In stock, In camera, Done shooting, At lab, Developed,
   Scanned), bulk add, edit, delete, and a detail page with gear, frames, costs and processing
   history.
@@ -47,10 +50,14 @@ vp dev
 
 ### Environment variables
 
-| Variable       | Default                 | Description                                                                   |
-| -------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `VITE_API_URL` | `http://localhost:8080` | Base URL of the Meta-Frame API.                                               |
-| `VITE_ACTOR`   | (empty)                 | Optional. Sent as the `X-Actor` header to attribute changes in the audit log. |
+| Variable       | Default                 | Description                     |
+| -------------- | ----------------------- | ------------------------------- |
+| `VITE_API_URL` | `http://localhost:8080` | Base URL of the Meta-Frame API. |
+
+The session is an HTTP-only cookie, so every request is sent with credentials. The API must allow
+this app's origin with credentials (CORS), and its `APP_URL` must point at this app: recovery
+emails link to `{APP_URL}/recover/end` and Google sign-in returns to `{APP_URL}/app/...` or
+`{APP_URL}/login?error=...`. The app forwards `/login` and `/recover/end` to their `/auth` pages.
 
 ## Scripts
 
@@ -71,6 +78,7 @@ src/
 ├── app/            # entry point, providers, router
 ├── features/       # one folder per domain
 │   ├── audit/
+│   ├── auth/
 │   ├── cameras/
 │   ├── film-stocks/
 │   ├── labs/

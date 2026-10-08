@@ -6,16 +6,16 @@ import { Link } from "@tanstack/vue-router";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
+import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import { PRIMARY_LINK, actionsColumn, stackCell, tagCell } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import CameraFormDialog from "../components/CameraFormDialog.vue";
-import { Badge } from "#/shared/ui/badge";
-import { Button } from "#/shared/ui/button";
 import { Switch } from "#/shared/ui/switch";
 import { ask } from "#/shared/lib/ui";
 
-const showInactive = ref(false);
-const cameras = useCameraList(showInactive);
+// every camera, inactive ones dimmed; the Active column filters them
+const cameras = useCameraList(true);
 const setActive = useSetCameraActive();
 const deleteCamera = useDeleteCamera();
 
@@ -30,20 +30,19 @@ const columns: DataTableColumn<CameraRow>[] = [
   {
     id: "camera",
     header: "Camera",
-    accessorFn: ({ camera: c }) => cameraName(c),
+    accessorFn: ({ camera: c }) => `${cameraName(c)} ${c.description}`,
     cell: ({
       row: {
         original: { camera: c },
       },
     }) =>
-      h(
-        Link,
-        {
-          to: "/cameras/$cameraId",
-          params: { cameraId: c.id },
-          class: "font-medium hover:underline",
-        },
-        () => cameraName(c),
+      stackCell(
+        h(
+          Link,
+          { to: "/app/cameras/$cameraId", params: { cameraId: c.id }, class: PRIMARY_LINK },
+          () => cameraName(c),
+        ),
+        c.description,
       ),
   },
   {
@@ -57,20 +56,15 @@ const columns: DataTableColumn<CameraRow>[] = [
       row: {
         original: { camera: c },
       },
-    }) => h(Badge, { variant: "secondary" }, () => (c.fixedLens ? "Fixed lens" : c.mount)),
-  },
-  {
-    id: "description",
-    enableSorting: false,
-    header: "Description",
-    accessorFn: ({ camera: c }) => c.description,
-    cell: ({ row }) =>
-      h("span", { class: "text-muted-foreground" }, row.original.camera.description || "—"),
+    }) => tagCell(c.fixedLens ? "Fixed lens" : c.mount || "—"),
   },
   {
     id: "status",
     enableSorting: false,
-    meta: { filter: { label: "Status", placeholder: "Any status" } },
+    enableGlobalFilter: false,
+    meta: {
+      filter: { label: "Status", placeholder: "Any status", options: ["Active", "Inactive"] },
+    },
     header: "Active",
     accessorFn: ({ camera: c }) => (c.active ? "Active" : "Inactive"),
     filterFn: "equalsString",
@@ -81,40 +75,21 @@ const columns: DataTableColumn<CameraRow>[] = [
     }) =>
       h(Switch, {
         modelValue: c.active,
+        "aria-label": c.active ? "Deactivate camera" : "Activate camera",
         "onUpdate:modelValue": (v: boolean) => setActive.mutate({ id: c.id, active: v }),
       }),
   },
-  {
-    id: "actions",
-    header: "",
-    cell: ({
-      row: {
-        original: { camera: c },
-      },
-    }) =>
-      h("div", { class: "space-x-1 text-right" }, [
-        h(Button, { size: "sm", variant: "outline", onClick: () => show(c.id) }, () => "Edit"),
-        h(
-          Button,
-          {
-            size: "sm",
-            variant: "ghost",
-            onClick: () => ask("Delete this camera?") && deleteCamera.mutate(c.id),
-          },
-          () => "Delete",
-        ),
-      ]),
-  },
+  actionsColumn(({ camera: c }) => ({
+    onEdit: () => show(c.id),
+    onDelete: async () => (await ask("Delete this camera?")) && deleteCamera.mutate(c.id),
+  })),
 ];
 </script>
 
 <template>
   <PageHeader title="Cameras" description="Your camera bodies and what is loaded in them.">
     <template #actions>
-      <Button variant="outline" @click="showInactive = !showInactive">
-        {{ showInactive ? "Hide" : "Show" }} inactive
-      </Button>
-      <Button @click="show()">Add camera</Button>
+      <AddButton @click="show()">Add camera</AddButton>
     </template>
   </PageHeader>
   <QueryBoundary :query="cameras" :is-empty="() => false">
@@ -123,7 +98,7 @@ const columns: DataTableColumn<CameraRow>[] = [
         empty-title="No cameras"
         empty-text="No cameras yet."
         filter-label="Camera"
-        filter-placeholder="Search brand or model…"
+        filter-placeholder="Search by brand, model or description..."
         :columns="columns"
         :data="data"
         :get-row-id="(r) => r.camera.id"
