@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Lenses, and the signed-in user in a card at the bottom. Labs has a flask icon.
 - The header has an Alerts button that counts in-stock rolls expired or expiring within 6
   months and opens the Expiry page.
+- Account pages (log in, sign up, forgot and reset password) match the new look: the logo above
+  a card with a film-strip edge, upper-case field labels, a show/hide toggle on password fields,
+  a full-colour Google button, and errors and notices with an icon.
 - Delete prompts open a confirmation dialog in the app's style instead of the browser's
   `confirm` box.
 - Fonts (Geist Mono and Space Grotesk) are bundled from Fontsource instead of loaded from
