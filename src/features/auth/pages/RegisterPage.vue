@@ -43,10 +43,9 @@ async function submit({ name, email, password }: v.InferOutput<typeof RegisterSc
       <AuthInput
         :of="form"
         :path="['name']"
-        label="Name"
-        optional
+        label="Full name"
         autocomplete="name"
-        placeholder="e.g. Ansel"
+        placeholder="e.g. Ansel Adams"
       />
       <AuthInput
         :of="form"

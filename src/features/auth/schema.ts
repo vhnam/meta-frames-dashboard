@@ -29,7 +29,12 @@ export const LoginSchema = v.object({
 
 export const RegisterSchema = v.pipe(
   v.object({
-    name: v.pipe(v.string(), v.trim(), v.maxLength(100, "Use at most 100 characters.")),
+    name: v.pipe(
+      v.string("Full name is required."),
+      v.trim(),
+      v.nonEmpty("Full name is required."),
+      v.maxLength(100, "Use at most 100 characters."),
+    ),
     email,
     password: newPassword,
     confirmPassword: v.string(),
