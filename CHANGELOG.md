@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A "Page not found" page for unknown addresses. Under `/app` it shows inside the dashboard,
+  with links back to Rolls and to the previous page; elsewhere it shows as a standalone page
+  with a link home. Visitors who are not signed in still go to the login page for `/app` paths.
+- A lens page at `/app/lenses/:id`, in the film stock page's look: a header card with focal
+  length, aperture, mount and status, the roll the lens is shooting now and the number of rolls
+  shot; numbered sections for specifications and optics & notes; and a side column with the
+  camera a built-in lens belongs to and every roll shot with the lens. The Lenses list opens it.
+
+### Changed
+
+- List tables open a record by clicking anywhere on its row (or Enter on a focused row), with a
+  chevron at the end of the row. Rolls, Film stocks, Inventory, Expiry, Cameras and Lenses open
+  the detail page; Labs, which have no detail page, open the edit dialog.
+- List tables no longer have Edit and Delete buttons on each row. Edit and Delete are on each
+  record's detail page; for labs, Delete is in the edit dialog.
+- New look for the film stock page: a header card with the stock's type, process, box ISO,
+  packaging and origin, unexposed rolls with a per-format breakdown, the next expiry and the
+  number of rolls shot; numbered sections for specifications and provenance & notes; and a
+  side column with related stocks and every roll of the stock. "Add rolls" on the page opens
+  Add rolls with the stock already chosen.
+- The camera page uses the same look: a header card with mount and status, the loaded roll,
+  the number of lenses and of rolls shot; numbered sections for specifications and notes; and
+  a side column with linked lenses (each opens its lens page, and "Manage" sits on the section)
+  and every roll shot in the camera.
+- The Add / Edit camera and lens dialogs share the film stock dialog's look: numbered sections
+  (camera body or lens, lens & mount or optics, notes), required fields marked with an
+  asterisk, quick picks for common focal lengths and apertures, and Cancel / Save fixed to the
+  bottom.
+- The Mount field on cameras and lenses is a searchable list of every mount already used by a
+  camera or lens. Typing a mount that is not in the list adds it, so a camera can get a new
+  mount (for example L39) before any of its lenses exist.
+- The camera and lens Brand fields work the same way: pick a brand already used by a camera or
+  lens, or type a new one.
+- The Brand and Mount lists show how many cameras and lenses use each value, so a one-off typo
+  is easy to spot.
+- New look for the Add / Edit film stock dialog: fields on white, grouped into numbered
+  sections (specifications, chemistry & format, provenance & notes), required fields marked
+  with an asterisk, quick picks for common box speeds (100, 200, 400, 800), process names
+  in the Process picker, the base stock in its own panel, and Cancel / Save fixed to the bottom
+  while the form scrolls.
+- Descriptions of film stocks ("Darkroom notes & characteristics"), cameras and lenses use a
+  rich text editor with bold, italic, strikethrough, code, headings, lists, quotes, undo and
+  redo. They are saved as Markdown, so existing plain-text descriptions keep working. Stock,
+  camera and roll pages show descriptions formatted; list tables show them as plain text.
+- Lab job notes in the Send to lab dialog use the same rich text editor, and the roll page shows
+  them formatted.
+- The Cameras, Lenses and Film stocks lists no longer show the description under the name.
+- The camera Manage lenses dialog shows each lens's focal length, aperture and mount under its
+  name.
+- "Film tracker" under the sidebar logo is in the accent colour, as on the account pages.
+
 ## [2.0.0] - 2026-10-08
 
 ### Added
