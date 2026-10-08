@@ -1,12 +1,12 @@
 import { createRoute } from "@tanstack/vue-router";
 import { h, type VNode } from "vue";
-import { rootRoute } from "#/layouts/rootRoute";
+import { appRoute } from "#/layouts/appRoute";
 import CameraDetailPage from "./pages/CameraDetailPage.vue";
 import CameraListPage from "./pages/CameraListPage.vue";
 
 const cameraListRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/cameras",
+  getParentRoute: () => appRoute,
+  path: "cameras",
   component: CameraListPage,
 });
 
@@ -15,8 +15,8 @@ function CameraDetailRoute(): VNode {
 }
 
 const cameraDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/cameras/$cameraId",
+  getParentRoute: () => appRoute,
+  path: "cameras/$cameraId",
   component: CameraDetailRoute,
 });
 

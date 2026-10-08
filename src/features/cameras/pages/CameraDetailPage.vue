@@ -26,7 +26,7 @@ const lensesOpen = ref(false);
 
 async function doDelete() {
   if (ask("Delete this camera?") && (await attempt(deleteCamera.mutateAsync(props.cameraId))))
-    router.navigate({ to: "/cameras" });
+    router.navigate({ to: "/app/cameras" });
 }
 </script>
 
@@ -72,7 +72,7 @@ async function doDelete() {
           <Link
             v-for="r in rolls.data.value ?? []"
             :key="r.roll.id"
-            to="/rolls/$rollId"
+            to="/app/rolls/$rollId"
             :params="{ rollId: r.roll.id }"
             class="hover:bg-accent/40 flex items-center justify-between rounded-md border px-3 py-2 text-sm"
           >

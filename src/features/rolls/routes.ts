@@ -1,13 +1,13 @@
 import { createRoute } from "@tanstack/vue-router";
 import { h, type VNode } from "vue";
-import { rootRoute } from "#/layouts/rootRoute";
+import { appRoute } from "#/layouts/appRoute";
 import ExpiryPage from "./pages/ExpiryPage.vue";
 import RollDetailPage from "./pages/RollDetailPage.vue";
 import RollListPage from "./pages/RollListPage.vue";
 
 const rollListRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/rolls",
+  getParentRoute: () => appRoute,
+  path: "rolls",
   component: RollListPage,
 });
 
@@ -16,14 +16,14 @@ function RollDetailRoute(): VNode {
 }
 
 const rollDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/rolls/$rollId",
+  getParentRoute: () => appRoute,
+  path: "rolls/$rollId",
   component: RollDetailRoute,
 });
 
 const expiryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/expiry",
+  getParentRoute: () => appRoute,
+  path: "expiry",
   component: ExpiryPage,
 });
 

@@ -22,7 +22,7 @@ const editOpen = ref(false);
 
 async function doDelete() {
   if (ask("Delete this stock?") && (await attempt(deleteStock.mutateAsync(props.stockId))))
-    router.navigate({ to: "/stocks" });
+    router.navigate({ to: "/app/stocks" });
 }
 </script>
 
@@ -59,7 +59,7 @@ async function doDelete() {
             <div v-if="d.base">
               Base:
               <Link
-                to="/stocks/$stockId"
+                to="/app/stocks/$stockId"
                 :params="{ stockId: d.base.id }"
                 class="font-medium hover:underline"
               >
@@ -71,7 +71,7 @@ async function doDelete() {
               <Link
                 v-for="s in d.siblings"
                 :key="s.id"
-                to="/stocks/$stockId"
+                to="/app/stocks/$stockId"
                 :params="{ stockId: s.id }"
                 class="mr-2 font-medium hover:underline"
               >
@@ -83,7 +83,7 @@ async function doDelete() {
               <Link
                 v-for="s in d.children"
                 :key="s.id"
-                to="/stocks/$stockId"
+                to="/app/stocks/$stockId"
                 :params="{ stockId: s.id }"
                 class="mr-2 font-medium hover:underline"
               >
@@ -100,7 +100,7 @@ async function doDelete() {
             <Link
               v-for="r in rolls.data.value ?? []"
               :key="r.roll.id"
-              to="/rolls/$rollId"
+              to="/app/rolls/$rollId"
               :params="{ rollId: r.roll.id }"
               class="hover:bg-accent/40 flex items-center justify-between rounded-md border px-3 py-2 text-sm"
             >
