@@ -28,6 +28,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Lenses, and the signed-in user in a card at the bottom. Labs has a flask icon.
 - The header has an Alerts button that counts in-stock rolls expired or expiring within 6
   months and opens the Expiry page.
+- Every list screen (rolls, cameras, lenses, film stocks, inventory, expiry, labs, audit log)
+  shares one table style: the name in bold with a detail line under it, values such as mount,
+  type and format in small tags, status badges with a dot, aligned digits for numbers, upper-case
+  headers, an Actions column with Edit and Delete, and an "Add …" button with a + icon.
+- Table search runs on Apply (or Enter) instead of while typing. The button then reads Applied
+  until the keyword changes, and an X inside the search box clears it. This replaces the Reset
+  button.
+- The rows-per-page select and page controls sit in the table footer and show on every list
+  that has rows; the first and last page buttons are gone.
+- Rolls list: the stock cell shows film type, exposures and ISO; the format shows its size
+  (`135 / 35mm`); the roll description shows under the camera; status tabs show empty counts
+  as a plain zero and the At lab count in red.
+- Cameras list: the description shows under the camera name, and inactive cameras are listed
+  too (dimmed) instead of behind a "Show inactive" button.
+- Lenses list: a built-in lens shows "Built into <camera>" under its name and a "Built-in" mount
+  tag.
+- The Active filter on Cameras and Lenses always offers Any status, Active and Inactive, even
+  when every row has the same status.
+- Expiry lists rolls without an expiry date in their own table.
 - The dashboard moved under `/app` (for example `/app/rolls`) and needs a session. Visitors are
   sent to `/auth/login` and return to the page they asked for after logging in. `/` is reserved
   for public pages and opens the app for now (breaking: old links such as `/rolls` no longer

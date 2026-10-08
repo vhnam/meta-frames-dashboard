@@ -1,53 +1,65 @@
 <script setup lang="ts">
 import { formatExpiry } from "../format";
 import { useExpiryReport } from "../queries";
-import type { ExpiryReport } from "../types";
+import type { ExpiryReport, RollRow } from "../types";
 import { Link } from "@tanstack/vue-router";
 import { h } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import PageHeader from "#/shared/components/PageHeader.vue";
+import StatusBadge from "#/shared/components/StatusBadge.vue";
+import { PRIMARY_LINK, numberCell, stackCell } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import { Badge } from "#/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
 
 const report = useExpiryReport();
 
 type DatedRow = ExpiryReport["dated"][number];
+
+const rollLink = (r: RollRow) =>
+  stackCell(
+    h(
+      Link,
+      { to: "/app/rolls/$rollId", params: { rollId: r.roll.id }, class: PRIMARY_LINK },
+      () => r.stockName,
+    ),
+    `${r.roll.format} · ${r.roll.exposures} Exp`,
+  );
 
 const columns: DataTableColumn<DatedRow>[] = [
   {
     id: "roll",
     header: "Roll",
     accessorFn: (r) => `${r.stockName} · ${r.roll.format}`,
-    cell: ({ row: { original: r } }) =>
-      h(
-        Link,
-        {
-          to: "/app/rolls/$rollId",
-          params: { rollId: r.roll.id },
-          class: "font-medium hover:underline",
-        },
-        () => `${r.stockName} · ${r.roll.format}`,
-      ),
+    cell: ({ row }) => rollLink(row.original),
   },
   {
     id: "expiry",
     header: "Expiry",
     accessorFn: (r) => formatExpiry(r.roll),
     enableGlobalFilter: false,
+    cell: ({ row }) => numberCell(formatExpiry(row.original.roll)),
   },
   {
     id: "status",
     meta: { filter: { label: "Status", placeholder: "Any status" } },
     header: "Status",
+    enableSorting: false,
     accessorFn: (r) => (r.expired ? "Expired" : "Soon"),
     enableGlobalFilter: false,
     filterFn: "equalsString",
     cell: ({ row: { original: r } }) =>
-      h(Badge, { variant: r.expired ? "destructive" : "secondary" }, () =>
+      h(StatusBadge, { tone: r.expired ? "danger" : "warning" }, () =>
         r.expired ? "Expired" : "Soon",
       ),
+  },
+];
+
+const undatedColumns: DataTableColumn<RollRow>[] = [
+  {
+    id: "roll",
+    header: "Roll",
+    accessorFn: (r) => r.stockName,
+    cell: ({ row }) => rollLink(row.original),
   },
 ];
 </script>
@@ -60,27 +72,25 @@ const columns: DataTableColumn<DatedRow>[] = [
         empty-title="Nothing expiring"
         empty-text="Nothing expires soon."
         filter-label="Roll"
-        filter-placeholder="Search stock…"
+        filter-placeholder="Search by stock..."
         :columns="columns"
         :data="data.dated"
         :get-row-id="(r) => r.roll.id"
       />
-      <Card v-if="data.undated.length" class="mt-4">
-        <CardHeader>
-          <CardTitle>No expiry information ({{ data.undated.length }})</CardTitle>
-        </CardHeader>
-        <CardContent class="grid gap-1">
-          <Link
-            v-for="r in data.undated"
-            :key="r.roll.id"
-            to="/app/rolls/$rollId"
-            :params="{ rollId: r.roll.id }"
-            class="text-sm hover:underline"
-          >
-            {{ r.stockName }} · {{ r.roll.format }}
-          </Link>
-        </CardContent>
-      </Card>
+      <template v-if="data.undated.length">
+        <h2 class="mt-4 text-xl font-semibold">
+          No expiry information
+          <span class="text-muted-foreground font-sans text-sm font-normal">
+            ({{ data.undated.length }})
+          </span>
+        </h2>
+        <DataTable
+          hide-filters
+          :columns="undatedColumns"
+          :data="data.undated"
+          :get-row-id="(r) => r.roll.id"
+        />
+      </template>
     </template>
   </QueryBoundary>
 </template>

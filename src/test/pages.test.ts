@@ -45,6 +45,7 @@ describe("Film & Lab screens", () => {
     const stocks = render(StocksView);
     await vi.waitFor(() => expect(stocks.findAll("tbody tr")).toHaveLength(1));
     await stocks.find("input").setValue("zzz");
+    await stocks.find('form[role="search"]').trigger("submit");
     await vi.waitFor(() => expect(stocks.text()).toContain("No matches"));
     const labs = render(LabsView);
     await vi.waitFor(() => expect(labs.text()).toContain("Saigon Lab"));
@@ -67,7 +68,11 @@ describe("Film & Lab screens", () => {
     server.addRoll({ expiry: { year: soon.getFullYear() + 5, month: 1 } }); // far away
     server.addRoll({}); // no expiry date
     const w = render(ExpiryView);
-    await vi.waitFor(() => expect(w.findAll("tbody tr")).toHaveLength(1));
-    expect(w.text()).toContain("No expiry information (1)");
+    // one table for the dated rolls, one for the roll without a date
+    await vi.waitFor(() => expect(w.findAll("table")).toHaveLength(2));
+    const [dated, undated] = w.findAll("table");
+    expect(dated!.findAll("tbody tr")).toHaveLength(1);
+    expect(undated!.findAll("tbody tr")).toHaveLength(1);
+    expect(w.find("h2").text().replace(/\s+/g, " ")).toBe("No expiry information (1)");
   });
 });
