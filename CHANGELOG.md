@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-08
+
 ### Added
 
 - Accounts under `/auth`: log in (`/auth/login`), sign up (`/auth/register`), forgot password
@@ -183,5 +185,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/vhnam/meta-frames-dashboard/releases/tag/v1.0.0
