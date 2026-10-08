@@ -1,5 +1,6 @@
 import { createRoute, redirect } from "@tanstack/vue-router";
 import { currentUser } from "#/features/auth/session";
+import AppNotFoundPage from "./AppNotFoundPage.vue";
 import DashboardLayout from "./DashboardLayout.vue";
 import { rootRoute } from "./rootRoute";
 
@@ -8,6 +9,7 @@ export const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
   component: DashboardLayout,
+  notFoundComponent: AppNotFoundPage,
   beforeLoad: async ({ location }) => {
     if (!(await currentUser())) {
       throw redirect({ to: "/auth/login", search: { redirect: location.href } });

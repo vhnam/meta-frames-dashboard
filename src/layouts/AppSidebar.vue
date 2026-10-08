@@ -68,11 +68,11 @@ const itemClass =
               <div
                 class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md shadow-sm"
               >
-                <IconAperture class="size-[1.125rem]" aria-hidden="true" />
+                <IconAperture class="size-4.5" aria-hidden="true" />
               </div>
               <div class="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                <span class="font-heading truncate text-[0.95rem] font-semibold">Meta Frames</span>
-                <span class="text-muted-foreground truncate text-xs tracking-[0.12em] uppercase">
+                <span class="font-heading truncate text-[0.95rem] font-bold">Meta Frames</span>
+                <span class="text-primary text-xs font-semibold tracking-[0.12em] uppercase">
                   Film tracker
                 </span>
               </div>
