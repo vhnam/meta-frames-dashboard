@@ -81,7 +81,7 @@ const columns: DataTableColumn<CameraRow>[] = [
   },
   actionsColumn(({ camera: c }) => ({
     onEdit: () => show(c.id),
-    onDelete: () => ask("Delete this camera?") && deleteCamera.mutate(c.id),
+    onDelete: async () => (await ask("Delete this camera?")) && deleteCamera.mutate(c.id),
   })),
 ];
 </script>

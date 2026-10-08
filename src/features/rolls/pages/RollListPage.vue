@@ -153,7 +153,7 @@ const columns: DataTableColumn<RollRow>[] = [
   },
   actionsColumn((r) => ({
     onEdit: () => edit(r),
-    onDelete: () => ask("Delete this roll?") && deleteRoll.mutate(r.roll.id),
+    onDelete: async () => (await ask("Delete this roll?")) && deleteRoll.mutate(r.roll.id),
   })),
 ];
 </script>

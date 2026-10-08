@@ -28,7 +28,7 @@ const loadOpen = ref(false);
 const lensesOpen = ref(false);
 
 async function doDelete() {
-  if (ask("Delete this roll?") && (await attempt(deleteRoll.mutateAsync(props.rollId))))
+  if ((await ask("Delete this roll?")) && (await attempt(deleteRoll.mutateAsync(props.rollId))))
     router.navigate({ to: "/app/rolls" });
 }
 

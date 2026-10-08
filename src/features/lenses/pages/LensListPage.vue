@@ -105,7 +105,7 @@ const columns: DataTableColumn<LensRow>[] = [
     onEdit: () => open(r.lens.id),
     onDelete: r.lens.builtInCameraId
       ? undefined
-      : () => ask("Delete this lens?") && deleteLens.mutate(r.lens.id),
+      : async () => (await ask("Delete this lens?")) && deleteLens.mutate(r.lens.id),
   })),
 ];
 </script>

@@ -35,7 +35,7 @@ const columns: DataTableColumn<Lab>[] = [
   },
   actionsColumn((l) => ({
     onEdit: () => show(l.id),
-    onDelete: () => ask("Delete this lab?") && deleteLab.mutate(l.id),
+    onDelete: async () => (await ask("Delete this lab?")) && deleteLab.mutate(l.id),
     deleteDisabled: deleteLab.isPending.value,
   })),
 ];
