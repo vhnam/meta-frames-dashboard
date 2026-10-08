@@ -27,8 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   labels, a bordered active item, the roll count next to Rolls, dot bullets for Cameras and
   Lenses, and the signed-in user in a card at the bottom. Labs has a flask icon.
 - The sidebar header and top bar are shorter (56px instead of 76px), with a smaller logo.
-- The header has an Alerts button that counts in-stock rolls expired or expiring within 6
-  months and opens the Expiry page.
+- The header has an Alerts bell with a red count of in-stock rolls expired or expiring within 6
+  months. It opens a panel that lists them, most overdue first, with how long ago each roll
+  expired or how soon it expires. Each alert opens its roll, and "See all" opens the Expiry page.
+  Hovering or focusing the bell shows a tooltip with the count.
 - Account pages (log in, sign up, forgot and reset password) match the new look: the logo above
   a card with a film-strip edge, upper-case field labels, a show/hide toggle on password fields,
   a full-colour Google button, and errors and notices with an icon.
