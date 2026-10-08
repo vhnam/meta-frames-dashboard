@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useLabList, useSaveLab } from "../queries";
+import { useDeleteLab, useLabList, useSaveLab } from "../queries";
 import { LabSchema } from "../schema";
 import { reset, useForm } from "@formisch/vue";
 import type * as v from "valibot";
 import { watch } from "vue";
 import FormDialog from "#/shared/components/FormDialog.vue";
 import FormInput from "#/shared/components/FormInput.vue";
-import { attempt } from "#/shared/lib/ui";
+import { Button } from "#/shared/ui/button";
+import { ask, attempt } from "#/shared/lib/ui";
 
 const props = defineProps<{ labId?: string }>();
 const open = defineModel<boolean>("open", { required: true });
@@ -14,6 +15,7 @@ const emit = defineEmits<{ saved: [id: string] }>();
 
 const labs = useLabList();
 const save = useSaveLab();
+const remove = useDeleteLab();
 const form = useForm({ schema: LabSchema });
 watch(open, (isOpen) => {
   if (!isOpen) return;
@@ -31,6 +33,11 @@ async function submit(o: v.InferOutput<typeof LabSchema>) {
     emit("saved", id);
   }
 }
+
+async function doDelete() {
+  if (!props.labId || !(await ask("Delete this lab?"))) return;
+  if (await attempt(remove.mutateAsync(props.labId))) open.value = false;
+}
 </script>
 
 <template>
@@ -40,6 +47,17 @@ async function submit(o: v.InferOutput<typeof LabSchema>) {
     :title="labId ? 'Edit lab' : 'Add lab'"
     @submit="submit"
   >
+    <template v-if="labId" #footer-start>
+      <Button
+        type="button"
+        variant="ghost"
+        class="text-destructive hover:text-destructive"
+        :disabled="remove.isPending.value"
+        @click="doDelete"
+      >
+        Delete
+      </Button>
+    </template>
     <div class="space-y-6">
       <FormInput :of="form" :path="['name']" label="Name" placeholder="e.g. Saigon Film Lab" />
       <FormInput

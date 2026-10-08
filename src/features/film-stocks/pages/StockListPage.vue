@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { PACKAGING_TONE, PROCESS_TONE, TYPE_TONE, stockName } from "../format";
-import { useDeleteStock, useStockList } from "../queries";
+import { useStockList } from "../queries";
 import { FILM_TYPE_LABELS, PACKAGING_LABELS, PROCESS_LABELS } from "../types";
 import type { StockRow } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
@@ -11,7 +11,6 @@ import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
 import {
   PRIMARY_LINK,
-  actionsColumn,
   mutedCell,
   numberCell,
   stackCell,
@@ -19,16 +18,18 @@ import {
 } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import StockFormDialog from "../components/StockFormDialog.vue";
-import { ask } from "#/shared/lib/ui";
 
 const stocks = useStockList();
-const deleteStock = useDeleteStock();
 const formOpen = ref(false);
 const editing = ref<string>();
 function show(id?: string) {
   editing.value = id;
   formOpen.value = true;
 }
+
+const router = useRouter();
+const openStock = (r: StockRow) =>
+  router.navigate({ to: "/app/stocks/$stockId", params: { stockId: r.stock.id } });
 
 const columns: DataTableColumn<StockRow>[] = [
   {
@@ -42,7 +43,6 @@ const columns: DataTableColumn<StockRow>[] = [
           { to: "/app/stocks/$stockId", params: { stockId: r.stock.id }, class: PRIMARY_LINK },
           () => stockName(r.stock),
         ),
-        r.stock.description,
       ),
   },
   {
@@ -88,10 +88,6 @@ const columns: DataTableColumn<StockRow>[] = [
     accessorFn: (r) => r.baseName ?? "—",
     cell: ({ row }) => mutedCell(row.original.baseName),
   },
-  actionsColumn((r) => ({
-    onEdit: () => show(r.stock.id),
-    onDelete: async () => (await ask("Delete this film stock?")) && deleteStock.mutate(r.stock.id),
-  })),
 ];
 </script>
 
@@ -112,6 +108,8 @@ const columns: DataTableColumn<StockRow>[] = [
         :columns="columns"
         :data="data"
         :get-row-id="(r) => r.stock.id"
+        :on-select="openStock"
+        :row-label="(r) => `Open ${stockName(r.stock)}`"
       />
     </template>
   </QueryBoundary>

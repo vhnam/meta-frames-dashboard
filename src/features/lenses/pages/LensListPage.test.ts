@@ -12,6 +12,8 @@ installFakeServer();
 
 vi.mock("vue-sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
+const Link = { name: "Link", template: "<a><slot /></a>" };
+
 beforeEach(() => {
   server.reset();
   queryClient.clear();
@@ -22,7 +24,7 @@ describe("LensListPage mount filter", () => {
     server.addCamera({ hasFixedLens: true });
     server.addLens();
     const wrapper = mount(LensListPage, {
-      global: { plugins: [[VueQueryPlugin, { queryClient }]] },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Link } },
     });
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
     const table = tableOf(wrapper.findComponent(DataTable));
@@ -36,7 +38,7 @@ describe("LensListPage mount filter", () => {
   it("hides Built-in when no fixed-lens camera exists", async () => {
     server.addLens();
     const wrapper = mount(LensListPage, {
-      global: { plugins: [[VueQueryPlugin, { queryClient }]] },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Link } },
     });
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
     const table = tableOf(wrapper.findComponent(DataTable));

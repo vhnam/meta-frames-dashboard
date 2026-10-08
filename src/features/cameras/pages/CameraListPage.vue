@@ -1,23 +1,21 @@
 <script setup lang="ts">
 import { cameraName } from "../format";
-import { useCameraList, useDeleteCamera, useSetCameraActive } from "../queries";
+import { useCameraList, useSetCameraActive } from "../queries";
 import type { CameraRow } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
-import { PRIMARY_LINK, actionsColumn, stackCell, tagCell } from "#/shared/components/tableCells";
+import { PRIMARY_LINK, stackCell, tagCell } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import CameraFormDialog from "../components/CameraFormDialog.vue";
 import { Switch } from "#/shared/ui/switch";
-import { ask } from "#/shared/lib/ui";
 
 // every camera, inactive ones dimmed; the Active column filters them
 const cameras = useCameraList(true);
 const setActive = useSetCameraActive();
-const deleteCamera = useDeleteCamera();
 
 const formOpen = ref(false);
 const editing = ref<string>();
@@ -25,6 +23,10 @@ function show(id?: string) {
   editing.value = id;
   formOpen.value = true;
 }
+
+const router = useRouter();
+const openCamera = (r: CameraRow) =>
+  router.navigate({ to: "/app/cameras/$cameraId", params: { cameraId: r.camera.id } });
 
 const columns: DataTableColumn<CameraRow>[] = [
   {
@@ -42,7 +44,6 @@ const columns: DataTableColumn<CameraRow>[] = [
           { to: "/app/cameras/$cameraId", params: { cameraId: c.id }, class: PRIMARY_LINK },
           () => cameraName(c),
         ),
-        c.description,
       ),
   },
   {
@@ -79,10 +80,6 @@ const columns: DataTableColumn<CameraRow>[] = [
         "onUpdate:modelValue": (v: boolean) => setActive.mutate({ id: c.id, active: v }),
       }),
   },
-  actionsColumn(({ camera: c }) => ({
-    onEdit: () => show(c.id),
-    onDelete: async () => (await ask("Delete this camera?")) && deleteCamera.mutate(c.id),
-  })),
 ];
 </script>
 
@@ -102,6 +99,8 @@ const columns: DataTableColumn<CameraRow>[] = [
         :columns="columns"
         :data="data"
         :get-row-id="(r) => r.camera.id"
+        :on-select="openCamera"
+        :row-label="(r) => `Open ${cameraName(r.camera)}`"
         :row-class="(r) => (r.camera.active ? undefined : 'opacity-60')"
       />
     </template>

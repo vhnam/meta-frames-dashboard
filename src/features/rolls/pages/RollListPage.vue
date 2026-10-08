@@ -1,29 +1,22 @@
 <script setup lang="ts">
 import { useStockList, type FilmStock, type FilmType } from "#/features/film-stocks";
-import { useDeleteRoll, useRollList } from "../queries";
+import { useRollList } from "../queries";
 import { ROLL_STATUSES } from "../types";
 import type { RollRow, RollStatus } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { computed, h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
-import {
-  PRIMARY_LINK,
-  actionsColumn,
-  numberCell,
-  stackCell,
-  tagCell,
-} from "#/shared/components/tableCells";
+import { PRIMARY_LINK, numberCell, stackCell, tagCell } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import RollStatusBadge from "../components/RollStatusBadge.vue";
 import AddRollsDialog from "../components/AddRollsDialog.vue";
-import RollEditDialog from "../components/RollEditDialog.vue";
 import { cn } from "#/shared/lib/utils";
 import { Badge } from "#/shared/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/shared/ui/tabs";
-import { ask } from "#/shared/lib/ui";
+import { plainText } from "#/shared/lib/format";
 
 const STATUS_LABELS: Record<RollStatus, string> = {
   in_stock: "In stock",
@@ -46,13 +39,6 @@ const inTab = (rows: RollRow[], t: RollTab) =>
 
 const addOpen = ref(false);
 const rolls = useRollList({});
-const deleteRoll = useDeleteRoll();
-const editing = ref<RollRow>();
-const editOpen = ref(false);
-function edit(row: RollRow) {
-  editing.value = row;
-  editOpen.value = true;
-}
 
 // the list endpoint names the stock only; type and box ISO come from the stock list
 const stocks = useStockList();
@@ -89,6 +75,10 @@ const tabCountClass = (t: RollTab, n: number) =>
 
 const negativesBadge = (r: RollRow) =>
   (r.roll.status === "scanned" || r.roll.status === "developed") && r.negativesAtLab;
+
+const router = useRouter();
+const openRoll = (r: RollRow) =>
+  router.navigate({ to: "/app/rolls/$rollId", params: { rollId: r.roll.id } });
 
 const columns: DataTableColumn<RollRow>[] = [
   {
@@ -128,7 +118,7 @@ const columns: DataTableColumn<RollRow>[] = [
           { class: r.cameraName ? "font-medium" : "text-muted-foreground" },
           r.cameraName ?? "—",
         ),
-        r.roll.description,
+        plainText(r.roll.description),
       ),
   },
   {
@@ -151,10 +141,6 @@ const columns: DataTableColumn<RollRow>[] = [
         negativesBadge(r) ? h(Badge, { variant: "outline" }, () => "Negatives at lab") : null,
       ]),
   },
-  actionsColumn((r) => ({
-    onEdit: () => edit(r),
-    onDelete: async () => (await ask("Delete this roll?")) && deleteRoll.mutate(r.roll.id),
-  })),
 ];
 </script>
 
@@ -197,11 +183,12 @@ const columns: DataTableColumn<RollRow>[] = [
             :columns="columns"
             :data="inTab(data, t.value)"
             :get-row-id="(r) => r.roll.id"
+            :on-select="openRoll"
+            :row-label="(r) => `Open ${r.stockName} roll`"
           />
         </TabsContent>
       </Tabs>
     </template>
   </QueryBoundary>
   <AddRollsDialog v-model:open="addOpen" />
-  <RollEditDialog v-model:open="editOpen" :row="editing" />
 </template>

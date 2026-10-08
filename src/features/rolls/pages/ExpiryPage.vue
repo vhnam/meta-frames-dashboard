@@ -2,7 +2,7 @@
 import { formatExpiry } from "../format";
 import { useExpiryReport } from "../queries";
 import type { ExpiryReport, RollRow } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
@@ -14,6 +14,10 @@ import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 const report = useExpiryReport();
 
 type DatedRow = ExpiryReport["dated"][number];
+
+const router = useRouter();
+const openRoll = (r: RollRow) =>
+  router.navigate({ to: "/app/rolls/$rollId", params: { rollId: r.roll.id } });
 
 const rollLink = (r: RollRow) =>
   stackCell(
@@ -76,6 +80,8 @@ const undatedColumns: DataTableColumn<RollRow>[] = [
         :columns="columns"
         :data="data.dated"
         :get-row-id="(r) => r.roll.id"
+        :on-select="openRoll"
+        :row-label="(r) => `Open ${r.stockName} roll`"
       />
       <template v-if="data.undated.length">
         <h2 class="mt-4 text-xl font-semibold">
@@ -89,6 +95,8 @@ const undatedColumns: DataTableColumn<RollRow>[] = [
           :columns="undatedColumns"
           :data="data.undated"
           :get-row-id="(r) => r.roll.id"
+          :on-select="openRoll"
+          :row-label="(r) => `Open ${r.stockName} roll`"
         />
       </template>
     </template>
