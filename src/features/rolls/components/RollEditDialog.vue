@@ -4,12 +4,14 @@ import { useUpdateRoll } from "../queries";
 import { RollSchema } from "../schema";
 import { FORMATS, MONTH_OPTIONS } from "../types";
 import type { RollRow } from "../types";
-import { reset, useForm } from "@formisch/vue";
+import { getInput, reset, setInput, useForm } from "@formisch/vue";
 import type * as v from "valibot";
 import { computed, watch } from "vue";
-import FormDialog from "#/shared/components/FormDialog.vue";
 import FormInput from "#/shared/components/FormInput.vue";
+import FormSection from "#/shared/components/FormSection.vue";
 import FormSelect from "#/shared/components/FormSelect.vue";
+import QuickPicks from "#/shared/components/QuickPicks.vue";
+import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
 import { attempt } from "#/shared/lib/ui";
 
 const props = defineProps<{ row?: RollRow }>();
@@ -20,34 +22,39 @@ const update = useUpdateRoll();
 const form = useForm({ schema: RollSchema });
 
 watch(open, (isOpen) => {
-  const r = props.row?.roll;
-  if (!isOpen || !r) return;
+  const roll = props.row?.roll;
+  if (!isOpen || !roll) return;
   reset(form, {
     initialInput: {
-      stockId: r.stockId,
-      format: r.format as (typeof FORMATS)[number],
-      exposures: r.exposures,
-      price: r.price ?? undefined,
-      expiryYear: r.expiryYear ?? undefined,
-      expiryMonth: r.expiryMonth ?? undefined,
+      stockId: roll.stockId,
+      format: roll.format as (typeof FORMATS)[number],
+      exposures: roll.exposures,
+      price: roll.price ?? undefined,
+      expiryYear: roll.expiryYear ?? undefined,
+      expiryMonth: roll.expiryMonth ?? undefined,
     },
   });
 });
 
 const stockOptions = computed(() =>
-  (stocks.data.value ?? []).map((r) => ({ value: r.stock.id, label: stockName(r.stock) })),
+  [...(stocks.data.value ?? [])]
+    .sort((left, right) => stockName(left.stock).localeCompare(stockName(right.stock)))
+    .map((row) => ({ value: row.stock.id, label: stockName(row.stock) })),
 );
+const formatOptions = FORMATS.map((format) => ({ value: format, label: format }));
 
-async function submit(o: v.InferOutput<typeof RollSchema>) {
+const EXPOSURE_PICKS = [12, 24, 36];
+
+async function submit(output: v.InferOutput<typeof RollSchema>) {
   if (!props.row) return;
   const ok = await attempt(
     update.mutateAsync({
       row: props.row,
       input: {
-        ...o,
-        price: o.price ?? null,
-        expiryYear: o.expiryYear ?? null,
-        expiryMonth: o.expiryMonth ?? null,
+        ...output,
+        price: output.price ?? null,
+        expiryYear: output.expiryYear ?? null,
+        expiryMonth: output.expiryMonth ?? null,
       },
     }),
   );
@@ -56,59 +63,94 @@ async function submit(o: v.InferOutput<typeof RollSchema>) {
 </script>
 
 <template>
-  <FormDialog v-model:open="open" :form="form" title="Edit roll" @submit="submit">
-    <FormSelect
-      :of="form"
-      :path="['stockId']"
-      label="Film stock"
-      placeholder="Select film stock"
-      :options="stockOptions"
-    />
-    <div class="grid grid-cols-2 gap-3">
-      <FormSelect
-        :of="form"
-        :path="['format']"
-        label="Format"
-        placeholder="Select format"
-        :options="FORMATS.map((f) => ({ value: f, label: f }))"
-      />
+  <SectionedFormDialog
+    v-model:open="open"
+    :form="form"
+    size="md"
+    title="Edit Roll"
+    description="Update the film, purchase price and expiry of this roll"
+    submit-label="Save changes"
+    :pending="update.isPending.value"
+    @submit="submit"
+  >
+    <FormSection no="01" title="Film" note="* Required attributes">
+      <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <FormSelect
+            :of="form"
+            :path="['stockId']"
+            label="Film stock"
+            required
+            placeholder="Select film stock"
+            :options="stockOptions"
+          />
+        </div>
+        <FormSelect
+          :of="form"
+          :path="['format']"
+          label="Format"
+          required
+          placeholder="Select format"
+          :options="formatOptions"
+        />
+        <FormInput
+          :of="form"
+          :path="['exposures']"
+          label="Exposures"
+          required
+          type="number"
+          min="1"
+          step="1"
+          placeholder="e.g. 36"
+        >
+          <template #aside>
+            <QuickPicks
+              :values="EXPOSURE_PICKS"
+              :current="getInput(form, { path: ['exposures'] })"
+              label="Common exposure counts"
+              @pick="(value) => setInput(form, { path: ['exposures'], input: value })"
+            />
+          </template>
+        </FormInput>
+      </div>
+    </FormSection>
+
+    <FormSection no="02" title="Purchase" note="Shipping excluded">
       <FormInput
         :of="form"
-        :path="['exposures']"
-        label="Exposures"
-        type="number"
-        min="1"
-        placeholder="e.g. 36"
-      />
-    </div>
-    <FormInput
-      :of="form"
-      :path="['price']"
-      label="Price (₫)"
-      optional
-      type="number"
-      min="0"
-      placeholder="e.g. 150000"
-    />
-    <div class="grid grid-cols-2 gap-3">
-      <FormInput
-        :of="form"
-        :path="['expiryYear']"
-        label="Expiry year"
+        :path="['price']"
+        label="Unit price"
         optional
         type="number"
-        min="1900"
-        placeholder="e.g. 2027"
+        min="0"
+        step="1000"
+        suffix="₫ / roll"
+        placeholder="e.g. 150000"
       />
-      <FormSelect
-        :of="form"
-        :path="['expiryMonth']"
-        label="Expiry month"
-        optional
-        numeric
-        placeholder="Select month"
-        :options="MONTH_OPTIONS"
-      />
-    </div>
-  </FormDialog>
+    </FormSection>
+
+    <FormSection no="03" title="Expiry" note="As printed on the box">
+      <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+        <FormInput
+          :of="form"
+          :path="['expiryYear']"
+          label="Expiry year"
+          optional
+          type="number"
+          min="1900"
+          step="1"
+          placeholder="e.g. 2027"
+        />
+        <FormSelect
+          :of="form"
+          :path="['expiryMonth']"
+          label="Expiry month"
+          optional
+          numeric
+          placeholder="Select month"
+          :options="MONTH_OPTIONS"
+        />
+      </div>
+    </FormSection>
+  </SectionedFormDialog>
 </template>

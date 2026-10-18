@@ -21,7 +21,7 @@ describe("LoadRollDialog", () => {
     const stock = server.addStock({ name: "Portra", brand: "Kodak", boxIso: 400 });
     const rec = server.addRoll({ filmStockId: stock.id, status: "in_stock" });
     const listed = (await queryClient.fetchQuery(rollQueries.list({}))).find(
-      (r) => r.roll.id === rec.id,
+      (row) => row.roll.id === rec.id,
     )!;
     // the list endpoint has no box ISO; the detail page fills it from the stock
     const row = { ...listed, boxIso: stock.boxIso };
@@ -37,7 +37,7 @@ describe("LoadRollDialog", () => {
     (document.body.querySelector("button[type=submit]") as HTMLButtonElement).click();
     await flushPromises();
     expect(document.body.textContent).toContain("Select a camera.");
-    expect(server.requests.some((r) => r.method === "put")).toBe(false);
+    expect(server.requests.some((request) => request.method === "put")).toBe(false);
     wrapper.unmount();
   });
 
@@ -48,7 +48,7 @@ describe("LoadRollDialog", () => {
     server.addRoll({ filmStockId: stock.id, cameraId: busy.id, status: "in_camera" });
     const rec = server.addRoll({ filmStockId: stock.id, status: "in_stock" });
     const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
-      (r) => r.roll.id === rec.id,
+      (row) => row.roll.id === rec.id,
     )!;
     const wrapper = mount(LoadRollDialog, {
       attachTo: document.body,
@@ -59,11 +59,14 @@ describe("LoadRollDialog", () => {
     const options = () => {
       const fields = wrapper
         .findAllComponents(FormSelect)
-        .map((s) => s.props() as { label: string; options: { value: string; label: string }[] });
-      return fields.find((p) => p.label === "Camera")?.options;
+        .map(
+          (select) =>
+            select.props() as { label: string; options: { value: string; label: string }[] },
+        );
+      return fields.find((field) => field.label === "Camera")?.options;
     };
-    await vi.waitFor(() => expect(options()?.map((o) => o.value)).toEqual([free.id]));
-    expect(options()?.some((o) => o.value === busy.id)).toBe(false);
+    await vi.waitFor(() => expect(options()?.map((option) => option.value)).toEqual([free.id]));
+    expect(options()?.some((option) => option.value === busy.id)).toBe(false);
     wrapper.unmount();
   });
 });

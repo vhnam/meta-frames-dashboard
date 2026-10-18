@@ -3,9 +3,10 @@ import { useDeleteLab, useLabList, useSaveLab } from "../queries";
 import { LabSchema } from "../schema";
 import { reset, useForm } from "@formisch/vue";
 import type * as v from "valibot";
-import { watch } from "vue";
-import FormDialog from "#/shared/components/FormDialog.vue";
+import { computed, watch } from "vue";
 import FormInput from "#/shared/components/FormInput.vue";
+import FormSection from "#/shared/components/FormSection.vue";
+import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
 import { Button } from "#/shared/ui/button";
 import { ask, attempt } from "#/shared/lib/ui";
 
@@ -17,16 +18,17 @@ const labs = useLabList();
 const save = useSaveLab();
 const remove = useDeleteLab();
 const form = useForm({ schema: LabSchema });
+const editing = computed(() => !!props.labId);
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  const l = labs.data.value?.find((x) => x.id === props.labId);
-  reset(form, { initialInput: { name: l?.name ?? "", address: l?.address ?? "" } });
+  const lab = labs.data.value?.find((entry) => entry.id === props.labId);
+  reset(form, { initialInput: { name: lab?.name ?? "", address: lab?.address ?? "" } });
 });
 
-async function submit(o: v.InferOutput<typeof LabSchema>) {
+async function submit(output: v.InferOutput<typeof LabSchema>) {
   let id = props.labId ?? "";
   const ok = await attempt(
-    save.mutateAsync({ id: props.labId, ...o }).then((saved) => (id = saved)),
+    save.mutateAsync({ id: props.labId, ...output }).then((saved) => (id = saved)),
   );
   if (ok) {
     open.value = false;
@@ -41,13 +43,40 @@ async function doDelete() {
 </script>
 
 <template>
-  <FormDialog
+  <SectionedFormDialog
     v-model:open="open"
     :form="form"
-    :title="labId ? 'Edit lab' : 'Add lab'"
+    size="md"
+    :title="editing ? 'Edit Lab' : 'Add Lab'"
+    :description="
+      editing
+        ? 'Update the name and address of this lab'
+        : 'Register a lab you send film to for developing and scanning'
+    "
+    :submit-label="editing ? 'Save changes' : 'Add lab'"
+    :pending="save.isPending.value"
     @submit="submit"
   >
-    <template v-if="labId" #footer-start>
+    <FormSection no="01" title="Lab" note="* Required attributes">
+      <div class="grid gap-y-6">
+        <FormInput
+          :of="form"
+          :path="['name']"
+          label="Name"
+          required
+          placeholder="e.g. Saigon Film Lab"
+        />
+        <FormInput
+          :of="form"
+          :path="['address']"
+          label="Address"
+          optional
+          placeholder="e.g. 12 Nguyen Hue, District 1"
+        />
+      </div>
+    </FormSection>
+
+    <template v-if="editing" #footer-start>
       <Button
         type="button"
         variant="ghost"
@@ -58,15 +87,5 @@ async function doDelete() {
         Delete
       </Button>
     </template>
-    <div class="space-y-6">
-      <FormInput :of="form" :path="['name']" label="Name" placeholder="e.g. Saigon Film Lab" />
-      <FormInput
-        :of="form"
-        :path="['address']"
-        label="Address"
-        optional
-        placeholder="e.g. 12 Nguyen Hue, District 1"
-      />
-    </div>
-  </FormDialog>
+  </SectionedFormDialog>
 </template>
