@@ -14,7 +14,7 @@ export const CameraSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["fixedLens"], ["mount"]],
-      (i) => i.fixedLens || i.mount.trim() !== "",
+      (input) => input.fixedLens || input.mount.trim() !== "",
       "Mount is required for interchangeable-lens cameras.",
     ),
     ["mount"],
@@ -22,7 +22,7 @@ export const CameraSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["fixedLens"], ["focalLength"]],
-      (i) => !i.fixedLens || i.focalLength != null,
+      (input) => !input.fixedLens || input.focalLength != null,
       "Focal length is required for the built-in lens.",
     ),
     ["focalLength"],
@@ -30,7 +30,7 @@ export const CameraSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["fixedLens"], ["maxAperture"]],
-      (i) => !i.fixedLens || i.maxAperture != null,
+      (input) => !input.fixedLens || input.maxAperture != null,
       "Max aperture is required for the built-in lens.",
     ),
     ["maxAperture"],

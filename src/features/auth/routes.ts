@@ -8,7 +8,7 @@ import RegisterPage from "./pages/RegisterPage.vue";
 import ResetPasswordPage from "./pages/ResetPasswordPage.vue";
 import { currentUser, safeRedirect } from "./session";
 
-const text = (x: unknown) => (typeof x === "string" && x ? x : undefined);
+const text = (value: unknown) => (typeof value === "string" && value ? value : undefined);
 
 /** Login, register and recovery are for visitors: a signed-in user goes on to the app. */
 async function guestOnly({ search }: { search: { redirect?: string } }) {
@@ -37,9 +37,9 @@ function LoginRoute(): VNode {
 const loginRoute = createRoute({
   getParentRoute: () => authRoute,
   path: "login",
-  validateSearch: (s: Record<string, unknown>): { redirect?: string; error?: string } => ({
-    redirect: text(s.redirect),
-    error: text(s.error),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; error?: string } => ({
+    redirect: text(search.redirect),
+    error: text(search.error),
   }),
   beforeLoad: guestOnly,
   component: LoginRoute,
@@ -52,8 +52,8 @@ function RegisterRoute(): VNode {
 const registerRoute = createRoute({
   getParentRoute: () => authRoute,
   path: "register",
-  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({
-    redirect: text(s.redirect),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: text(search.redirect),
   }),
   beforeLoad: guestOnly,
   component: RegisterRoute,
@@ -73,7 +73,9 @@ function ResetPasswordRoute(): VNode {
 const resetPasswordRoute = createRoute({
   getParentRoute: () => authRoute,
   path: "recover/end",
-  validateSearch: (s: Record<string, unknown>): { token?: string } => ({ token: text(s.token) }),
+  validateSearch: (search: Record<string, unknown>): { token?: string } => ({
+    token: text(search.token),
+  }),
   component: ResetPasswordRoute,
 });
 

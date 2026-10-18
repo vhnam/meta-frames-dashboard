@@ -16,11 +16,12 @@ export const SelectStub = defineComponent({
         {
           ...attrs,
           value: props.modelValue,
-          onChange: (e: Event) => emit("update:modelValue", (e.target as HTMLSelectElement).value),
+          onChange: (event: Event) =>
+            emit("update:modelValue", (event.target as HTMLSelectElement).value),
         },
         [
           props.placeholder !== undefined ? h("option", { value: "" }, props.placeholder) : null,
-          ...props.options.map((o) => h("option", { value: o.value }, o.label)),
+          ...props.options.map((option) => h("option", { value: option.value }, option.label)),
         ],
       );
   },

@@ -9,7 +9,7 @@ export const useSaveLab = () =>
   useApiMutation({
     fn: saveLab,
     // lab names appear on jobs and roll histories
-    invalidates: (v) => (v.id ? [labKeys.all, rollKeys.details()] : [labKeys.all]),
+    invalidates: (variables) => (variables.id ? [labKeys.all, rollKeys.details()] : [labKeys.all]),
     success: "Lab saved",
   });
 

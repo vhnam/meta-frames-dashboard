@@ -44,9 +44,13 @@ defineEmits<{ manageLenses: []; load: [] }>();
           <dd v-if="!detail.lenses.length" class="text-muted-foreground">
             {{ detail.camera.fixedLens ? "Fixed lens" : "None selected" }}
           </dd>
-          <dd v-for="l in detail.lenses" :key="l.id" class="grid">
-            <span class="font-medium">{{ [l.brand, l.model].filter(Boolean).join(" ") }}</span>
-            <span v-if="l.mount" class="text-muted-foreground text-xs">{{ l.mount }} mount</span>
+          <dd v-for="lens in detail.lenses" :key="lens.id" class="grid">
+            <span class="font-medium">{{
+              [lens.brand, lens.model].filter(Boolean).join(" ")
+            }}</span>
+            <span v-if="lens.mount" class="text-muted-foreground text-xs"
+              >{{ lens.mount }} mount</span
+            >
           </dd>
         </div>
       </dl>

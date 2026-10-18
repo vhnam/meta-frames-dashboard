@@ -147,7 +147,7 @@ export const MONTH_OPTIONS = [
   "October",
   "November",
   "December",
-].map((label, i) => ({ value: String(i + 1), label }));
+].map((label, index) => ({ value: String(index + 1), label }));
 
 export interface LoadRollInput {
   cameraId: string;

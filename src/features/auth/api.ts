@@ -20,11 +20,11 @@ interface AuthResult {
   user?: ApiUser;
 }
 
-const toUser = (u: ApiUser): User => ({
-  id: u.id,
-  email: u.email,
-  name: u.name ?? "",
-  createdAt: u.createdAt,
+const toUser = (apiUser: ApiUser): User => ({
+  id: apiUser.id,
+  email: apiUser.email,
+  name: apiUser.name ?? "",
+  createdAt: apiUser.createdAt,
 });
 
 const fetchMe = async () => toUser((await http.get<ApiUser>("/auth/me")).data);
@@ -37,26 +37,30 @@ export const authQueries = {
       queryFn: async (): Promise<User | null> => {
         try {
           return await fetchMe();
-        } catch (e) {
-          if (isAxiosError(e) && e.response?.status === 401) return null;
-          throw e;
+        } catch (error) {
+          if (isAxiosError(error) && error.response?.status === 401) return null;
+          throw error;
         }
       },
       staleTime: 5 * 60_000,
     }),
 };
 
-export const login = async (v: { email: string; password: string }): Promise<User> => {
-  const { data } = await http.post<AuthResult>("/auth/login", v);
+export const login = async (variables: { email: string; password: string }): Promise<User> => {
+  const { data } = await http.post<AuthResult>("/auth/login", variables);
   return data.user ? toUser(data.user) : fetchMe();
 };
 
-export const register = async (v: {
+export const register = async (variables: {
   email: string;
   password: string;
   name: string;
 }): Promise<User> => {
-  const body = { email: v.email, password: v.password, name: v.name.trim() || undefined };
+  const body = {
+    email: variables.email,
+    password: variables.password,
+    name: variables.name.trim() || undefined,
+  };
   const { data } = await http.post<AuthResult>("/auth/register", body);
   return data.user ? toUser(data.user) : fetchMe();
 };
@@ -66,11 +70,11 @@ export const logout = async () => {
 };
 
 /** Emails a reset link. The answer is the same whether or not the account exists. */
-export const startRecovery = async (v: { email: string }) =>
-  (await http.post<AuthResult>("/auth/recover", v)).data.message;
+export const startRecovery = async (variables: { email: string }) =>
+  (await http.post<AuthResult>("/auth/recover", variables)).data.message;
 
-export const resetPassword = async (v: { token: string; password: string }) => {
-  await http.post("/auth/recover/end", v);
+export const resetPassword = async (variables: { token: string; password: string }) => {
+  await http.post("/auth/recover/end", variables);
 };
 
 /** Where the browser goes for "Sign in with Google"; the API lands it back on `redir`. */

@@ -9,6 +9,7 @@ import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import PageHeader from "#/shared/components/PageHeader.vue";
 import { PRIMARY_TEXT } from "#/shared/components/tableCells";
+import { formatDateTime } from "#/shared/lib/format";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 
 const log = useAuditLog();
@@ -20,56 +21,50 @@ function select(entry: AuditEntry) {
   open.value = true;
 }
 
-const when = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
-
 const show = (value: unknown) => (value == null ? "∅" : String(value));
 
 /** Full diff text stays searchable; the cell only shows a short summary. */
-const changeText = (e: AuditEntry) =>
-  e.changes.map((c) => `${c.field}: ${show(c.before)} → ${show(c.after)}`).join("; ");
+const changeText = (entry: AuditEntry) =>
+  entry.changes
+    .map((change) => `${change.field}: ${show(change.before)} → ${show(change.after)}`)
+    .join("; ");
 
-const changeSummary = (e: AuditEntry) => {
-  if (!e.changes.length) return "No field changes";
-  if (e.changes.length === 1) return e.changes[0]!.field;
-  return `${e.changes[0]!.field} +${e.changes.length - 1}`;
+const changeSummary = (entry: AuditEntry) => {
+  if (!entry.changes.length) return "No field changes";
+  if (entry.changes.length === 1) return entry.changes[0]!.field;
+  return `${entry.changes[0]!.field} +${entry.changes.length - 1}`;
 };
 
 const columns: DataTableColumn<AuditEntry>[] = [
   {
     id: "time",
     header: "When",
-    accessorFn: (e) => e.createdAt,
+    accessorFn: (entry) => entry.createdAt,
     meta: { class: "w-40" },
-    cell: ({ row }) =>
-      h("span", { class: "tabular-nums" }, when.format(new Date(row.original.createdAt))),
+    cell: ({ row }) => h("span", { class: "tabular-nums" }, formatDateTime(row.original.createdAt)),
   },
   {
     id: "entity",
     header: "Record",
-    accessorFn: (e) => `${e.entityType} ${e.entityId}`,
+    accessorFn: (entry) => `${entry.entityType} ${entry.entityId}`,
     meta: { class: "w-[26%] overflow-hidden" },
-    cell: ({ row: { original: e } }) =>
+    cell: ({ row: { original: entry } }) =>
       h("div", { class: "min-w-0" }, [
-        h("div", { class: `truncate ${PRIMARY_TEXT}` }, e.entityType),
-        h("div", { class: "text-muted-foreground truncate font-mono text-xs" }, e.entityId),
+        h("div", { class: `truncate ${PRIMARY_TEXT}` }, entry.entityType),
+        h("div", { class: "text-muted-foreground truncate font-mono text-xs" }, entry.entityId),
       ]),
   },
   {
     id: "action",
     header: "Action",
-    accessorFn: (e) => e.action,
+    accessorFn: (entry) => entry.action,
     meta: { class: "w-32" },
     cell: ({ row }) => h(AuditActionBadge, { action: row.original.action }),
   },
   {
     id: "actor",
     header: "Actor",
-    accessorFn: (e) => e.actor || "—",
+    accessorFn: (entry) => entry.actor || "—",
     meta: { class: "w-[16%] overflow-hidden" },
     cell: ({ row }) => h("span", { class: "block truncate" }, row.original.actor || "—"),
   },
@@ -103,10 +98,10 @@ const columns: DataTableColumn<AuditEntry>[] = [
         table-class="table-fixed"
         :columns="columns"
         :data="data"
-        :get-row-id="(e) => String(e.id)"
+        :get-row-id="(entry) => String(entry.id)"
         :on-select="select"
         :selected-row-id="open && selected ? String(selected.id) : undefined"
-        :row-label="(e) => `${e.action} ${e.entityType} ${e.entityId}`"
+        :row-label="(entry) => `${entry.action} ${entry.entityType} ${entry.entityId}`"
       />
     </template>
   </QueryBoundary>

@@ -50,31 +50,31 @@ interface ApiInventoryItem {
   soonestExpiry?: { year: number; month?: number };
 }
 
-export const toStock = (s: ApiStock): FilmStock => ({
-  id: s.id,
-  brand: s.brand,
-  name: s.name,
-  type: s.type,
-  boxIso: s.boxIso,
-  process: s.process,
-  packaging: s.packaging,
-  stockOrigin: s.stockOrigin ?? "",
-  packOrigin: s.packOrigin ?? "",
-  description: s.description ?? "",
-  baseStockId: s.baseStockId ?? null,
+export const toStock = (apiStock: ApiStock): FilmStock => ({
+  id: apiStock.id,
+  brand: apiStock.brand,
+  name: apiStock.name,
+  type: apiStock.type,
+  boxIso: apiStock.boxIso,
+  process: apiStock.process,
+  packaging: apiStock.packaging,
+  stockOrigin: apiStock.stockOrigin ?? "",
+  packOrigin: apiStock.packOrigin ?? "",
+  description: apiStock.description ?? "",
+  baseStockId: apiStock.baseStockId ?? null,
 });
 
-const toApiInput = (i: StockInput) => ({
-  brand: i.brand.trim(),
-  name: i.name.trim(),
-  type: i.type,
-  boxIso: i.boxIso,
-  process: i.process,
-  packaging: i.packaging,
-  stockOrigin: i.stockOrigin.trim() || undefined,
-  packOrigin: i.packOrigin.trim() || undefined,
-  description: i.description.trim() || undefined,
-  baseStockId: i.baseStockId || undefined,
+const toApiInput = (input: StockInput) => ({
+  brand: input.brand.trim(),
+  name: input.name.trim(),
+  type: input.type,
+  boxIso: input.boxIso,
+  process: input.process,
+  packaging: input.packaging,
+  stockOrigin: input.stockOrigin.trim() || undefined,
+  packOrigin: input.packOrigin.trim() || undefined,
+  description: input.description.trim() || undefined,
+  baseStockId: input.baseStockId || undefined,
 });
 
 export const stockQueries = {
@@ -84,13 +84,13 @@ export const stockQueries = {
       queryFn: async (): Promise<StockRow[]> => {
         const { data } = await http.get<ApiStock[]>("/film-stocks");
         const stocks = data.map(toStock);
-        const byId = new Map(stocks.map((s) => [s.id, s]));
+        const byId = new Map(stocks.map((stock) => [stock.id, stock]));
         return stocks
           .map((stock) => ({
             stock,
             baseName: stock.baseStockId ? stockName(byId.get(stock.baseStockId)) : null,
           }))
-          .sort((a, b) => stockName(a.stock).localeCompare(stockName(b.stock)));
+          .sort((left, right) => stockName(left.stock).localeCompare(stockName(right.stock)));
       },
     }),
   detail: (id: string) =>
@@ -105,9 +105,9 @@ export const stockQueries = {
             siblings: data.siblings.map(toStock),
             children: data.derived.map(toStock),
           };
-        } catch (e) {
-          if (isAxiosError(e) && e.response?.status === 404) return null;
-          throw e;
+        } catch (error) {
+          if (isAxiosError(error) && error.response?.status === 404) return null;
+          throw error;
         }
       },
     }),
@@ -119,7 +119,9 @@ export const stockQueries = {
         return data
           .map((item) => ({
             stock: toStock(item.stock),
-            byFormat: Object.fromEntries(item.formats.map((f) => [String(f.format), f.count])),
+            byFormat: Object.fromEntries(
+              item.formats.map((entry) => [String(entry.format), entry.count]),
+            ),
             expiryLabel: item.soonestExpiry
               ? formatExpiry({
                   expiryYear: item.soonestExpiry.year,
@@ -127,16 +129,16 @@ export const stockQueries = {
                 })
               : "—",
           }))
-          .sort((a, b) => stockName(a.stock).localeCompare(stockName(b.stock)));
+          .sort((left, right) => stockName(left.stock).localeCompare(stockName(right.stock)));
       },
     }),
 };
 
-export const saveStock = async (v: { id?: string; input: StockInput }) => {
-  const body = toApiInput(v.input);
-  if (v.id) {
-    await http.put(`/film-stocks/${v.id}`, body);
-    return v.id;
+export const saveStock = async (variables: { id?: string; input: StockInput }) => {
+  const body = toApiInput(variables.input);
+  if (variables.id) {
+    await http.put(`/film-stocks/${variables.id}`, body);
+    return variables.id;
   }
   return (await http.post<ApiStockDetail>("/film-stocks", body)).data.stock.id;
 };

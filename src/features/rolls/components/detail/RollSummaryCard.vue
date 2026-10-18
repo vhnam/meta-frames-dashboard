@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { formatVnd } from "#/shared/lib/format";
+import { RichText } from "#/shared/components/richText";
+import { formatDate, formatVnd } from "#/shared/lib/format";
 import { formatExpiry } from "../../format";
 import type { RollDetail } from "../../types";
 import { computed } from "vue";
@@ -15,11 +16,11 @@ const facts = computed(() => {
     { label: "Format", value: `${roll.format} · ${roll.exposures} exp` },
     { label: "Box ISO", value: String(stock.boxIso) },
     { label: "Expiry", value: formatExpiry(roll) },
-    { label: "Started", value: roll.startDate ?? "—" },
+    { label: "Started", value: formatDate(roll.startDate) },
   ];
 });
 const processingCost = computed(() =>
-  props.detail.jobs.reduce((sum, j) => sum + (j.price ?? 0), 0),
+  props.detail.jobs.reduce((sum, job) => sum + (job.price ?? 0), 0),
 );
 </script>
 
@@ -42,14 +43,14 @@ const processingCost = computed(() =>
     </CardHeader>
     <CardContent class="grid gap-4 text-sm">
       <dl class="grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-4">
-        <div v-for="f in facts" :key="f.label">
-          <dt class="text-muted-foreground text-xs">{{ f.label }}</dt>
-          <dd class="font-medium tabular-nums">{{ f.value }}</dd>
+        <div v-for="fact in facts" :key="fact.label">
+          <dt class="text-muted-foreground text-xs">{{ fact.label }}</dt>
+          <dd class="font-medium tabular-nums">{{ fact.value }}</dd>
         </div>
       </dl>
       <div v-if="detail.roll.description">
         <div class="text-muted-foreground text-xs">Description</div>
-        <p>{{ detail.roll.description }}</p>
+        <RichText :markdown="detail.roll.description" />
       </div>
       <div class="bg-muted/50 grid gap-1 rounded-lg px-4 py-3">
         <div class="text-muted-foreground text-xs">Total cost</div>

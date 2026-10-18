@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { h } from "vue";
 import { tableOf } from "#/test/tableOf";
 import DataTable from "./DataTable.vue";
 import type { DataTableColumn } from "./dataTable";
@@ -10,7 +11,12 @@ interface Row {
   n: number;
 }
 const columns: DataTableColumn<Row>[] = [
-  { id: "name", header: "Name", accessorFn: (r) => r.name, cell: ({ row }) => row.original.name },
+  {
+    id: "name",
+    header: "Name",
+    accessorFn: (row) => row.name,
+    cell: ({ row }) => row.original.name,
+  },
   { id: "n", header: "N", cell: ({ row }) => row.original.n },
 ];
 const data: Row[] = [
@@ -21,7 +27,7 @@ const data: Row[] = [
 describe("DataTable", () => {
   it("sorts on header click and leaves columns without an accessor unsortable", async () => {
     const wrapper = mount(DataTable, { props: { columns, data } as never });
-    const names = () => wrapper.findAll("tbody tr").map((r) => r.find("td").text());
+    const names = () => wrapper.findAll("tbody tr").map((row) => row.find("td").text());
     expect(names()).toEqual(["b", "a"]);
     expect(wrapper.findAll("thead button")).toHaveLength(1);
 
@@ -51,7 +57,7 @@ describe("DataTable", () => {
   const kindColumn: DataTableColumn<Row> = {
     id: "kind",
     header: "Kind",
-    accessorFn: (r) => (r.n > 1 ? "big" : "small"),
+    accessorFn: (row) => (row.n > 1 ? "big" : "small"),
     filterFn: "equalsString",
     meta: { filter: { label: "Kind", placeholder: "Any kind" } },
     cell: ({ row }) => (row.original.n > 1 ? "big" : "small"),
@@ -64,8 +70,8 @@ describe("DataTable", () => {
     expect(wrapper.find('thead button[aria-label="Filter Kind"]').exists()).toBe(true);
     const column = tableOf(wrapper).getColumn("kind")!;
     expect(
-      [...column.getFacetedUniqueValues().keys()].sort((a, b) =>
-        String(a).localeCompare(String(b)),
+      [...column.getFacetedUniqueValues().keys()].sort((left, right) =>
+        String(left).localeCompare(String(right)),
       ),
     ).toEqual(["big", "small"]);
     column.setFilterValue("big");
@@ -101,15 +107,15 @@ describe("DataTable", () => {
       {
         id: "name",
         header: "Name",
-        accessorFn: (r) => r.name,
+        accessorFn: (row) => row.name,
         cell: ({ row }) => row.original.name,
       },
       {
         id: "n",
         header: "N",
-        accessorFn: (r) => r.n,
+        accessorFn: (row) => row.n,
         enableGlobalFilter: false,
-        filterFn: (row, id, v) => String(row.getValue(id)) === String(v),
+        filterFn: (row, id, value) => String(row.getValue(id)) === String(value),
         cell: ({ row }) => row.original.n,
       },
     ];
@@ -137,7 +143,9 @@ describe("DataTable", () => {
       .trigger("keydown", { key: "Enter" });
     await vi.waitFor(() =>
       expect(
-        [...document.querySelectorAll('[role="menuitemradio"]')].map((e) => e.textContent?.trim()),
+        [...document.querySelectorAll('[role="menuitemradio"]')].map((element) =>
+          element.textContent?.trim(),
+        ),
       ).toEqual(["Any kind", "big", "huge"]),
     );
     wrapper.unmount();
@@ -152,7 +160,7 @@ describe("DataTable", () => {
   });
 
   it("paginates 10 rows per page by default", async () => {
-    const many = Array.from({ length: 25 }, (_, i) => ({ name: `r${i}`, n: i }));
+    const many = Array.from({ length: 25 }, (_, index) => ({ name: `r${index}`, n: index }));
     const wrapper = mount(DataTable, { props: { columns, data: many } as never });
     expect(wrapper.findAll("tbody tr")).toHaveLength(10);
     await wrapper.find('[data-slot="pagination-next"]').trigger("click");
@@ -162,7 +170,13 @@ describe("DataTable", () => {
   it("activates a row from click and keyboard when onSelect is set", async () => {
     const onSelect = vi.fn();
     const wrapper = mount(DataTable, {
-      props: { columns, data, onSelect, selectedRowId: "0", rowLabel: (r: Row) => r.name } as never,
+      props: {
+        columns,
+        data,
+        onSelect,
+        selectedRowId: "0",
+        rowLabel: (row: Row) => row.name,
+      } as never,
     });
     const row = wrapper.find("tbody tr");
     expect(row.attributes("tabindex")).toBe("0");
@@ -173,6 +187,28 @@ describe("DataTable", () => {
     await row.trigger("keydown", { key: "Enter" });
     await row.trigger("keydown", { key: " " });
     expect(onSelect).toHaveBeenCalledTimes(3);
+  });
+
+  it("leaves clicks and keys on controls inside a row to those controls", async () => {
+    const onSelect = vi.fn();
+    const onToggle = vi.fn();
+    const withButton: DataTableColumn<Row>[] = [
+      ...columns,
+      {
+        id: "toggle",
+        header: "",
+        cell: () => h("button", { type: "button", onClick: onToggle }, "Toggle"),
+      },
+    ];
+    const wrapper = mount(DataTable, { props: { columns: withButton, data, onSelect } as never });
+    const row = wrapper.find("tbody tr");
+    const button = row.find("button");
+    await button.trigger("click");
+    await button.trigger("keydown", { key: "Enter" });
+    expect(onToggle).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
+    // a chevron cell marks the row as opening something
+    expect(row.findAll("td")).toHaveLength(withButton.length + 1);
   });
 
   it("shows the pager footer with the row range, and hides it without rows", () => {

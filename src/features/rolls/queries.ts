@@ -38,8 +38,8 @@ export const useAddRolls = () =>
 export const useUpdateRoll = () =>
   useApiMutation({
     fn: updateRoll,
-    invalidates: (v) => [
-      rollKeys.detail(v.row.roll.id),
+    invalidates: (variables) => [
+      rollKeys.detail(variables.row.roll.id),
       rollKeys.lists(),
       rollKeys.expiry(),
       stockKeys.all,
@@ -51,8 +51,8 @@ export const useUpdateRoll = () =>
 export const useLoadRoll = () =>
   useApiMutation({
     fn: loadRoll,
-    invalidates: (v) => [
-      rollKeys.detail(v.id),
+    invalidates: (variables) => [
+      rollKeys.detail(variables.id),
       rollKeys.lists(),
       rollKeys.expiry(),
       stockKeys.all,
@@ -64,18 +64,18 @@ export const useLoadRoll = () =>
 export const useSendToLab = () =>
   useApiMutation({
     fn: sendToLab,
-    invalidates: (v) => [
-      rollKeys.detail(v.rollId),
+    invalidates: (variables) => [
+      rollKeys.detail(variables.rollId),
       rollKeys.lists(),
       rollKeys.expiry(),
       labKeys.all,
     ],
-    success: "Roll sent to lab",
+    success: (variables) => (variables.input.labId ? "Roll sent to lab" : "Processing recorded"),
   });
 
 /** A job change moves the roll status and the lab's in-progress list. */
-const jobInvalidates = (v: { rollId: string }) => [
-  rollKeys.detail(v.rollId),
+const jobInvalidates = (variables: { rollId: string }) => [
+  rollKeys.detail(variables.rollId),
   rollKeys.lists(),
   rollKeys.expiry(),
   labKeys.all,
@@ -111,7 +111,7 @@ export const useFinishRoll = () =>
 export const useSetRollLenses = () =>
   useApiMutation({
     fn: setRollLenses,
-    invalidates: (v) => [rollKeys.detail(v.id)],
+    invalidates: (variables) => [rollKeys.detail(variables.id)],
     success: "Lenses updated",
   });
 

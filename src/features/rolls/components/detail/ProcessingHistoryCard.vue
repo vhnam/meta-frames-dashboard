@@ -7,6 +7,7 @@ import { computed, ref } from "vue";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { attempt } from "#/shared/lib/ui";
+import { formatDate } from "#/shared/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
 import ProcessingJobs from "../ProcessingJobs.vue";
 import SendToLabDialog from "../SendToLabDialog.vue";
@@ -19,8 +20,13 @@ const props = defineProps<{
 }>();
 
 const sendOpen = ref(false);
+const rescanOpen = ref(false);
 const finishRoll = useFinishRoll();
 const types = computed(() => sendableTypes(props.row.roll.status, props.jobs.length));
+/** Once the roll has been processed, scanning it again is the only action left; prints are not
+ * offered after the first job. */
+const canRescan = computed(() => props.jobs.length > 0 && types.value.includes("scan"));
+const canSend = computed(() => !props.jobs.length && types.value.length > 0);
 </script>
 
 <template>
@@ -40,7 +46,10 @@ const types = computed(() => sendableTypes(props.row.roll.status, props.jobs.len
         >
           Mark as finished
         </Button>
-        <Button v-if="types.length" type="button" size="sm" @click="sendOpen = true">
+        <Button v-if="canRescan" type="button" size="sm" @click="rescanOpen = true">
+          Re-scan
+        </Button>
+        <Button v-if="canSend" type="button" size="sm" @click="sendOpen = true">
           Send to lab
         </Button>
       </div>
@@ -48,7 +57,7 @@ const types = computed(() => sendableTypes(props.row.roll.status, props.jobs.len
     <CardContent class="grid gap-3 text-sm">
       <dl v-if="finishedOn" class="grid grid-cols-[auto_1fr] gap-x-3">
         <dt class="text-muted-foreground">Finished</dt>
-        <dd class="tabular-nums">{{ finishedOn }}</dd>
+        <dd class="tabular-nums">{{ formatDate(finishedOn) }}</dd>
       </dl>
       <ProcessingJobs :row="row" :jobs="jobs" :process="process" :finished-on="finishedOn" />
     </CardContent>
@@ -58,6 +67,14 @@ const types = computed(() => sendableTypes(props.row.roll.status, props.jobs.len
       :process="process"
       :finished-on="finishedOn"
       :types="types"
+    />
+    <SendToLabDialog
+      v-model:open="rescanOpen"
+      :row="row"
+      :process="process"
+      :finished-on="finishedOn"
+      :types="['scan']"
+      rescan
     />
   </Card>
 </template>

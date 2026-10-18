@@ -27,14 +27,14 @@ describe("CameraFormDialog", () => {
     await wrapper.setProps({ cameraId: cam.id, open: true } as never);
     await nextTick();
     await vi.waitFor(() => {
-      const values = [...document.body.querySelectorAll("input")].map((i) => i.value);
+      const values = [...document.body.querySelectorAll("input")].map((input) => input.value);
       expect(values).toContain("Nikon");
       expect(values).toContain("S2");
     });
     await flushPromises();
-    // every dialog needs a description for screen readers, even when none is shown
+    // every dialog needs a description for screen readers
     const description = document.body.querySelector('[data-slot="dialog-description"]');
-    expect(description?.className).toContain("sr-only");
+    expect(description?.textContent).toContain("Update the body");
     wrapper.unmount();
   });
 });

@@ -1,8 +1,8 @@
 import { MutationCache, QueryClient } from "@tanstack/vue-query";
 import { toast } from "vue-sonner";
 
-export const errorMessage = (e: unknown) =>
-  e instanceof Error ? e.message : "Something went wrong.";
+export const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Something went wrong.";
 
 /** Server state lives only here. Mutation failures are reported centrally. */
 export const queryClient = new QueryClient({

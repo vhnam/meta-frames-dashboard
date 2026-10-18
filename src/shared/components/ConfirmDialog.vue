@@ -16,7 +16,7 @@ import { Button } from "#/shared/ui/button";
 
 // keeps the title while the dialog animates out
 const message = ref("");
-watch(pendingAsk, (p) => p && (message.value = p.message));
+watch(pendingAsk, (pending) => pending && (message.value = pending.message));
 
 function settle(ok: boolean) {
   pendingAsk.value?.resolve(ok);
@@ -26,7 +26,7 @@ function settle(ok: boolean) {
 // Cancel, Escape and the overlay close through here
 const open = computed({
   get: () => !!pendingAsk.value,
-  set: (o) => o || settle(false),
+  set: (output) => output || settle(false),
 });
 </script>
 

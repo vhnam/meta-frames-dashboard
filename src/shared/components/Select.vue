@@ -36,7 +36,7 @@ const selectedLabel = computed(() =>
     ? hasNoneItem.value
       ? props.placeholder
       : undefined
-    : props.options.find((o) => o.value === model.value)?.label,
+    : props.options.find((output) => output.value === model.value)?.label,
 );
 </script>
 
@@ -47,7 +47,9 @@ const selectedLabel = computed(() =>
     </SelectTrigger>
     <SelectContent>
       <SelectItem v-if="hasNoneItem" :value="NONE">{{ placeholder }}</SelectItem>
-      <SelectItem v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</SelectItem>
+      <SelectItem v-for="option in options" :key="option.value" :value="option.value">{{
+        option.label
+      }}</SelectItem>
     </SelectContent>
   </Select>
 </template>

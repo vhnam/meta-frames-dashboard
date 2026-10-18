@@ -9,8 +9,8 @@ export function expiryDate(roll: Expiry): Date | null {
 }
 
 export const isExpired = (roll: Expiry, now = new Date()) => {
-  const d = expiryDate(roll);
-  return !!d && d < now;
+  const date = expiryDate(roll);
+  return !!date && date < now;
 };
 
 export const formatExpiry = (roll: Expiry) =>

@@ -1,57 +1,56 @@
 <script setup lang="ts">
-import { useDeleteLens, useLensList, useSetLensActive } from "../queries";
+import { useLensList, useSetLensActive } from "../queries";
 import type { LensRow } from "../types";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
-import {
-  actionsColumn,
-  numberCell,
-  primaryText,
-  stackCell,
-  tagCell,
-} from "#/shared/components/tableCells";
+import { PRIMARY_LINK, numberCell, stackCell, tagCell } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import LensFormDialog from "../components/LensFormDialog.vue";
 import { Switch } from "#/shared/ui/switch";
-import { ask } from "#/shared/lib/ui";
 
 const lenses = useLensList();
 const setActive = useSetLensActive();
-const deleteLens = useDeleteLens();
 const formOpen = ref(false);
-const editing = ref<string>();
 
-function open(id?: string) {
-  editing.value = id;
-  formOpen.value = true;
-}
+const router = useRouter();
+const openLens = (row: LensRow) =>
+  router.navigate({ to: "/app/lenses/$lensId", params: { lensId: row.lens.id } });
 
 /** Exact match for numeric columns; dropdown values arrive as strings. */
 const sameValue: NonNullable<DataTableColumn<LensRow>["filterFn"]> = (row, columnId, value) =>
   String(row.getValue(columnId)) === String(value);
 
-const lensName = (r: LensRow) => [r.lens.brand, r.lens.model].filter(Boolean).join(" ");
+const lensName = (row: LensRow) => [row.lens.brand, row.lens.model].filter(Boolean).join(" ");
 
 const columns: DataTableColumn<LensRow>[] = [
   {
     id: "lens",
     accessorFn: lensName,
     header: "Lens",
-    cell: ({ row: { original: r } }) =>
+    cell: ({ row: { original: row } }) =>
       stackCell(
-        primaryText(lensName(r)),
-        r.cameraName ? `Built into ${r.cameraName}` : r.lens.description,
+        h(
+          Link,
+          { to: "/app/lenses/$lensId", params: { lensId: row.lens.id }, class: PRIMARY_LINK },
+          () => lensName(row),
+        ),
+        row.cameraName ? `Built into ${row.cameraName}` : null,
       ),
   },
   {
     id: "focal",
     meta: {
-      filter: { label: "Focal length", placeholder: "Any focal length", format: (v) => `${v}mm` },
+      filter: {
+        label: "Focal length",
+        placeholder: "Any focal length",
+        format: (value) => `${value}mm`,
+      },
     },
-    accessorFn: (r) => r.lens.focalLength,
+    accessorFn: (row) => row.lens.focalLength,
     header: "Focal",
     enableGlobalFilter: false,
     filterFn: sameValue,
@@ -63,10 +62,10 @@ const columns: DataTableColumn<LensRow>[] = [
       filter: {
         label: "Aperture",
         placeholder: "Any aperture",
-        format: (v) => `f/${Number(v).toFixed(1)}`,
+        format: (value) => `f/${Number(value).toFixed(1)}`,
       },
     },
-    accessorFn: (r) => r.lens.maxAperture,
+    accessorFn: (row) => row.lens.maxAperture,
     header: "Aperture",
     enableGlobalFilter: false,
     filterFn: sameValue,
@@ -76,11 +75,11 @@ const columns: DataTableColumn<LensRow>[] = [
     id: "mount",
     meta: { filter: { label: "Mount", placeholder: "All mounts" } },
     header: "Mount",
-    accessorFn: (r) => (r.lens.builtInCameraId ? "Built-in" : r.lens.mount),
+    accessorFn: (row) => (row.lens.builtInCameraId ? "Built-in" : row.lens.mount),
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
-      tagCell(r.lens.builtInCameraId ? "Built-in" : r.lens.mount || "—"),
+    cell: ({ row: { original: row } }) =>
+      tagCell(row.lens.builtInCameraId ? "Built-in" : row.lens.mount || "—"),
   },
   {
     id: "active",
@@ -89,24 +88,18 @@ const columns: DataTableColumn<LensRow>[] = [
     },
     header: "Active",
     enableSorting: false,
-    accessorFn: (r) => (r.lens.active ? "Active" : "Inactive"),
+    accessorFn: (row) => (row.lens.active ? "Active" : "Inactive"),
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
+    cell: ({ row: { original: row } }) =>
       h(Switch, {
-        modelValue: r.lens.active,
-        disabled: !!r.lens.builtInCameraId,
-        "aria-label": r.lens.active ? "Deactivate lens" : "Activate lens",
-        "onUpdate:modelValue": (v: boolean) => setActive.mutate({ id: r.lens.id, active: v }),
+        modelValue: row.lens.active,
+        disabled: !!row.lens.builtInCameraId,
+        "aria-label": row.lens.active ? "Deactivate lens" : "Activate lens",
+        "onUpdate:modelValue": (active: boolean) =>
+          setActive.mutate({ id: row.lens.id, active: active }),
       }),
   },
-  // a built-in lens goes with its camera, so it has no Delete
-  actionsColumn((r) => ({
-    onEdit: () => open(r.lens.id),
-    onDelete: r.lens.builtInCameraId
-      ? undefined
-      : async () => (await ask("Delete this lens?")) && deleteLens.mutate(r.lens.id),
-  })),
 ];
 </script>
 
@@ -115,7 +108,7 @@ const columns: DataTableColumn<LensRow>[] = [
     title="Lenses"
     description="Prime lenses, including built-in lenses of fixed-lens cameras."
   >
-    <template #actions><AddButton @click="open()">Add lens</AddButton></template>
+    <template #actions><AddButton @click="formOpen = true">Add lens</AddButton></template>
   </PageHeader>
   <QueryBoundary :query="lenses" :is-empty="() => false">
     <template #default="{ data }">
@@ -126,10 +119,12 @@ const columns: DataTableColumn<LensRow>[] = [
         filter-placeholder="Search by brand or model..."
         :columns="columns"
         :data="data"
-        :get-row-id="(r) => r.lens.id"
-        :row-class="(r) => (r.lens.active ? undefined : 'opacity-60')"
+        :get-row-id="(row) => row.lens.id"
+        :on-select="openLens"
+        :row-label="(row) => `Open ${lensName(row)}`"
+        :row-class="(row) => (row.lens.active ? undefined : 'opacity-60')"
       />
     </template>
   </QueryBoundary>
-  <LensFormDialog v-model:open="formOpen" :lens-id="editing" />
+  <LensFormDialog v-model:open="formOpen" />
 </template>

@@ -29,12 +29,21 @@ export const PACKAGING_TONE: Record<Packaging, string> = {
   respooled: tone.violet,
 };
 
-export const stockName = (s: Pick<FilmStock, "brand" | "name"> | undefined) =>
-  s ? `${s.brand} ${s.name}` : "—";
+/** What each process is: "C-41" reads as "Color negative". */
+export const PROCESS_NAMES: Record<Process, string> = {
+  "C-41": "Color negative",
+  "E-6": "Color reversal",
+  BW: "Black & white",
+  "ECN-2": "Motion picture",
+};
 
-export function stockWarnings(s: Pick<FilmStock, "type" | "process">): string[] {
+export const stockName = (stock: Pick<FilmStock, "brand" | "name"> | undefined) =>
+  stock ? `${stock.brand} ${stock.name}` : "—";
+
+export function stockWarnings(stock: Pick<FilmStock, "type" | "process">): string[] {
   const out: string[] = [];
-  if (s.type === "bw" && s.process !== "BW") out.push("B&W film usually uses process BW.");
-  if (s.type === "slide" && s.process !== "E-6") out.push("Slide film usually uses process E-6.");
+  if (stock.type === "bw" && stock.process !== "BW") out.push("B&W film usually uses process BW.");
+  if (stock.type === "slide" && stock.process !== "E-6")
+    out.push("Slide film usually uses process E-6.");
   return out;
 }

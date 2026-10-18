@@ -41,7 +41,7 @@ const inputType = computed(() => (isPassword.value && shown.value ? "text" : pro
           :aria-invalid="!!field.errors"
           class="font-heading h-11 px-3.5 text-base md:text-base"
           :class="{ 'pr-11': isPassword }"
-          @update:model-value="(x) => (field.input = x as never)"
+          @update:model-value="(value) => (field.input = value as never)"
         />
         <button
           v-if="isPassword"

@@ -22,7 +22,7 @@ describe("RollEditDialog", () => {
     const [{ data: row }] = [
       {
         data: (await queryClient.fetchQuery(rollQueries.list({}))).find(
-          (r) => r.roll.id === rec.id,
+          (row) => row.roll.id === rec.id,
         )!,
       },
     ];
@@ -33,7 +33,9 @@ describe("RollEditDialog", () => {
     });
     await wrapper.setProps({ open: true } as never);
     await flushPromises();
-    const exposures = [...document.body.querySelectorAll("input")].find((i) => i.value === "36")!;
+    const exposures = [...document.body.querySelectorAll("input")].find(
+      (input) => input.value === "36",
+    )!;
     exposures.value = "24";
     exposures.dispatchEvent(new Event("input", { bubbles: true }));
     const year = document.body.querySelector('input[placeholder="e.g. 2027"]') as HTMLInputElement;
@@ -43,9 +45,12 @@ describe("RollEditDialog", () => {
     (document.body.querySelector("button[type=submit]") as HTMLButtonElement).click();
     await vi.waitFor(() => expect(server.rolls[0].exposures).toBe(24));
     // the API reads a nested expiry object and ignores flat expiryYear / expiryMonth
-    const put = server.requests.find((r) => r.method === "put")!.body as Record<string, unknown>;
+    const put = server.requests.find((request) => request.method === "put")!.body as Record<
+      string,
+      unknown
+    >;
     expect(put).toMatchObject({ expiry: { year: 2028 } });
-    expect(Object.keys(put).sort((a, b) => a.localeCompare(b))).toEqual([
+    expect(Object.keys(put).sort((left, right) => left.localeCompare(right))).toEqual([
       "expiry",
       "exposures",
       "filmStockId",
