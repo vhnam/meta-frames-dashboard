@@ -31,7 +31,7 @@ import {
 import { navSections } from "./nav";
 import NavUser from "./NavUser.vue";
 
-const pathname = useRouterState({ select: (s) => s.location.pathname });
+const pathname = useRouterState({ select: (state) => state.location.pathname });
 const isActive = computed(
   () => (to: string) => pathname.value === to || pathname.value.startsWith(to + "/"),
 );
@@ -68,11 +68,11 @@ const itemClass =
               <div
                 class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md shadow-sm"
               >
-                <IconAperture class="size-[1.125rem]" aria-hidden="true" />
+                <IconAperture class="size-4.5" aria-hidden="true" />
               </div>
               <div class="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                <span class="font-heading truncate text-[0.95rem] font-semibold">Meta Frames</span>
-                <span class="text-muted-foreground truncate text-xs tracking-[0.12em] uppercase">
+                <span class="font-heading truncate text-[0.95rem] font-bold">Meta Frames</span>
+                <span class="text-primary text-xs font-semibold tracking-[0.12em] uppercase">
                   Film tracker
                 </span>
               </div>
@@ -96,7 +96,7 @@ const itemClass =
               <DropdownMenu v-if="item.children && collapsed">
                 <DropdownMenuTrigger as-child>
                   <SidebarMenuButton
-                    :is-active="item.children.some((c) => isActive(c.to))"
+                    :is-active="item.children.some((child) => isActive(child.to))"
                     :class="itemClass"
                     :aria-label="item.title"
                   >

@@ -14,7 +14,11 @@ export interface ApiLab {
   address?: string;
 }
 
-const toLab = (l: ApiLab): Lab => ({ id: l.id, name: l.name, address: l.address ?? "" });
+const toLab = (apiLab: ApiLab): Lab => ({
+  id: apiLab.id,
+  name: apiLab.name,
+  address: apiLab.address ?? "",
+});
 
 export const labQueries = {
   list: () =>
@@ -22,16 +26,16 @@ export const labQueries = {
       queryKey: labKeys.list(),
       queryFn: async (): Promise<Lab[]> => {
         const { data } = await http.get<ApiLab[]>("/labs");
-        return data.map(toLab).sort((a, b) => a.name.localeCompare(b.name));
+        return data.map(toLab).sort((left, right) => left.name.localeCompare(right.name));
       },
     }),
 };
 
-export const saveLab = async (v: { id?: string; name: string; address: string }) => {
-  const body = { name: v.name.trim(), address: v.address.trim() || undefined };
-  if (v.id) {
-    await http.put(`/labs/${v.id}`, body);
-    return v.id;
+export const saveLab = async (variables: { id?: string; name: string; address: string }) => {
+  const body = { name: variables.name.trim(), address: variables.address.trim() || undefined };
+  if (variables.id) {
+    await http.put(`/labs/${variables.id}`, body);
+    return variables.id;
   }
   return (await http.post<ApiLab>("/labs", body)).data.id;
 };

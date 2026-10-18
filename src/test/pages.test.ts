@@ -35,8 +35,8 @@ const views = [
 
 describe("Film & Lab screens", () => {
   it.each(views)("%s shows its empty message", async (_name, view, text) => {
-    const w = render(view);
-    await vi.waitFor(() => expect(w.text()).toContain(text));
+    const wrapper = render(view);
+    await vi.waitFor(() => expect(wrapper.text()).toContain(text));
   });
 
   it("lists stocks and filters by search", async () => {
@@ -55,10 +55,10 @@ describe("Film & Lab screens", () => {
     const stock = server.addStock({ name: "UltraMax" });
     server.addRoll({ filmStockId: stock.id });
     server.addRoll({ filmStockId: stock.id });
-    const w = render(RollsView);
-    await vi.waitFor(() => expect(w.text()).toContain("UltraMax"));
-    await vi.waitFor(() => expect(w.findAll("tbody tr")).toHaveLength(2));
-    expect(w.findAll("button").some((b) => b.text() === "Board view")).toBe(false);
+    const wrapper = render(RollsView);
+    await vi.waitFor(() => expect(wrapper.text()).toContain("UltraMax"));
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
+    expect(wrapper.findAll("button").some((right) => right.text() === "Board view")).toBe(false);
   });
 
   it("expiry lists in-stock rolls that expire soon, and those without a date", async () => {
@@ -67,12 +67,12 @@ describe("Film & Lab screens", () => {
     server.addRoll({ expiry: { year: soon.getFullYear(), month: soon.getMonth() + 1 } });
     server.addRoll({ expiry: { year: soon.getFullYear() + 5, month: 1 } }); // far away
     server.addRoll({}); // no expiry date
-    const w = render(ExpiryView);
+    const wrapper = render(ExpiryView);
     // one table for the dated rolls, one for the roll without a date
-    await vi.waitFor(() => expect(w.findAll("table")).toHaveLength(2));
-    const [dated, undated] = w.findAll("table");
+    await vi.waitFor(() => expect(wrapper.findAll("table")).toHaveLength(2));
+    const [dated, undated] = wrapper.findAll("table");
     expect(dated!.findAll("tbody tr")).toHaveLength(1);
     expect(undated!.findAll("tbody tr")).toHaveLength(1);
-    expect(w.find("h2").text().replace(/\s+/g, " ")).toBe("No expiry information (1)");
+    expect(wrapper.find("h2").text().replace(/\s+/g, " ")).toBe("No expiry information (1)");
   });
 });

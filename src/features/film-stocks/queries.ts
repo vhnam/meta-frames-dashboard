@@ -18,8 +18,8 @@ export const useSaveStock = () =>
   useApiMutation({
     fn: saveStock,
     // roll rows and details embed the stock name
-    invalidates: (v) => (v.id ? [stockKeys.all, rollKeys.all] : [stockKeys.all]),
-    success: (v) => (v.id ? "Stock updated" : "Stock added"),
+    invalidates: (variables) => (variables.id ? [stockKeys.all, rollKeys.all] : [stockKeys.all]),
+    success: (variables) => (variables.id ? "Stock updated" : "Stock added"),
   });
 
 export const useDeleteStock = () =>

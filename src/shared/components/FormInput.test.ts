@@ -14,7 +14,7 @@ const FormSchema = v.object({
   price: v.optional(v.pipe(v.number("Enter a number."), v.minValue(0, "Price must be 0 or more."))),
 });
 
-function setup(onSubmit: (o: unknown) => void) {
+function setup(onSubmit: (output: unknown) => void) {
   const Comp = defineComponent({
     setup() {
       const form = useForm({
@@ -37,29 +37,29 @@ function setup(onSubmit: (o: unknown) => void) {
   return mount(Comp, { attachTo: document.body });
 }
 const flush = async () => {
-  for (let i = 0; i < 5; i++) await new Promise((r) => setTimeout(r, 0));
+  for (let index = 0; index < 5; index++) await new Promise((resolve) => setTimeout(resolve, 0));
   await nextTick();
 };
 
 describe("FormInput + Formisch", () => {
   it("shows (optional) in emphasis and submits decoded numbers", async () => {
     let out: unknown;
-    const w = setup((o) => (out = o));
-    expect(w.find("em").text()).toBe("(optional)");
-    const [qty] = w.findAll("input");
+    const wrapper = setup((output) => (out = output));
+    expect(wrapper.find("em").text()).toBe("(optional)");
+    const [qty] = wrapper.findAll("input");
     await qty.setValue("3");
-    await w.find("form").trigger("submit");
+    await wrapper.find("form").trigger("submit");
     await flush();
     expect(out).toMatchObject({ stockId: "s1", quantity: 3 });
   });
 
   it("shows validation error and blocks submit", async () => {
     let out: unknown;
-    const w = setup((o) => (out = o));
-    await w.findAll("input")[0].setValue("0");
-    await w.find("form").trigger("submit");
+    const wrapper = setup((output) => (out = output));
+    await wrapper.findAll("input")[0].setValue("0");
+    await wrapper.find("form").trigger("submit");
     await flush();
     expect(out).toBeUndefined();
-    expect(w.text()).toContain("Quantity must be at least 1.");
+    expect(wrapper.text()).toContain("Quantity must be at least 1.");
   });
 });

@@ -42,7 +42,7 @@ export const RegisterSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["password"], ["confirmPassword"]],
-      (i) => i.password === i.confirmPassword,
+      (input) => input.password === input.confirmPassword,
       "Passwords do not match.",
     ),
     ["confirmPassword"],
@@ -56,7 +56,7 @@ export const ResetPasswordSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["password"], ["confirmPassword"]],
-      (i) => i.password === i.confirmPassword,
+      (input) => input.password === input.confirmPassword,
       "Passwords do not match.",
     ),
     ["confirmPassword"],

@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A "Page not found" page for unknown addresses. Under `/app` it shows inside the dashboard,
+  with links back to Rolls and to the previous page; elsewhere it shows as a standalone page
+  with a link home. Visitors who are not signed in still go to the login page for `/app` paths.
+- A lens page at `/app/lenses/:id`, in the film stock page's look: a header card with focal
+  length, aperture, mount and status, the roll the lens is shooting now and the number of rolls
+  shot; numbered sections for specifications and optics & notes; and a side column with the
+  camera a built-in lens belongs to and every roll shot with the lens. The Lenses list opens it.
+- A Re-scan action in a roll's Processing history, once the roll has been developed or
+  scanned, to scan the negatives again at another lab or at home. Earlier jobs and their scans
+  stay. "Send to lab" is then hidden, so print jobs are only offered for a roll's first job.
+- Scanning or printing at home is labelled "Self-scan (at home)" or "Self-print (at home)" in
+  place of "Self-develop", and a new scan at home starts with "Other scanner" picked; picking a
+  lab switches it to the Noritsu until the scanners are changed by hand.
+- Developing or scanning at home records when the negatives were developed and the roll was
+  scanned, both today by default, so the job is complete as soon as it is saved. Dates a lab
+  would give ("expected back") are not asked for. Editing a home job can change both dates.
+- Edit processing job can change the service and the process. A developing job switches
+  between Develop and Develop + scan, a scan or print job between Scan and Print, and a job
+  with imported scans keeps scanning. The lab is now fixed instead.
+
+### Changed
+
+- List tables open a record by clicking anywhere on its row (or Enter on a focused row), with a
+  chevron at the end of the row. Rolls, Film stocks, Inventory, Expiry, Cameras and Lenses open
+  the detail page; Labs, which have no detail page, open the edit dialog.
+- List tables no longer have Edit and Delete buttons on each row. Edit and Delete are on each
+  record's detail page; for labs, Delete is in the edit dialog.
+- New look for the film stock page: a header card with the stock's type, process, box ISO,
+  packaging and origin, unexposed rolls with a per-format breakdown, the next expiry and the
+  number of rolls shot; numbered sections for specifications and provenance & notes; and a
+  side column with related stocks and every roll of the stock. "Add rolls" on the page opens
+  Add rolls with the stock already chosen.
+- The camera page uses the same look: a header card with mount and status, the loaded roll,
+  the number of lenses and of rolls shot; numbered sections for specifications and notes; and
+  a side column with linked lenses (each opens its lens page, and "Manage" sits on the section)
+  and every roll shot in the camera.
+- The Add / Edit camera and lens dialogs share the film stock dialog's look: numbered sections
+  (camera body or lens, lens & mount or optics, notes), required fields marked with an
+  asterisk, quick picks for common focal lengths and apertures, and Cancel / Save fixed to the
+  bottom.
+- The Add rolls and Edit roll dialogs share the same look: numbered sections for film,
+  purchase and expiry, required fields marked with an asterisk, quick picks for exposures and
+  quantity, and Cancel / Save fixed to the bottom. The Add button shows how many rolls it adds.
+- Load into camera uses the same look: the roll in its own section, then camera and date
+  loaded, then the shot ISO with quick picks for pulling one stop, box speed, and pushing one
+  or two stops.
+- Send to lab and Edit processing job use the same look: numbered sections for the roll, lab
+  & service, scans (for jobs with scanning), dates and notes. The note that the roll becomes
+  At Lab moved to the dialog's description.
+- The Add / Edit lab dialog uses the same look, with the required Name marked by an asterisk.
+- The Mount field on cameras and lenses is a searchable list of every mount already used by a
+  camera or lens. Typing a mount that is not in the list adds it, so a camera can get a new
+  mount (for example L39) before any of its lenses exist.
+- The camera and lens Brand fields work the same way: pick a brand already used by a camera or
+  lens, or type a new one.
+- The Brand and Mount lists show how many cameras and lenses use each value, so a one-off typo
+  is easy to spot.
+- New look for the Add / Edit film stock dialog: fields on white, grouped into numbered
+  sections (specifications, chemistry & format, provenance & notes), required fields marked
+  with an asterisk, quick picks for common box speeds (100, 200, 400, 800), process names
+  in the Process picker, the base stock in its own panel, and Cancel / Save fixed to the bottom
+  while the form scrolls.
+- Descriptions of film stocks ("Darkroom notes & characteristics"), cameras and lenses use a
+  rich text editor with bold, italic, strikethrough, code, headings, lists, quotes, undo and
+  redo. They are saved as Markdown, so existing plain-text descriptions keep working. Stock,
+  camera and roll pages show descriptions formatted; list tables show them as plain text.
+- Lab job notes in the Send to lab dialog use the same rich text editor, and the roll page shows
+  them formatted.
+- The Cameras, Lenses and Film stocks lists no longer show the description under the name.
+- The camera Manage lenses dialog shows each lens's focal length, aperture and mount under its
+  name.
+- "Film tracker" under the sidebar logo is in the accent colour, as on the account pages.
+- Dates show as dd/mm/yyyy: the Started column and field of rolls, the finish date and job dates
+  in Processing history and Send to lab, and the audit log (with the time as HH:mm).
+- Processing jobs show "Scans received" only for services that scan and "Negatives returned"
+  only for services that develop, in Processing history and in Edit processing job.
+
+### Fixed
+
+- In Add rolls, choosing 135 or 120 sets the default exposures again (36 or 12).
+
 ## [2.0.0] - 2026-10-08
 
 ### Added

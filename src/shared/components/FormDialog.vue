@@ -38,6 +38,8 @@ const open = defineModel<boolean>("open", { required: true });
       <Form :of="form" class="grid gap-4" @submit="(output) => emit('submit', output)">
         <slot />
         <DialogFooter>
+          <!-- left side of the footer, e.g. Delete when editing -->
+          <div v-if="$slots['footer-start']" class="sm:mr-auto"><slot name="footer-start" /></div>
           <Button type="button" variant="outline" @click="open = false">Cancel</Button>
           <Button type="submit">{{ submitLabel ?? "Save" }}</Button>
         </DialogFooter>

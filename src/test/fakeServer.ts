@@ -57,8 +57,8 @@ interface LabRec {
   address?: string;
 }
 
-let n = 0;
-const id = () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`;
+let counter = 0;
+const id = () => `00000000-0000-4000-8000-${String(++counter).padStart(12, "0")}`;
 
 export const server = {
   cameras: [] as CameraRec[],
@@ -76,8 +76,8 @@ export const server = {
     this.labs = [];
     this.requests = [];
   },
-  addStock(p: Partial<StockRec> = {}): StockRec {
-    const s: StockRec = {
+  addStock(overrides: Partial<StockRec> = {}): StockRec {
+    const stock: StockRec = {
       id: id(),
       brand: "Kodak",
       name: "UltraMax 400",
@@ -85,13 +85,13 @@ export const server = {
       boxIso: 400,
       process: "C-41",
       packaging: "factory",
-      ...p,
+      ...overrides,
     };
-    this.stocks.push(s);
-    return s;
+    this.stocks.push(stock);
+    return stock;
   },
-  addLens(p: Partial<LensRec> = {}): LensRec {
-    const l: LensRec = {
+  addLens(overrides: Partial<LensRec> = {}): LensRec {
+    const lens: LensRec = {
       id: id(),
       brand: "Canon",
       model: "FD",
@@ -100,55 +100,55 @@ export const server = {
       maxAperture: 1.8,
       isBuiltIn: false,
       isActive: true,
-      ...p,
+      ...overrides,
     };
-    this.lenses.push(l);
-    return l;
+    this.lenses.push(lens);
+    return lens;
   },
-  addCamera(p: Partial<CameraRec> = {}, builtIn?: Partial<LensRec>): CameraRec {
-    const c: CameraRec = {
+  addCamera(overrides: Partial<CameraRec> = {}, builtIn?: Partial<LensRec>): CameraRec {
+    const camera: CameraRec = {
       id: id(),
       brand: "Nikon",
       model: "FM2",
       mount: "F",
       hasFixedLens: false,
       isActive: true,
-      ...p,
+      ...overrides,
     };
-    if (builtIn || c.hasFixedLens) {
-      c.hasFixedLens = true;
-      c.mount = undefined;
-      c.builtInLensId = this.addLens({ isBuiltIn: true, mount: undefined, ...builtIn }).id;
+    if (builtIn || camera.hasFixedLens) {
+      camera.hasFixedLens = true;
+      camera.mount = undefined;
+      camera.builtInLensId = this.addLens({ isBuiltIn: true, mount: undefined, ...builtIn }).id;
     }
-    this.cameras.push(c);
-    return c;
+    this.cameras.push(camera);
+    return camera;
   },
-  addRoll(p: Partial<RollRec> = {}): RollRec {
+  addRoll(overrides: Partial<RollRec> = {}): RollRec {
     const stock = this.stocks[0] ?? this.addStock();
-    const r: RollRec = {
+    const roll: RollRec = {
       id: id(),
       filmStockId: stock.id,
       format: 135,
       exposures: 36,
       status: "in_stock",
-      ...p,
+      ...overrides,
     };
-    this.rolls.push(r);
-    return r;
+    this.rolls.push(roll);
+    return roll;
   },
-  addLab(p: Partial<LabRec> = {}): LabRec {
-    const l: LabRec = { id: id(), name: "Saigon Lab", ...p };
-    this.labs.push(l);
-    return l;
+  addLab(overrides: Partial<LabRec> = {}): LabRec {
+    const lab: LabRec = { id: id(), name: "Saigon Lab", ...overrides };
+    this.labs.push(lab);
+    return lab;
   },
 };
 
-const stockOf = (sid: string) => server.stocks.find((s) => s.id === sid);
-const apiRoll = (r: RollRec) => {
-  const st = stockOf(r.filmStockId);
-  const cam = server.cameras.find((c) => c.id === r.cameraId);
+const stockOf = (sid: string) => server.stocks.find((stock) => stock.id === sid);
+const apiRoll = (roll: RollRec) => {
+  const st = stockOf(roll.filmStockId);
+  const cam = server.cameras.find((camera) => camera.id === roll.cameraId);
   return {
-    ...r,
+    ...roll,
     stockName: st ? `${st.name}` : "",
     stockBrand: st?.brand,
     cameraName: cam?.model,
@@ -172,18 +172,20 @@ export function installFakeServer() {
     };
     const notFound = (what: string) =>
       respond(404, { code: "not_found", message: `${what} not found` });
-    const m = (re: RegExp) => re.exec(url);
+    const match = (re: RegExp) => re.exec(url);
 
     if (method === "get" && url === "/cameras") {
       return respond(
         200,
         server.cameras
-          .filter((c) => c.isActive || !params.activeOnly)
-          .map((c) => {
-            const roll = server.rolls.find((r) => r.cameraId === c.id && r.status === "in_camera");
+          .filter((camera) => camera.isActive || !params.activeOnly)
+          .map((camera) => {
+            const roll = server.rolls.find(
+              (record) => record.cameraId === camera.id && record.status === "in_camera",
+            );
             const st = roll && stockOf(roll.filmStockId);
             return {
-              ...c,
+              ...camera,
               loadedRoll: roll && {
                 rollId: roll.id,
                 stockName: st?.name ?? "",
@@ -194,60 +196,62 @@ export function installFakeServer() {
           }),
       );
     }
-    let r = m(/^\/cameras\/([^/]+)\/lenses$/);
-    if (method === "get" && r) {
-      const c = server.cameras.find((x) => x.id === r![1]);
+    let route = match(/^\/cameras\/([^/]+)\/lenses$/);
+    if (method === "get" && route) {
+      const camera = server.cameras.find((record) => record.id === route![1]);
       return respond(
         200,
-        c?.builtInLensId ? server.lenses.filter((l) => l.id === c.builtInLensId) : [],
+        camera?.builtInLensId
+          ? server.lenses.filter((lens) => lens.id === camera.builtInLensId)
+          : [],
       );
     }
-    r = m(/^\/cameras\/([^/]+)\/active$/);
-    if (method === "put" && r) {
-      const c = server.cameras.find((x) => x.id === r![1]);
-      if (!c) return notFound("camera");
-      c.isActive = body.isActive;
-      const bl = server.lenses.find((l) => l.id === c.builtInLensId);
+    route = match(/^\/cameras\/([^/]+)\/active$/);
+    if (method === "put" && route) {
+      const camera = server.cameras.find((record) => record.id === route![1]);
+      if (!camera) return notFound("camera");
+      camera.isActive = body.isActive;
+      const bl = server.lenses.find((lens) => lens.id === camera.builtInLensId);
       if (bl) bl.isActive = body.isActive;
-      return respond(200, c);
+      return respond(200, camera);
     }
-    r = m(/^\/cameras\/([^/]+)$/);
-    if (method === "get" && r) {
-      const c = server.cameras.find((x) => x.id === r![1]);
-      return c ? respond(200, c) : notFound("camera");
+    route = match(/^\/cameras\/([^/]+)$/);
+    if (method === "get" && route) {
+      const camera = server.cameras.find((record) => record.id === route![1]);
+      return camera ? respond(200, camera) : notFound("camera");
     }
     if (method === "get" && url === "/lenses") return respond(200, server.lenses);
-    r = m(/^\/lenses\/([^/]+)\/active$/);
-    if (method === "put" && r) {
-      const l = server.lenses.find((x) => x.id === r![1]);
-      if (!l) return notFound("lens");
-      if (l.isBuiltIn)
+    route = match(/^\/lenses\/([^/]+)\/active$/);
+    if (method === "put" && route) {
+      const lens = server.lenses.find((record) => record.id === route![1]);
+      if (!lens) return notFound("lens");
+      if (lens.isBuiltIn)
         return respond(409, { code: "conflict", message: "A built-in lens follows its camera." });
-      l.isActive = body.isActive;
-      return respond(200, l);
+      lens.isActive = body.isActive;
+      return respond(200, lens);
     }
     if (method === "get" && url === "/film-stocks") return respond(200, server.stocks);
-    r = m(/^\/film-stocks\/([^/]+)$/);
-    if (method === "get" && r) {
-      const s = stockOf(r[1]);
-      if (!s) return notFound("film stock");
-      const base = s.baseStockId ? stockOf(s.baseStockId) : undefined;
+    route = match(/^\/film-stocks\/([^/]+)$/);
+    if (method === "get" && route) {
+      const stock = stockOf(route[1]);
+      if (!stock) return notFound("film stock");
+      const base = stock.baseStockId ? stockOf(stock.baseStockId) : undefined;
       return respond(200, {
-        stock: s,
+        stock: stock,
         baseStock: base,
         siblings: [],
-        derived: server.stocks.filter((x) => x.baseStockId === s.id),
+        derived: server.stocks.filter((record) => record.baseStockId === stock.id),
         warnings: [],
       });
     }
     if (method === "get" && url === "/inventory") {
       const items = server.stocks.flatMap((stock) => {
         const rolls = server.rolls.filter(
-          (x) => x.filmStockId === stock.id && x.status === "in_stock",
+          (roll) => roll.filmStockId === stock.id && roll.status === "in_stock",
         );
         if (!rolls.length) return [];
         const counts = new Map<number, number>();
-        for (const x of rolls) counts.set(x.format, (counts.get(x.format) ?? 0) + 1);
+        for (const roll of rolls) counts.set(roll.format, (counts.get(roll.format) ?? 0) + 1);
         return [{ stock, formats: [...counts].map(([format, count]) => ({ format, count })) }];
       });
       return respond(200, items);
@@ -257,16 +261,17 @@ export function installFakeServer() {
       return respond(
         200,
         server.rolls
-          .filter((x) => !params.status || x.status === params.status)
-          .filter((x) => !params.filmStockId || x.filmStockId === params.filmStockId)
-          .filter((x) => !params.cameraId || x.cameraId === params.cameraId)
+          .filter((roll) => !params.status || roll.status === params.status)
+          .filter((roll) => !params.filmStockId || roll.filmStockId === params.filmStockId)
+          .filter((roll) => !params.cameraId || roll.cameraId === params.cameraId)
+          .filter((roll) => !params.lensId || !!roll.lensIds?.includes(params.lensId as string))
           .map(apiRoll),
       );
     }
     if (method === "post" && url === "/rolls/bulk") {
       if (!stockOf(body.filmStockId))
         return respond(422, { code: "unknown_film_stock", message: "film stock does not exist" });
-      for (let i = 0; i < body.quantity; i++) {
+      for (let index = 0; index < body.quantity; index++) {
         server.addRoll({
           filmStockId: body.filmStockId,
           format: body.format,
@@ -277,35 +282,39 @@ export function installFakeServer() {
       }
       return respond(201, {});
     }
-    r = m(/^\/rolls\/([^/]+)\/lenses$/);
-    if (r && method === "put") {
-      const roll = server.rolls.find((x) => x.id === r![1]);
+    route = match(/^\/rolls\/([^/]+)\/lenses$/);
+    if (route && method === "put") {
+      const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
       roll.lensIds = body.lensIds;
       return respond(200, {});
     }
-    r = m(/^\/rolls\/([^/]+)\/processing\/([^/]+)$/);
-    if (r && method === "put") {
-      const roll = server.rolls.find((x) => x.id === r![1]);
+    route = match(/^\/rolls\/([^/]+)\/processing\/([^/]+)$/);
+    if (route && method === "put") {
+      const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
       roll.status = "at_lab";
       return respond(200, {});
     }
-    r = m(/^\/rolls\/([^/]+)\/finish$/);
-    if (r && method === "put") {
-      const roll = server.rolls.find((x) => x.id === r![1]);
+    if (method === "put" && /^\/processing\/[^/]+\/(scans-received|negatives-returned)$/.test(url))
+      return respond(200, {});
+    route = match(/^\/rolls\/([^/]+)\/finish$/);
+    if (route && method === "put") {
+      const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
       roll.status = "done_shooting";
       roll.finishedAt ??= "2026-10-05";
       return respond(200, {});
     }
-    r = m(/^\/rolls\/([^/]+)\/load$/);
-    if (r && method === "put") {
-      const roll = server.rolls.find((x) => x.id === r![1]);
+    route = match(/^\/rolls\/([^/]+)\/load$/);
+    if (route && method === "put") {
+      const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
-      const camera = server.cameras.find((c) => c.id === body.cameraId);
+      const camera = server.cameras.find((record) => record.id === body.cameraId);
       if (!camera) return notFound("camera");
-      const busy = server.rolls.find((x) => x.cameraId === camera.id && x.status === "in_camera");
+      const busy = server.rolls.find(
+        (record) => record.cameraId === camera.id && record.status === "in_camera",
+      );
       if (busy)
         return respond(409, {
           code: "conflict",
@@ -318,16 +327,16 @@ export function installFakeServer() {
       });
       return respond(200, {});
     }
-    r = m(/^\/rolls\/([^/]+)$/);
-    if (r) {
-      const roll = server.rolls.find((x) => x.id === r![1]);
+    route = match(/^\/rolls\/([^/]+)$/);
+    if (route) {
+      const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
       if (method === "get") {
         const st = stockOf(roll.filmStockId)!;
         return respond(200, {
           roll: apiRoll(roll),
           stock: st,
-          lenses: server.lenses.filter((l) => roll.lensIds?.includes(l.id)),
+          lenses: server.lenses.filter((lens) => roll.lensIds?.includes(lens.id)),
           frames: [],
           processing: [],
           totals: { total: roll.price ?? 0, incomplete: roll.price == null },
@@ -344,7 +353,7 @@ export function installFakeServer() {
         return respond(200, {});
       }
       if (method === "delete") {
-        server.rolls = server.rolls.filter((x) => x !== roll);
+        server.rolls = server.rolls.filter((record) => record !== roll);
         return respond(204, undefined);
       }
     }

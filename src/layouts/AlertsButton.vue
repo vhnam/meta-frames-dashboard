@@ -39,7 +39,7 @@ function setMenuOpen(open: boolean) {
 
 <template>
   <DropdownMenu :open="menuOpen" @update:open="setMenuOpen">
-    <Tooltip :open="tipOpen" @update:open="(o) => (tipOpen = o && !menuOpen)">
+    <Tooltip :open="tipOpen" @update:open="(isOpen) => (tipOpen = isOpen && !menuOpen)">
       <TooltipTrigger as-child>
         <DropdownMenuTrigger
           ref="bell"
@@ -73,37 +73,37 @@ function setMenuOpen(open: boolean) {
 
       <div v-if="count" class="grid max-h-104 gap-0.5 overflow-y-auto px-1.5 pb-1.5">
         <DropdownMenuItem
-          v-for="r in alerts.slice(0, SHOWN)"
-          :key="r.roll.id"
+          v-for="alert in alerts.slice(0, SHOWN)"
+          :key="alert.roll.id"
           class="items-start gap-3 rounded-lg p-2.5"
           as-child
         >
-          <Link :to="'/app/rolls/$rollId'" :params="{ rollId: r.roll.id }">
+          <Link :to="'/app/rolls/$rollId'" :params="{ rollId: alert.roll.id }">
             <span
               :class="[
                 'flex size-10 shrink-0 items-center justify-center rounded-full',
-                r.expired
+                alert.expired
                   ? 'bg-destructive/10 text-destructive'
                   : 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
               ]"
               aria-hidden="true"
             >
-              <component :is="r.expired ? IconCalendarX : IconClockHour4" class="size-5" />
+              <component :is="alert.expired ? IconCalendarX : IconClockHour4" class="size-5" />
             </span>
             <span class="grid min-w-0 gap-0.5">
               <span class="text-sm leading-snug">
-                <span class="font-semibold">{{ r.stockName }}</span>
+                <span class="font-semibold">{{ alert.stockName }}</span>
                 <span class="text-muted-foreground">
-                  · {{ r.roll.format }} · {{ r.roll.exposures }} exp</span
+                  · {{ alert.roll.format }} · {{ alert.roll.exposures }} exp</span
                 >
               </span>
               <span
                 :class="[
                   'text-xs font-medium',
-                  r.expired ? 'text-destructive' : 'text-amber-700 dark:text-amber-400',
+                  alert.expired ? 'text-destructive' : 'text-amber-700 dark:text-amber-400',
                 ]"
               >
-                {{ expiryFromNow(r.roll) }}
+                {{ expiryFromNow(alert.roll) }}
               </span>
             </span>
           </Link>

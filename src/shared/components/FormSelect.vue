@@ -13,6 +13,7 @@ defineProps<{
   options: Option[];
   placeholder?: string;
   optional?: boolean;
+  required?: boolean;
   hint?: string;
   disabled?: boolean;
   /** Store the option value as a number (undefined when cleared). */
@@ -22,7 +23,14 @@ defineProps<{
 
 <template>
   <Field :of="of" :path="path" v-slot="field">
-    <FormField :label="label" :optional="optional" :hint="hint" :error="field.errors?.[0]">
+    <FormField
+      :label="label"
+      :optional="optional"
+      :required="required"
+      :hint="hint"
+      :error="field.errors?.[0]"
+    >
+      <template v-if="$slots.aside" #aside><slot name="aside" /></template>
       <div class="flex gap-2">
         <Select
           :model-value="field.input == null ? '' : String(field.input)"
@@ -32,7 +40,10 @@ defineProps<{
           :allow-empty="!!optional"
           :disabled="disabled"
           @update:model-value="
-            (x) => (field.input = (numeric ? (x === '' ? undefined : Number(x)) : x) as never)
+            (value) =>
+              (field.input = (
+                numeric ? (value === '' ? undefined : Number(value)) : value
+              ) as never)
           "
         />
         <slot name="action" />

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { PACKAGING_TONE, PROCESS_TONE, TYPE_TONE, stockName } from "../format";
-import { useDeleteStock, useStockList } from "../queries";
+import { useStockList } from "../queries";
 import { FILM_TYPE_LABELS, PACKAGING_LABELS, PROCESS_LABELS } from "../types";
 import type { StockRow } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h, ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
@@ -11,7 +11,6 @@ import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
 import {
   PRIMARY_LINK,
-  actionsColumn,
   mutedCell,
   numberCell,
   stackCell,
@@ -19,10 +18,8 @@ import {
 } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import StockFormDialog from "../components/StockFormDialog.vue";
-import { ask } from "#/shared/lib/ui";
 
 const stocks = useStockList();
-const deleteStock = useDeleteStock();
 const formOpen = ref(false);
 const editing = ref<string>();
 function show(id?: string) {
@@ -30,35 +27,38 @@ function show(id?: string) {
   formOpen.value = true;
 }
 
+const router = useRouter();
+const openStock = (row: StockRow) =>
+  router.navigate({ to: "/app/stocks/$stockId", params: { stockId: row.stock.id } });
+
 const columns: DataTableColumn<StockRow>[] = [
   {
     id: "stock",
     header: "Stock",
-    accessorFn: (r) => stockName(r.stock),
-    cell: ({ row: { original: r } }) =>
+    accessorFn: (row) => stockName(row.stock),
+    cell: ({ row: { original: row } }) =>
       stackCell(
         h(
           Link,
-          { to: "/app/stocks/$stockId", params: { stockId: r.stock.id }, class: PRIMARY_LINK },
-          () => stockName(r.stock),
+          { to: "/app/stocks/$stockId", params: { stockId: row.stock.id }, class: PRIMARY_LINK },
+          () => stockName(row.stock),
         ),
-        r.stock.description,
       ),
   },
   {
     id: "type",
     meta: { filter: { label: "Type", placeholder: "All types" } },
     header: "Type",
-    accessorFn: (r) => FILM_TYPE_LABELS[r.stock.type],
+    accessorFn: (row) => FILM_TYPE_LABELS[row.stock.type],
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
-      tagCell(FILM_TYPE_LABELS[r.stock.type], TYPE_TONE[r.stock.type]),
+    cell: ({ row: { original: row } }) =>
+      tagCell(FILM_TYPE_LABELS[row.stock.type], TYPE_TONE[row.stock.type]),
   },
   {
     id: "iso",
     header: "ISO",
-    accessorFn: (r) => r.stock.boxIso,
+    accessorFn: (row) => row.stock.boxIso,
     enableGlobalFilter: false,
     cell: ({ row }) => numberCell(row.original.stock.boxIso),
   },
@@ -66,32 +66,28 @@ const columns: DataTableColumn<StockRow>[] = [
     id: "process",
     meta: { filter: { label: "Process", placeholder: "All processes" } },
     header: "Process",
-    accessorFn: (r) => PROCESS_LABELS[r.stock.process],
+    accessorFn: (row) => PROCESS_LABELS[row.stock.process],
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
-      tagCell(PROCESS_LABELS[r.stock.process], PROCESS_TONE[r.stock.process]),
+    cell: ({ row: { original: row } }) =>
+      tagCell(PROCESS_LABELS[row.stock.process], PROCESS_TONE[row.stock.process]),
   },
   {
     id: "packaging",
     meta: { filter: { label: "Packaging", placeholder: "All packagings" } },
     header: "Packaging",
-    accessorFn: (r) => PACKAGING_LABELS[r.stock.packaging],
+    accessorFn: (row) => PACKAGING_LABELS[row.stock.packaging],
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
-      tagCell(PACKAGING_LABELS[r.stock.packaging], PACKAGING_TONE[r.stock.packaging]),
+    cell: ({ row: { original: row } }) =>
+      tagCell(PACKAGING_LABELS[row.stock.packaging], PACKAGING_TONE[row.stock.packaging]),
   },
   {
     id: "base",
     header: "Base stock",
-    accessorFn: (r) => r.baseName ?? "—",
+    accessorFn: (row) => row.baseName ?? "—",
     cell: ({ row }) => mutedCell(row.original.baseName),
   },
-  actionsColumn((r) => ({
-    onEdit: () => show(r.stock.id),
-    onDelete: async () => (await ask("Delete this film stock?")) && deleteStock.mutate(r.stock.id),
-  })),
 ];
 </script>
 
@@ -111,7 +107,9 @@ const columns: DataTableColumn<StockRow>[] = [
         filter-placeholder="Search by stock name..."
         :columns="columns"
         :data="data"
-        :get-row-id="(r) => r.stock.id"
+        :get-row-id="(row) => row.stock.id"
+        :on-select="openStock"
+        :row-label="(row) => `Open ${stockName(row.stock)}`"
       />
     </template>
   </QueryBoundary>

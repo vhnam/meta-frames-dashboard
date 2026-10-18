@@ -2,7 +2,7 @@
 import { formatExpiry } from "../format";
 import { useExpiryReport } from "../queries";
 import type { ExpiryReport, RollRow } from "../types";
-import { Link } from "@tanstack/vue-router";
+import { Link, useRouter } from "@tanstack/vue-router";
 import { h } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
@@ -15,27 +15,31 @@ const report = useExpiryReport();
 
 type DatedRow = ExpiryReport["dated"][number];
 
-const rollLink = (r: RollRow) =>
+const router = useRouter();
+const openRoll = (row: RollRow) =>
+  router.navigate({ to: "/app/rolls/$rollId", params: { rollId: row.roll.id } });
+
+const rollLink = (row: RollRow) =>
   stackCell(
     h(
       Link,
-      { to: "/app/rolls/$rollId", params: { rollId: r.roll.id }, class: PRIMARY_LINK },
-      () => r.stockName,
+      { to: "/app/rolls/$rollId", params: { rollId: row.roll.id }, class: PRIMARY_LINK },
+      () => row.stockName,
     ),
-    `${r.roll.format} · ${r.roll.exposures} Exp`,
+    `${row.roll.format} · ${row.roll.exposures} Exp`,
   );
 
 const columns: DataTableColumn<DatedRow>[] = [
   {
     id: "roll",
     header: "Roll",
-    accessorFn: (r) => `${r.stockName} · ${r.roll.format}`,
+    accessorFn: (row) => `${row.stockName} · ${row.roll.format}`,
     cell: ({ row }) => rollLink(row.original),
   },
   {
     id: "expiry",
     header: "Expiry",
-    accessorFn: (r) => formatExpiry(r.roll),
+    accessorFn: (row) => formatExpiry(row.roll),
     enableGlobalFilter: false,
     cell: ({ row }) => numberCell(formatExpiry(row.original.roll)),
   },
@@ -44,12 +48,12 @@ const columns: DataTableColumn<DatedRow>[] = [
     meta: { filter: { label: "Status", placeholder: "Any status" } },
     header: "Status",
     enableSorting: false,
-    accessorFn: (r) => (r.expired ? "Expired" : "Soon"),
+    accessorFn: (row) => (row.expired ? "Expired" : "Soon"),
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
-      h(StatusBadge, { tone: r.expired ? "danger" : "warning" }, () =>
-        r.expired ? "Expired" : "Soon",
+    cell: ({ row: { original: row } }) =>
+      h(StatusBadge, { tone: row.expired ? "danger" : "warning" }, () =>
+        row.expired ? "Expired" : "Soon",
       ),
   },
 ];
@@ -58,7 +62,7 @@ const undatedColumns: DataTableColumn<RollRow>[] = [
   {
     id: "roll",
     header: "Roll",
-    accessorFn: (r) => r.stockName,
+    accessorFn: (row) => row.stockName,
     cell: ({ row }) => rollLink(row.original),
   },
 ];
@@ -75,7 +79,9 @@ const undatedColumns: DataTableColumn<RollRow>[] = [
         filter-placeholder="Search by stock..."
         :columns="columns"
         :data="data.dated"
-        :get-row-id="(r) => r.roll.id"
+        :get-row-id="(row) => row.roll.id"
+        :on-select="openRoll"
+        :row-label="(row) => `Open ${row.stockName} roll`"
       />
       <template v-if="data.undated.length">
         <h2 class="mt-4 text-xl font-semibold">
@@ -88,7 +94,9 @@ const undatedColumns: DataTableColumn<RollRow>[] = [
           hide-filters
           :columns="undatedColumns"
           :data="data.undated"
-          :get-row-id="(r) => r.roll.id"
+          :get-row-id="(row) => row.roll.id"
+          :on-select="openRoll"
+          :row-label="(row) => `Open ${row.stockName} roll`"
         />
       </template>
     </template>

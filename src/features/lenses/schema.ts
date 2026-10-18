@@ -17,7 +17,7 @@ export const LensSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["builtIn"], ["brand"]],
-      (i) => i.builtIn || i.brand.trim() !== "",
+      (input) => input.builtIn || input.brand.trim() !== "",
       "Brand is required.",
     ),
     ["brand"],
@@ -25,7 +25,7 @@ export const LensSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["builtIn"], ["model"]],
-      (i) => i.builtIn || i.model.trim() !== "",
+      (input) => input.builtIn || input.model.trim() !== "",
       "Model is required.",
     ),
     ["model"],
@@ -33,7 +33,7 @@ export const LensSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["builtIn"], ["mount"]],
-      (i) => i.builtIn || i.mount.trim() !== "",
+      (input) => input.builtIn || input.mount.trim() !== "",
       "Mount is required.",
     ),
     ["mount"],

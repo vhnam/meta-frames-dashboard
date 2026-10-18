@@ -29,7 +29,7 @@ export const useSaveCamera = () =>
     fn: saveCamera,
     // a fixed-lens camera also creates / renames its built-in lens
     invalidates: () => [cameraKeys.all, lensKeys.all],
-    success: (v) => (v.id ? "Camera updated" : "Camera added"),
+    success: (variables) => (variables.id ? "Camera updated" : "Camera added"),
   });
 
 /** Optimistic: the switch flips immediately and rolls back if the rule rejects it. */
@@ -37,22 +37,27 @@ export const useSetCameraActive = () =>
   useApiMutation({
     fn: setCameraActive,
     optimistic: {
-      cancel: (v) => [cameraKeys.lists(), cameraKeys.detail(v.id)],
-      apply: (qc, v) => {
-        const flip = (c: Camera) => (c.id === v.id ? { ...c, active: v.active } : c);
+      cancel: (variables) => [cameraKeys.lists(), cameraKeys.detail(variables.id)],
+      apply: (qc, variables) => {
+        const flip = (camera: Camera) =>
+          camera.id === variables.id ? { ...camera, active: variables.active } : camera;
         const undoLists = patchQueries<CameraRow[]>(qc, { queryKey: cameraKeys.lists() }, (rows) =>
-          rows.map((r) => ({ ...r, camera: flip(r.camera) })),
+          rows.map((row) => ({ ...row, camera: flip(row.camera) })),
         );
         const undoDetail = patchQueries<CameraDetail | null>(
           qc,
-          { queryKey: cameraKeys.detail(v.id) },
-          (d) => (d ? { ...d, camera: flip(d.camera) } : d),
+          { queryKey: cameraKeys.detail(variables.id) },
+          (detail) => (detail ? { ...detail, camera: flip(detail.camera) } : detail),
         );
         return () => (undoLists(), undoDetail());
       },
     },
     // the built-in lens follows the camera's active state
-    invalidates: (v) => [cameraKeys.lists(), cameraKeys.detail(v.id), lensKeys.lists()],
+    invalidates: (variables) => [
+      cameraKeys.lists(),
+      cameraKeys.detail(variables.id),
+      lensKeys.lists(),
+    ],
   });
 
 export const useDeleteCamera = () =>
@@ -65,6 +70,6 @@ export const useDeleteCamera = () =>
 export const useSetCameraLenses = () =>
   useApiMutation({
     fn: setCameraLenses,
-    invalidates: (v) => [cameraKeys.detail(v.cameraId)],
+    invalidates: (variables) => [cameraKeys.detail(variables.cameraId)],
     success: "Lenses updated",
   });
