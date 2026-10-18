@@ -90,30 +90,30 @@ interface ApiRollDetail {
   totals: { total: number; incomplete: boolean };
 }
 
-function toApiRow(r: ApiRoll): RollRow {
+function toApiRow(apiRoll: ApiRoll): RollRow {
   return {
     roll: {
-      id: r.id,
-      stockId: r.filmStockId,
-      format: String(r.format),
-      exposures: r.exposures,
-      price: r.price ?? null,
-      expiryYear: r.expiry?.year ?? null,
-      expiryMonth: r.expiry?.month ?? null,
-      status: r.status,
-      cameraId: r.cameraId ?? null,
+      id: apiRoll.id,
+      stockId: apiRoll.filmStockId,
+      format: String(apiRoll.format),
+      exposures: apiRoll.exposures,
+      price: apiRoll.price ?? null,
+      expiryYear: apiRoll.expiry?.year ?? null,
+      expiryMonth: apiRoll.expiry?.month ?? null,
+      status: apiRoll.status,
+      cameraId: apiRoll.cameraId ?? null,
       // TODO: lenses are not on the list endpoint
       lensIds: [],
-      shotIso: r.shotIso ?? null,
-      startDate: r.startedAt ?? null,
-      finishDate: r.finishedAt ?? null,
-      description: r.description ?? "",
+      shotIso: apiRoll.shotIso ?? null,
+      startDate: apiRoll.startedAt ?? null,
+      finishDate: apiRoll.finishedAt ?? null,
+      description: apiRoll.description ?? "",
       createdAt: "",
     },
-    stockName: [r.stockBrand, r.stockName].filter(Boolean).join(" "),
+    stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(" "),
     boxIso: 0,
-    cameraName: r.cameraName ?? null,
-    negativesAtLab: r.negativesAtLab,
+    cameraName: apiRoll.cameraName ?? null,
+    negativesAtLab: apiRoll.negativesAtLab,
   };
 }
 
@@ -143,9 +143,9 @@ export const rollQueries = {
         let data: ApiRollDetail;
         try {
           data = (await http.get<ApiRollDetail>(`/rolls/${id}`)).data;
-        } catch (e) {
-          if (isAxiosError(e) && e.response?.status === 404) return null;
-          throw e;
+        } catch (error) {
+          if (isAxiosError(error) && error.response?.status === 404) return null;
+          throw error;
         }
         const row = toApiRow(data.roll);
         const cameraId = data.roll.cameraId;
@@ -159,31 +159,31 @@ export const rollQueries = {
         ]);
         const fixedLens = camera?.data.hasFixedLens ? cameraId : null;
         return {
-          roll: { ...row.roll, lensIds: data.lenses.map((l) => l.id) },
+          roll: { ...row.roll, lensIds: data.lenses.map((lens) => lens.id) },
           stock,
           base: base?.data.baseStock ? toStock(base.data.baseStock) : null,
           camera: camera ? toCamera(camera.data) : null,
-          lenses: data.lenses.map((l) => toLens(l)),
-          cameraLenses: (linked?.data ?? []).map((l) => toLens(l, fixedLens ?? null)),
-          jobs: data.processing.map((j) => ({
-            id: j.id,
-            labId: j.labId ?? null,
-            labName: j.labName ?? "Home",
-            type: j.type,
-            process: j.process,
-            sentDate: j.sentAt,
-            scansExpectedDate: j.scansExpectedAt ?? null,
-            negativesExpectedDate: j.negativesExpectedAt ?? null,
-            scansReceivedDate: j.scansReceivedAt ?? null,
-            negativesReturnedDate: j.negativesReturnedAt ?? null,
-            price: j.price ?? null,
-            notes: j.notes ?? "",
-            scanOrders: j.scanOrders ?? [],
-            open: j.isOpen,
+          lenses: data.lenses.map((lens) => toLens(lens)),
+          cameraLenses: (linked?.data ?? []).map((lens) => toLens(lens, fixedLens ?? null)),
+          jobs: data.processing.map((job) => ({
+            id: job.id,
+            labId: job.labId ?? null,
+            labName: job.labName ?? "Home",
+            type: job.type,
+            process: job.process,
+            sentDate: job.sentAt,
+            scansExpectedDate: job.scansExpectedAt ?? null,
+            negativesExpectedDate: job.negativesExpectedAt ?? null,
+            scansReceivedDate: job.scansReceivedAt ?? null,
+            negativesReturnedDate: job.negativesReturnedAt ?? null,
+            price: job.price ?? null,
+            notes: job.notes ?? "",
+            scanOrders: job.scanOrders ?? [],
+            open: job.isOpen,
           })),
-          frames: data.frames.map((f) => ({
-            frame: { id: f.id, rollId: id, number: f.number, notes: f.notes ?? "" },
-            scanCount: f.scanCount ?? f.scans?.length ?? 0,
+          frames: data.frames.map((frame) => ({
+            frame: { id: frame.id, rollId: id, number: frame.number, notes: frame.notes ?? "" },
+            scanCount: frame.scanCount ?? frame.scans?.length ?? 0,
           })),
           cost: { total: data.totals.total, incomplete: data.totals.incomplete },
           negativesAtLab: data.roll.negativesAtLab,
@@ -200,21 +200,21 @@ export const rollQueries = {
         const horizon = new Date();
         horizon.setMonth(horizon.getMonth() + months);
         const dated = rows
-          .flatMap((r) => {
-            const d = expiryDate(r.roll);
-            return d && d <= horizon ? [{ row: r, d }] : [];
+          .flatMap((row) => {
+            const date = expiryDate(row.roll);
+            return date && date <= horizon ? [{ row: row, d: date }] : [];
           })
-          .sort((a, b) => a.d.getTime() - b.d.getTime())
+          .sort((left, right) => left.d.getTime() - right.d.getTime())
           .map(({ row }) => ({ ...row, expired: isExpired(row.roll) }));
-        const undated = rows.filter((r) => !r.roll.expiryYear);
+        const undated = rows.filter((row) => !row.roll.expiryYear);
         return { dated, undated };
       },
     }),
 };
 
 /** The API reads a nested `expiry`; flat `expiryYear`/`expiryMonth` are silently ignored. */
-const toApiExpiry = (i: { expiryYear?: number | null; expiryMonth?: number | null }) =>
-  i.expiryYear ? { year: i.expiryYear, month: i.expiryMonth ?? undefined } : undefined;
+const toApiExpiry = (input: { expiryYear?: number | null; expiryMonth?: number | null }) =>
+  input.expiryYear ? { year: input.expiryYear, month: input.expiryMonth ?? undefined } : undefined;
 
 export const addRolls = async (input: AddRollsInput) => {
   await http.post(
@@ -233,8 +233,8 @@ export const addRolls = async (input: AddRollsInput) => {
   return input.quantity;
 };
 
-export const updateRoll = async (v: { row: RollRow; input: UpdateRollInput }) => {
-  const { row, input } = v;
+export const updateRoll = async (variables: { row: RollRow; input: UpdateRollInput }) => {
+  const { row, input } = variables;
   await http.put(`/rolls/${row.roll.id}`, {
     filmStockId: input.stockId,
     format: Number(input.format),
@@ -249,11 +249,11 @@ export const updateRoll = async (v: { row: RollRow; input: UpdateRollInput }) =>
   });
 };
 
-export const loadRoll = async (v: { id: string; input: LoadRollInput }) => {
-  await http.put(`/rolls/${v.id}/load`, {
-    cameraId: v.input.cameraId,
-    startedAt: v.input.startedAt || undefined,
-    shotIso: v.input.shotIso ?? undefined,
+export const loadRoll = async (variables: { id: string; input: LoadRollInput }) => {
+  await http.put(`/rolls/${variables.id}/load`, {
+    cameraId: variables.input.cameraId,
+    startedAt: variables.input.startedAt || undefined,
+    shotIso: variables.input.shotIso ?? undefined,
   });
 };
 
@@ -272,36 +272,66 @@ const putJob = async (rollId: string, jobId: string, input: SendToLabInput) => {
   });
 };
 
-export const sendToLab = (v: { rollId: string; input: SendToLabInput }) =>
-  putJob(v.rollId, crypto.randomUUID(), v.input);
-
-/** A job's roll and type cannot change; the rest, scanners included, can. */
-export const updateJob = (v: { rollId: string; jobId: string; input: SendToLabInput }) =>
-  putJob(v.rollId, v.jobId, v.input);
-
-/** Without a date the API records today. */
-export const recordScansReceived = async (v: { rollId: string; jobId: string; date?: string }) => {
-  await http.put(`/processing/${v.jobId}/scans-received`, { date: v.date || undefined });
+/**
+ * Work done at home is finished when it is recorded, so its receipt dates are sent with it: the
+ * API has its own endpoints for them.
+ */
+export const sendToLab = async (variables: {
+  rollId: string;
+  input: SendToLabInput;
+  received?: { scansAt?: string; negativesAt?: string };
+}) => {
+  const jobId = crypto.randomUUID();
+  await putJob(variables.rollId, jobId, variables.input);
+  if (variables.received?.scansAt)
+    await recordScansReceived({
+      rollId: variables.rollId,
+      jobId,
+      date: variables.received.scansAt,
+    });
+  if (variables.received?.negativesAt)
+    await recordNegativesReturned({
+      rollId: variables.rollId,
+      jobId,
+      date: variables.received.negativesAt,
+    });
 };
 
-export const recordNegativesReturned = async (v: {
+/** A job's roll cannot change; the dialog keeps its lab fixed too. */
+export const updateJob = (variables: { rollId: string; jobId: string; input: SendToLabInput }) =>
+  putJob(variables.rollId, variables.jobId, variables.input);
+
+/** Without a date the API records today. */
+export const recordScansReceived = async (variables: {
   rollId: string;
   jobId: string;
   date?: string;
 }) => {
-  await http.put(`/processing/${v.jobId}/negatives-returned`, { date: v.date || undefined });
+  await http.put(`/processing/${variables.jobId}/scans-received`, {
+    date: variables.date || undefined,
+  });
 };
 
-export const deleteJob = async (v: { rollId: string; jobId: string }) => {
-  await http.delete(`/processing/${v.jobId}`);
+export const recordNegativesReturned = async (variables: {
+  rollId: string;
+  jobId: string;
+  date?: string;
+}) => {
+  await http.put(`/processing/${variables.jobId}/negatives-returned`, {
+    date: variables.date || undefined,
+  });
+};
+
+export const deleteJob = async (variables: { rollId: string; jobId: string }) => {
+  await http.delete(`/processing/${variables.jobId}`);
 };
 
 export const finishRoll = async (id: string) => {
   await http.put(`/rolls/${id}/finish`, {});
 };
 
-export const setRollLenses = async (v: { id: string; lensIds: string[] }) => {
-  await http.put(`/rolls/${v.id}/lenses`, { lensIds: v.lensIds });
+export const setRollLenses = async (variables: { id: string; lensIds: string[] }) => {
+  await http.put(`/rolls/${variables.id}/lenses`, { lensIds: variables.lensIds });
 };
 
 export const deleteRoll = async (id: string) => {

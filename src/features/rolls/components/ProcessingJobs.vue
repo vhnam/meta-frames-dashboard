@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { formatVnd } from "#/shared/lib/format";
+import { formatDate, formatVnd } from "#/shared/lib/format";
 import { useDeleteJob } from "../queries";
-import { PROCESSING_TYPE_LABELS, SCANNER_LABELS, developsFilm } from "../types";
+import { PROCESSING_TYPE_LABELS, SCANNER_LABELS, developsFilm, producesScans } from "../types";
 import type { RollJob, RollRow } from "../types";
 import type { Process } from "#/features/film-stocks/types";
 import { ref } from "vue";
@@ -51,13 +51,13 @@ function jobFacts(job: RollJob) {
   return [
     { label: "Type", value: PROCESSING_TYPE_LABELS[job.type] },
     { label: "Process", value: job.process },
-    { label: "Sent", value: job.sentDate },
+    { label: "Sent", value: formatDate(job.sentDate) },
     // a scanning job always shows when its scans are due, even before a date is set
     ...(job.scanOrders.length || job.scansExpectedDate
       ? [
           {
             label: "Scans expected",
-            value: job.scansExpectedDate ?? "—",
+            value: formatDate(job.scansExpectedDate),
             overdue: isOverdue(job),
           },
         ]
@@ -67,13 +67,18 @@ function jobFacts(job: RollJob) {
       ? [
           {
             label: "Negatives expected",
-            value: job.negativesExpectedDate ?? "—",
+            value: formatDate(job.negativesExpectedDate),
             overdue: isNegativesOverdue(job),
           },
         ]
       : []),
-    { label: "Scans received", value: job.scansReceivedDate ?? "—" },
-    { label: "Negatives returned", value: job.negativesReturnedDate ?? "—" },
+    // receipts follow the service: scans from a scanning job, negatives from developing
+    ...(producesScans(job.type)
+      ? [{ label: "Scans received", value: formatDate(job.scansReceivedDate) }]
+      : []),
+    ...(developsFilm(job.type)
+      ? [{ label: "Negatives returned", value: formatDate(job.negativesReturnedDate) }]
+      : []),
   ];
 }
 </script>
@@ -81,21 +86,21 @@ function jobFacts(job: RollJob) {
 <template>
   <EmptyState v-if="!jobs.length" text="Not sent for processing yet." />
   <ul v-else class="grid gap-3">
-    <li v-for="j in jobs" :key="j.id" class="grid gap-4 rounded-lg border p-4">
+    <li v-for="job in jobs" :key="job.id" class="grid gap-4 rounded-lg border p-4">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-base leading-snug font-semibold text-balance">{{ j.labName }}</p>
+          <p class="text-base leading-snug font-semibold text-balance">{{ job.labName }}</p>
           <RichText
-            v-if="j.notes"
-            :markdown="j.notes"
+            v-if="job.notes"
+            :markdown="job.notes"
             class="text-muted-foreground mt-1 text-sm leading-relaxed"
           />
         </div>
         <div class="flex shrink-0 flex-col items-end gap-1">
-          <Badge :variant="j.open ? 'destructive' : 'secondary'">
-            {{ j.open ? "Open" : "Closed" }}
+          <Badge :variant="job.open ? 'destructive' : 'secondary'">
+            {{ job.open ? "Open" : "Closed" }}
           </Badge>
-          <p class="text-sm font-semibold tabular-nums">{{ formatVnd(j.price) }}</p>
+          <p class="text-sm font-semibold tabular-nums">{{ formatVnd(job.price) }}</p>
         </div>
       </div>
 
@@ -104,7 +109,11 @@ function jobFacts(job: RollJob) {
           <p class="bg-muted rounded-md px-2 py-1 text-sm font-semibold">Processing</p>
           <Table>
             <TableBody>
-              <TableRow v-for="fact in jobFacts(j)" :key="fact.label" class="hover:bg-transparent">
+              <TableRow
+                v-for="fact in jobFacts(job)"
+                :key="fact.label"
+                class="hover:bg-transparent"
+              >
                 <TableHead
                   scope="row"
                   class="text-muted-foreground h-auto px-2 py-1.5 text-left text-sm font-normal whitespace-normal"
@@ -133,14 +142,18 @@ function jobFacts(job: RollJob) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-if="!j.scanOrders.length" class="hover:bg-transparent">
+              <TableRow v-if="!job.scanOrders.length" class="hover:bg-transparent">
                 <TableCell colspan="2" class="text-muted-foreground px-2 py-1.5">None</TableCell>
               </TableRow>
-              <TableRow v-for="o in j.scanOrders" :key="o.scanner" class="hover:bg-transparent">
+              <TableRow
+                v-for="order in job.scanOrders"
+                :key="order.scanner"
+                class="hover:bg-transparent"
+              >
                 <TableCell class="px-2 py-1.5 whitespace-normal">
-                  {{ SCANNER_LABELS[o.scanner] }}
+                  {{ SCANNER_LABELS[order.scanner] }}
                 </TableCell>
-                <TableCell class="px-2 py-1.5">{{ o.hiRes ? "Hi-res" : "Standard" }}</TableCell>
+                <TableCell class="px-2 py-1.5">{{ order.hiRes ? "Hi-res" : "Standard" }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -148,13 +161,13 @@ function jobFacts(job: RollJob) {
       </div>
 
       <div class="flex justify-end gap-2 border-t pt-3">
-        <Button type="button" size="sm" variant="outline" @click="edit(j)">Edit</Button>
+        <Button type="button" size="sm" variant="outline" @click="edit(job)">Edit</Button>
         <Button
           type="button"
           size="sm"
           variant="ghost"
           class="text-destructive hover:text-destructive"
-          @click="remove(j)"
+          @click="remove(job)"
         >
           Delete
         </Button>
