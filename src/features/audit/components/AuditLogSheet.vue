@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AuditEntry } from "../types";
+import { formatDateTime } from "#/shared/lib/format";
 import AuditActionBadge from "./AuditActionBadge.vue";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "#/shared/ui/sheet";
 
@@ -24,7 +25,7 @@ function show(value: unknown) {
           <AuditActionBadge :action="entry.action" />
         </SheetTitle>
         <SheetDescription>
-          {{ new Date(entry.createdAt).toLocaleString() }}
+          {{ formatDateTime(entry.createdAt) }}
           · {{ entry.actor || "Unknown actor" }}
         </SheetDescription>
       </SheetHeader>
