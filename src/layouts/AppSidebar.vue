@@ -31,7 +31,7 @@ import {
 import { navSections } from "./nav";
 import NavUser from "./NavUser.vue";
 
-const pathname = useRouterState({ select: (s) => s.location.pathname });
+const pathname = useRouterState({ select: (state) => state.location.pathname });
 const isActive = computed(
   () => (to: string) => pathname.value === to || pathname.value.startsWith(to + "/"),
 );
@@ -96,7 +96,7 @@ const itemClass =
               <DropdownMenu v-if="item.children && collapsed">
                 <DropdownMenuTrigger as-child>
                   <SidebarMenuButton
-                    :is-active="item.children.some((c) => isActive(c.to))"
+                    :is-active="item.children.some((child) => isActive(child.to))"
                     :class="itemClass"
                     :aria-label="item.title"
                   >

@@ -22,13 +22,13 @@ const columns: DataTableColumn<Lab>[] = [
   {
     id: "name",
     header: "Lab",
-    accessorFn: (l) => l.name,
+    accessorFn: (lab) => lab.name,
     cell: ({ row }) => primaryText(row.original.name),
   },
   {
     id: "address",
     header: "Address",
-    accessorFn: (l) => l.address || "No address",
+    accessorFn: (lab) => lab.address || "No address",
     cell: ({ row }) => mutedCell(row.original.address || "No address"),
   },
 ];
@@ -47,9 +47,9 @@ const columns: DataTableColumn<Lab>[] = [
         filter-placeholder="Search by name or address..."
         :columns="columns"
         :data="data"
-        :get-row-id="(l) => l.id"
-        :on-select="(l) => show(l.id)"
-        :row-label="(l) => `Edit ${l.name}`"
+        :get-row-id="(lab) => lab.id"
+        :on-select="(lab) => show(lab.id)"
+        :row-label="(lab) => `Edit ${lab.name}`"
       />
     </template>
   </QueryBoundary>

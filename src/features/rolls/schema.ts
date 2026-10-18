@@ -29,7 +29,7 @@ export const AddRollsSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["expiryYear"], ["expiryMonth"]],
-      (i) => i.expiryMonth == null || i.expiryYear != null,
+      (input) => input.expiryMonth == null || input.expiryYear != null,
       "Month requires a year.",
     ),
     ["expiryMonth"],
@@ -49,7 +49,7 @@ export const RollSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [["expiryYear"], ["expiryMonth"]],
-      (i) => i.expiryMonth == null || i.expiryYear != null,
+      (input) => input.expiryMonth == null || input.expiryYear != null,
       "Month requires a year.",
     ),
     ["expiryMonth"],

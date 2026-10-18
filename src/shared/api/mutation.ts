@@ -8,13 +8,13 @@ import {
 import { toast } from "vue-sonner";
 
 /** Optimistically patches every cached query under `filters`; returns a rollback. */
-export function patchQueries<T>(
+export function patchQueries<TData>(
   qc: QueryClient,
   filters: QueryFilters,
-  updater: (old: T) => T,
+  updater: (old: TData) => TData,
 ): () => void {
-  const previous = qc.getQueriesData<T>(filters);
-  qc.setQueriesData<T>(filters, (old) => (old === undefined ? old : updater(old)));
+  const previous = qc.getQueriesData<TData>(filters);
+  qc.setQueriesData<TData>(filters, (old) => (old === undefined ? old : updater(old)));
   return () => {
     for (const [key, data] of previous) qc.setQueryData(key, data);
   };

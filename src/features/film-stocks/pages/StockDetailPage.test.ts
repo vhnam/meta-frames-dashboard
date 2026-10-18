@@ -43,9 +43,9 @@ describe("StockDetailPage", () => {
     server.addRoll({ filmStockId: stock.id, format: 120, exposures: 12 });
     server.addRoll({ filmStockId: stock.id, status: "in_camera" });
 
-    const w = render(stock.id);
-    await vi.waitFor(() => expect(w.find("h1").text()).toBe("CineStill 800T"));
-    const text = w.text().replace(/\s+/g, " ");
+    const wrapper = render(stock.id);
+    await vi.waitFor(() => expect(wrapper.find("h1").text()).toBe("CineStill 800T"));
+    const text = wrapper.text().replace(/\s+/g, " ");
     expect(text).toContain("Box ISO 800");
     expect(text).toContain("Color (C-41)");
     expect(text).toContain("Origin: USA");
@@ -53,16 +53,16 @@ describe("StockDetailPage", () => {
     // header stats; Next expiry is the earliest among unexposed rolls
     const stats = () =>
       Object.fromEntries(
-        w
+        wrapper
           .find("dl")
           .findAll("dt")
           .map((dt) => [dt.text(), dt.element.nextElementSibling?.textContent?.trim()]),
       );
     await vi.waitFor(() => expect(stats()).toMatchObject({ Unexposed: "3", Shot: "1" }));
     expect(stats()).toMatchObject({ "Next expiry": "02/2029" });
-    expect(w.find("dl").text()).toContain("of 4 rolls");
+    expect(wrapper.find("dl").text()).toContain("of 4 rolls");
     // unexposed rolls per format under the count
-    expect(w.find("dl").text()).toContain("2 × 135 · 1 × 120");
-    expect(w.text()).toContain("No notes yet.");
+    expect(wrapper.find("dl").text()).toContain("2 × 135 · 1 × 120");
+    expect(wrapper.text()).toContain("No notes yet.");
   });
 });

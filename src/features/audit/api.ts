@@ -23,21 +23,25 @@ interface ApiAuditLog {
 const IGNORED = new Set(["updated_at", "updatedAt"]);
 
 export function diffRows(before: ApiAuditLog["before"], after: ApiAuditLog["after"]) {
-  const b = before ?? {};
-  const a = after ?? {};
-  return [...new Set([...Object.keys(b), ...Object.keys(a)])]
-    .filter((field) => !IGNORED.has(field) && JSON.stringify(b[field]) !== JSON.stringify(a[field]))
-    .map((field) => ({ field, before: b[field], after: a[field] }));
+  const beforeFields = before ?? {};
+  const afterFields = after ?? {};
+  return [...new Set([...Object.keys(beforeFields), ...Object.keys(afterFields)])]
+    .filter(
+      (field) =>
+        !IGNORED.has(field) &&
+        JSON.stringify(beforeFields[field]) !== JSON.stringify(afterFields[field]),
+    )
+    .map((field) => ({ field, before: beforeFields[field], after: afterFields[field] }));
 }
 
-const toEntry = (l: ApiAuditLog): AuditEntry => ({
-  id: l.id,
-  entityType: l.entityType,
-  entityId: l.entityId,
-  action: l.action,
-  actor: l.actor ?? "",
-  changes: diffRows(l.before, l.after),
-  createdAt: l.createdAt,
+const toEntry = (log: ApiAuditLog): AuditEntry => ({
+  id: log.id,
+  entityType: log.entityType,
+  entityId: log.entityId,
+  action: log.action,
+  actor: log.actor ?? "",
+  changes: diffRows(log.before, log.after),
+  createdAt: log.createdAt,
 });
 
 /** The API caps a page at 200 entries; the table filters and pages these client-side. */

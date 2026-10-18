@@ -17,19 +17,19 @@ defineProps<{ frames: RollDetail["frames"] }>();
       <EmptyState v-if="!frames.length" text="No frames yet." />
       <ul v-else class="grid gap-2">
         <li
-          v-for="f in frames"
-          :key="f.frame.id"
+          v-for="frame in frames"
+          :key="frame.frame.id"
           class="flex items-start gap-3 rounded-md border px-3 py-2"
         >
-          <span class="w-10 shrink-0 font-medium tabular-nums">#{{ f.frame.number }}</span>
+          <span class="w-10 shrink-0 font-medium tabular-nums">#{{ frame.frame.number }}</span>
           <span
             class="min-w-0 flex-1 break-words"
-            :class="{ 'text-muted-foreground': !f.frame.notes }"
+            :class="{ 'text-muted-foreground': !frame.frame.notes }"
           >
-            {{ f.frame.notes || "No notes" }}
+            {{ frame.frame.notes || "No notes" }}
           </span>
-          <Badge :variant="f.scanCount ? 'outline' : 'secondary'" class="shrink-0">
-            {{ f.scanCount }} {{ f.scanCount === 1 ? "scan" : "scans" }}
+          <Badge :variant="frame.scanCount ? 'outline' : 'secondary'" class="shrink-0">
+            {{ frame.scanCount }} {{ frame.scanCount === 1 ? "scan" : "scans" }}
           </Badge>
         </li>
       </ul>

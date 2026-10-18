@@ -7,20 +7,22 @@ const options = [{ value: "bw", label: "B&W" }];
 
 describe("Select", () => {
   it("shows the placeholder when nothing is selected", () => {
-    const w = mount(Select, { props: { modelValue: "", placeholder: "All types", options } });
-    expect(w.text()).toContain("All types");
+    const wrapper = mount(Select, { props: { modelValue: "", placeholder: "All types", options } });
+    expect(wrapper.text()).toContain("All types");
   });
 
   it("shows the placeholder for required fields without offering an empty item", () => {
-    const w = mount(Select, {
+    const wrapper = mount(Select, {
       props: { modelValue: "", placeholder: "Select type", allowEmpty: false, options },
     });
-    expect(w.text()).toContain("Select type");
+    expect(wrapper.text()).toContain("Select type");
   });
 
   it("shows the option label, not the value", () => {
-    const w = mount(Select, { props: { modelValue: "bw", placeholder: "All types", options } });
-    expect(w.text()).toContain("B&W");
-    expect(w.text()).not.toContain("bw");
+    const wrapper = mount(Select, {
+      props: { modelValue: "bw", placeholder: "All types", options },
+    });
+    expect(wrapper.text()).toContain("B&W");
+    expect(wrapper.text()).not.toContain("bw");
   });
 });

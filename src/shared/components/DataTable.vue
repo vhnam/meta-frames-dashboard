@@ -125,7 +125,7 @@ watch(
 
 /** Columns that declare `meta.filter` get a dropdown backed by their TanStack column filter. */
 const filterColumns = computed(() =>
-  table.getAllLeafColumns().filter((c) => c.columnDef.meta?.filter),
+  table.getAllLeafColumns().filter((column) => column.columnDef.meta?.filter),
 );
 
 function optionsOf(column: (typeof filterColumns.value)[number]) {
@@ -135,7 +135,7 @@ function optionsOf(column: (typeof filterColumns.value)[number]) {
     : [...column.getFacetedUniqueValues().keys()]
         .map(String)
         .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
   return values.map((value) => ({ value, label: format?.(value) ?? value }));
 }
 
@@ -288,17 +288,17 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     :model-value="selected(header.column)"
-                    @update:model-value="(v) => select(header.column, String(v))"
+                    @update:model-value="(value) => select(header.column, String(value))"
                   >
                     <DropdownMenuRadioItem :value="ALL">
                       {{ header.column.columnDef.meta.filter.placeholder }}
                     </DropdownMenuRadioItem>
                     <DropdownMenuRadioItem
-                      v-for="o in optionsOf(header.column)"
-                      :key="o.value"
-                      :value="o.value"
+                      v-for="option in optionsOf(header.column)"
+                      :key="option.value"
+                      :value="option.value"
                     >
-                      {{ o.label }}
+                      {{ option.label }}
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
@@ -372,7 +372,9 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem v-for="n in PAGE_SIZES" :key="n" :value="String(n)">{{ n }}</SelectItem>
+            <SelectItem v-for="size in PAGE_SIZES" :key="size" :value="String(size)">{{
+              size
+            }}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -385,7 +387,7 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           :total="rowCount"
           :items-per-page="pagination.pageSize"
           :page="page"
-          @update:page="(p) => table.setPageIndex(p - 1)"
+          @update:page="(pageNumber) => table.setPageIndex(pageNumber - 1)"
         >
           <PaginationContent v-slot="{ items }">
             <PaginationPrevious size="icon-sm" class="bg-card" aria-label="Previous page">

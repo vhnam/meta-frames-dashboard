@@ -23,9 +23,9 @@ const googleError = computed(() =>
   props.error ? (googleErrors[props.error] ?? googleErrors.google_failed) : undefined,
 );
 
-async function submit(o: v.InferOutput<typeof LoginSchema>) {
+async function submit(output: v.InferOutput<typeof LoginSchema>) {
   try {
-    await login.mutateAsync(o);
+    await login.mutateAsync(output);
   } catch {
     return; // shown inline
   }

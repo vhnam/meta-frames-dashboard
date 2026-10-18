@@ -52,17 +52,18 @@ const ACTIVATE_TONE =
 
 const rows = computed(() => rolls.data.value ?? []);
 /** The roll in the camera now, if any. */
-const loaded = computed(() => rows.value.find((r) => r.roll.status === "in_camera"));
+const loaded = computed(() => rows.value.find((row) => row.roll.status === "in_camera"));
 /** Rolls finished in this camera: everything past loading. */
 const shot = computed(
   () =>
-    rows.value.filter((r) => r.roll.status !== "in_stock" && r.roll.status !== "in_camera").length,
+    rows.value.filter((row) => row.roll.status !== "in_stock" && row.roll.status !== "in_camera")
+      .length,
 );
 </script>
 
 <template>
   <QueryBoundary :query="camera" empty-text="Camera not found.">
-    <template #default="{ data: d }">
+    <template #default="{ data: detail }">
       <div class="grid gap-6">
         <!-- header -->
         <section class="bg-card overflow-hidden rounded-xl border shadow-sm">
@@ -76,16 +77,19 @@ const shot = computed(
                   <i class="bg-primary size-1.5 rounded-full" aria-hidden="true" />
                   Camera
                 </span>
-                <span class="tracking-[0.08em] uppercase">ID: {{ d.camera.id.slice(0, 8) }}</span>
+                <span class="tracking-[0.08em] uppercase"
+                  >ID: {{ detail.camera.id.slice(0, 8) }}</span
+                >
               </div>
               <div class="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
-                  :class="d.camera.active ? DEACTIVATE_TONE : ACTIVATE_TONE"
+                  :class="detail.camera.active ? DEACTIVATE_TONE : ACTIVATE_TONE"
                   :disabled="setActive.isPending.value"
-                  @click="setActive.mutate({ id: d.camera.id, active: !d.camera.active })"
+                  @click="setActive.mutate({ id: detail.camera.id, active: !detail.camera.active })"
                 >
-                  <IconPower aria-hidden="true" /> {{ d.camera.active ? "Deactivate" : "Activate" }}
+                  <IconPower aria-hidden="true" />
+                  {{ detail.camera.active ? "Deactivate" : "Activate" }}
                 </Button>
                 <Button variant="outline" class="bg-card" @click="editOpen = true">
                   <IconPencil aria-hidden="true" /> Edit camera
@@ -102,7 +106,7 @@ const shot = computed(
 
             <div class="grid gap-4">
               <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">
-                {{ cameraName(d.camera) }}
+                {{ cameraName(detail.camera) }}
               </h1>
               <div class="flex flex-wrap gap-2">
                 <span
@@ -113,11 +117,11 @@ const shot = computed(
                     )
                   "
                 >
-                  {{ d.camera.fixedLens ? "Fixed lens" : `Mount: ${d.camera.mount}` }}
+                  {{ detail.camera.fixedLens ? "Fixed lens" : `Mount: ${detail.camera.mount}` }}
                 </span>
-                <span :class="cn(CHIP, d.camera.active ? ACTIVE_TONE : INACTIVE_TONE)">
+                <span :class="cn(CHIP, detail.camera.active ? ACTIVE_TONE : INACTIVE_TONE)">
                   <i class="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                  {{ d.camera.active ? "Active" : "Inactive" }}
+                  {{ detail.camera.active ? "Active" : "Inactive" }}
                 </span>
               </div>
             </div>
@@ -140,11 +144,11 @@ const shot = computed(
               </div>
               <div class="grid content-start gap-1">
                 <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  {{ d.camera.fixedLens ? "Lens" : "Lenses" }}
+                  {{ detail.camera.fixedLens ? "Lens" : "Lenses" }}
                 </dt>
-                <dd class="text-lg font-semibold tabular-nums">{{ d.lenses.length }}</dd>
+                <dd class="text-lg font-semibold tabular-nums">{{ detail.lenses.length }}</dd>
                 <dd class="text-muted-foreground text-xs">
-                  {{ d.camera.fixedLens ? "built in" : "linked" }}
+                  {{ detail.camera.fixedLens ? "built in" : "linked" }}
                 </dd>
               </div>
               <div class="grid content-start gap-1">
@@ -166,11 +170,11 @@ const shot = computed(
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="01" title="Primary specifications">
                 <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  <SpecTile label="Brand">{{ d.camera.brand }}</SpecTile>
-                  <SpecTile label="Model">{{ d.camera.model }}</SpecTile>
+                  <SpecTile label="Brand">{{ detail.camera.brand }}</SpecTile>
+                  <SpecTile label="Model">{{ detail.camera.model }}</SpecTile>
                   <SpecTile label="Mount">
-                    <span :class="{ 'text-muted-foreground font-normal': d.camera.fixedLens }">
-                      {{ d.camera.fixedLens ? "Fixed lens" : d.camera.mount }}
+                    <span :class="{ 'text-muted-foreground font-normal': detail.camera.fixedLens }">
+                      {{ detail.camera.fixedLens ? "Fixed lens" : detail.camera.mount }}
                     </span>
                   </SpecTile>
                 </div>
@@ -180,8 +184,8 @@ const shot = computed(
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="02" title="Notes">
                 <RichText
-                  v-if="d.camera.description"
-                  :markdown="d.camera.description"
+                  v-if="detail.camera.description"
+                  :markdown="detail.camera.description"
                   class="bg-background/60 rounded-lg border p-4 text-sm"
                 />
                 <p v-else class="text-muted-foreground rounded-lg border border-dashed p-4 text-sm">
@@ -196,25 +200,29 @@ const shot = computed(
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection
                 no="LNS"
-                :title="d.camera.fixedLens ? 'Built-in lens' : `Linked lenses (${d.lenses.length})`"
+                :title="
+                  detail.camera.fixedLens
+                    ? 'Built-in lens'
+                    : `Linked lenses (${detail.lenses.length})`
+                "
               >
-                <template v-if="!d.camera.fixedLens" #actions>
+                <template v-if="!detail.camera.fixedLens" #actions>
                   <Button variant="outline" size="xs" @click="lensesOpen = true">
                     <IconAperture aria-hidden="true" /> Manage
                   </Button>
                 </template>
-                <div v-if="d.lenses.length" class="grid gap-2">
+                <div v-if="detail.lenses.length" class="grid gap-2">
                   <Link
-                    v-for="l in d.lenses"
-                    :key="l.id"
+                    v-for="lens in detail.lenses"
+                    :key="lens.id"
                     to="/app/lenses/$lensId"
-                    :params="{ lensId: l.id }"
+                    :params="{ lensId: lens.id }"
                     class="hover:bg-accent/40 group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm"
                   >
                     <span class="grid gap-0.5">
-                      <span class="font-medium">{{ lensName(l) }}</span>
-                      <span v-if="l.mount" class="text-muted-foreground text-xs">
-                        Mount: {{ l.mount }}
+                      <span class="font-medium">{{ lensName(lens) }}</span>
+                      <span v-if="lens.mount" class="text-muted-foreground text-xs">
+                        Mount: {{ lens.mount }}
                       </span>
                     </span>
                     <IconChevronRight
@@ -229,7 +237,7 @@ const shot = computed(
                 >
                   No lenses linked yet.
                   <Button
-                    v-if="!d.camera.fixedLens"
+                    v-if="!detail.camera.fixedLens"
                     variant="outline"
                     size="sm"
                     @click="lensesOpen = true"
@@ -244,21 +252,21 @@ const shot = computed(
               <FormSection no="LOG" :title="`Rolls (${rows.length})`">
                 <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto">
                   <Link
-                    v-for="r in rows"
-                    :key="r.roll.id"
+                    v-for="row in rows"
+                    :key="row.roll.id"
                     to="/app/rolls/$rollId"
-                    :params="{ rollId: r.roll.id }"
+                    :params="{ rollId: row.roll.id }"
                     class="hover:bg-accent/40 group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm"
                   >
                     <span class="grid gap-0.5">
-                      <span class="font-medium">{{ r.stockName }}</span>
+                      <span class="font-medium">{{ row.stockName }}</span>
                       <span class="text-muted-foreground text-xs">
-                        {{ r.roll.format }} · {{ r.roll.exposures }} exp · Exp:
-                        {{ formatExpiry(r.roll) }}
+                        {{ row.roll.format }} · {{ row.roll.exposures }} exp · Exp:
+                        {{ formatExpiry(row.roll) }}
                       </span>
                     </span>
                     <span class="flex items-center gap-2">
-                      <RollStatusBadge :status="r.roll.status" />
+                      <RollStatusBadge :status="row.roll.status" />
                       <IconChevronRight
                         class="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5"
                         aria-hidden="true"
@@ -275,8 +283,8 @@ const shot = computed(
         </div>
       </div>
 
-      <CameraFormDialog v-model:open="editOpen" :camera-id="d.camera.id" />
-      <ManageLensesDialog v-model:open="lensesOpen" :camera-id="d.camera.id" />
+      <CameraFormDialog v-model:open="editOpen" :camera-id="detail.camera.id" />
+      <ManageLensesDialog v-model:open="lensesOpen" :camera-id="detail.camera.id" />
     </template>
   </QueryBoundary>
 </template>

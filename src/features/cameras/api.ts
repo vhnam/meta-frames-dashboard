@@ -31,14 +31,14 @@ export interface ApiCamera {
   };
 }
 
-export const toCamera = (c: ApiCamera): Camera => ({
-  id: c.id,
-  brand: c.brand,
-  model: c.model,
-  mount: c.mount ?? "",
-  description: c.description ?? "",
-  fixedLens: c.hasFixedLens,
-  active: c.isActive,
+export const toCamera = (camera: ApiCamera): Camera => ({
+  id: camera.id,
+  brand: camera.brand,
+  model: camera.model,
+  mount: camera.mount ?? "",
+  description: camera.description ?? "",
+  fixedLens: camera.hasFixedLens,
+  active: camera.isActive,
 });
 
 const toApiInput = (input: CameraInput, builtIn?: BuiltInLensInput) => ({
@@ -60,14 +60,14 @@ export const cameraQueries = {
         const { data } = await http.get<ApiCamera[]>("/cameras", {
           params: { activeOnly: !filters.includeInactive },
         });
-        return data.map((c) => ({
-          camera: toCamera(c),
-          loaded: c.loadedRoll
+        return data.map((camera) => ({
+          camera: toCamera(camera),
+          loaded: camera.loadedRoll
             ? {
-                rollId: c.loadedRoll.rollId,
-                stockName: c.loadedRoll.stockName,
-                shotIso: c.loadedRoll.shotIso,
-                daysLoaded: c.loadedRoll.daysLoaded,
+                rollId: camera.loadedRoll.rollId,
+                stockName: camera.loadedRoll.stockName,
+                shotIso: camera.loadedRoll.shotIso,
+                daysLoaded: camera.loadedRoll.daysLoaded,
               }
             : null,
         }));
@@ -84,11 +84,11 @@ export const cameraQueries = {
           ]);
           return {
             camera: toCamera(camera),
-            lenses: lenses.map((l) => toLens(l, camera.hasFixedLens ? id : null)),
+            lenses: lenses.map((lens) => toLens(lens, camera.hasFixedLens ? id : null)),
           };
-        } catch (e) {
-          if (isAxiosError(e) && e.response?.status === 404) return null;
-          throw e;
+        } catch (error) {
+          if (isAxiosError(error) && error.response?.status === 404) return null;
+          throw error;
         }
       },
     }),
@@ -96,27 +96,27 @@ export const cameraQueries = {
 
 // ---- writes ----
 
-export const saveCamera = async (v: {
+export const saveCamera = async (variables: {
   id?: string;
   input: CameraInput;
   builtIn?: BuiltInLensInput;
 }) => {
-  const body = toApiInput(v.input, v.builtIn);
-  if (v.id) {
-    await http.put(`/cameras/${v.id}`, body);
-    return v.id;
+  const body = toApiInput(variables.input, variables.builtIn);
+  if (variables.id) {
+    await http.put(`/cameras/${variables.id}`, body);
+    return variables.id;
   }
   return (await http.post<ApiCamera>("/cameras", body)).data.id;
 };
 
-export const setCameraActive = async (v: { id: string; active: boolean }) => {
-  await http.put(`/cameras/${v.id}/active`, { isActive: v.active });
+export const setCameraActive = async (variables: { id: string; active: boolean }) => {
+  await http.put(`/cameras/${variables.id}/active`, { isActive: variables.active });
 };
 
 export const deleteCamera = async (id: string) => {
   await http.delete(`/cameras/${id}`);
 };
 
-export const setCameraLenses = async (v: { cameraId: string; lensIds: string[] }) => {
-  await http.put(`/cameras/${v.cameraId}/lenses`, { lensIds: v.lensIds });
+export const setCameraLenses = async (variables: { cameraId: string; lensIds: string[] }) => {
+  await http.put(`/cameras/${variables.cameraId}/lenses`, { lensIds: variables.lensIds });
 };

@@ -6,7 +6,7 @@ defineProps<{
   values: readonly number[];
   current: unknown;
   label: string;
-  format?: (n: number) => string;
+  format?: (value: number) => string;
 }>();
 const emit = defineEmits<{ pick: [value: number] }>();
 </script>
@@ -14,21 +14,21 @@ const emit = defineEmits<{ pick: [value: number] }>();
 <template>
   <div class="flex gap-1.5" role="group" :aria-label="label">
     <button
-      v-for="n in values"
-      :key="n"
+      v-for="value in values"
+      :key="value"
       type="button"
-      :aria-pressed="Number(current) === n"
+      :aria-pressed="Number(current) === value"
       :class="
         cn(
           'rounded-sm border px-1.5 py-0.5 text-[0.7rem] leading-none transition-colors',
-          Number(current) === n
+          Number(current) === value
             ? 'border-primary/60 bg-primary/10 text-primary'
             : 'bg-secondary text-muted-foreground hover:text-foreground border-transparent',
         )
       "
-      @click="emit('pick', n)"
+      @click="emit('pick', value)"
     >
-      {{ format ? format(n) : n }}
+      {{ format ? format(value) : value }}
     </button>
   </div>
 </template>

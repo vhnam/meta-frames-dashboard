@@ -15,8 +15,8 @@ vi.mock("vue-sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 installFakeServer();
 
 /** Mounts a component under the app's real QueryClient. */
-function withQueries<T>(setup: () => T) {
-  let api!: T;
+function withQueries<TApi>(setup: () => TApi) {
+  let api!: TApi;
   const wrapper = mount(
     defineComponent({
       setup() {
@@ -114,11 +114,11 @@ describe("targeted invalidation", () => {
       lenses: queryClient.getQueryState(lensKeys.list())!.dataUpdatedAt,
       rolls: queryClient.getQueryState(rollKeys.list({}))!.dataUpdatedAt,
     });
-    await new Promise((r) => setTimeout(r, 5));
+    await new Promise((resolve) => setTimeout(resolve, 5));
     const before = stamp();
 
     await api.setActive.mutateAsync({ id: cam.id, active: false });
-    await new Promise((r) => setTimeout(r, 5));
+    await new Promise((resolve) => setTimeout(resolve, 5));
 
     expect(stamp().cameras).toBeGreaterThan(before.cameras); // camera lists refetched
     expect(stamp().rolls).toBe(before.rolls); // roll lists untouched
@@ -128,11 +128,11 @@ describe("targeted invalidation", () => {
 
 describe("QueryBoundary states", () => {
   function boundary(queryFn: () => Promise<string[]>, opts: { staleTime?: number } = {}) {
-    let q!: ReturnType<typeof useQuery<string[], Error>>;
+    let result!: ReturnType<typeof useQuery<string[], Error>>;
     const wrapper = mount(
       defineComponent({
         setup() {
-          q = useQuery<string[], Error>({
+          result = useQuery<string[], Error>({
             queryKey: ["test", Math.random()],
             queryFn,
             retry: false,
@@ -141,12 +141,12 @@ describe("QueryBoundary states", () => {
           return () =>
             h(
               QueryBoundary,
-              { query: q, emptyText: "Nothing here." },
+              { query: result, emptyText: "Nothing here." },
               {
                 default: ({ data }: { data: string[] }) =>
                   h(
                     "ul",
-                    data.map((d) => h("li", d)),
+                    data.map((item) => h("li", item)),
                   ),
               },
             );
@@ -157,65 +157,65 @@ describe("QueryBoundary states", () => {
     return {
       wrapper,
       get q() {
-        return q;
+        return result;
       },
     };
   }
 
   it("loading → data", async () => {
-    const b = boundary(async () => ["a", "b"]);
-    expect(b.wrapper.find("[role=status]").exists()).toBe(true);
-    await vi.waitFor(() => expect(b.wrapper.findAll("li")).toHaveLength(2));
+    const view = boundary(async () => ["a", "b"]);
+    expect(view.wrapper.find("[role=status]").exists()).toBe(true);
+    await vi.waitFor(() => expect(view.wrapper.findAll("li")).toHaveLength(2));
   });
 
   it("empty", async () => {
-    const b = boundary(async () => []);
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("Nothing here."));
+    const view = boundary(async () => []);
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("Nothing here."));
   });
 
   it("error with retry", async () => {
     let calls = 0;
-    const b = boundary(async () => {
+    const view = boundary(async () => {
       if (++calls === 1) throw new Error("boom");
       return ["ok"];
     });
-    await vi.waitFor(() => expect(b.wrapper.find("[role=alert]").text()).toContain("boom"));
-    await b.wrapper.find("[role=alert] button").trigger("click");
-    await vi.waitFor(() => expect(b.wrapper.findAll("li")).toHaveLength(1));
+    await vi.waitFor(() => expect(view.wrapper.find("[role=alert]").text()).toContain("boom"));
+    await view.wrapper.find("[role=alert] button").trigger("click");
+    await vi.waitFor(() => expect(view.wrapper.findAll("li")).toHaveLength(1));
   });
 
   it("background refetch keeps data visible and says it is updating", async () => {
     let release!: () => void;
-    let n = 0;
-    const b = boundary(async () => {
-      if (++n === 1) return ["first"];
-      await new Promise<void>((r) => (release = r));
+    let counter = 0;
+    const view = boundary(async () => {
+      if (++counter === 1) return ["first"];
+      await new Promise<void>((resolve) => (release = resolve));
       return ["second"];
     });
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("first"));
-    void b.q.refetch();
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("Updating…"));
-    expect(b.wrapper.text()).toContain("first"); // data stays
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("first"));
+    void view.q.refetch();
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("Updating…"));
+    expect(view.wrapper.text()).toContain("first"); // data stays
     release();
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("second"));
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("second"));
   });
 
   it("failed refresh keeps stale data and offers retry", async () => {
-    let n = 0;
-    const b = boundary(async () => {
-      if (++n === 2) throw new Error("offline");
+    let counter = 0;
+    const view = boundary(async () => {
+      if (++counter === 2) throw new Error("offline");
       return ["cached"];
     });
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("cached"));
-    await b.q.refetch();
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("Couldn't refresh"));
-    expect(b.wrapper.text()).toContain("cached");
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("cached"));
+    await view.q.refetch();
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("Couldn't refresh"));
+    expect(view.wrapper.text()).toContain("cached");
   });
 
   it("stale data shows no freshness bar", async () => {
-    const b = boundary(async () => ["x"], { staleTime: 0 });
-    await vi.waitFor(() => expect(b.wrapper.text()).toContain("x"));
-    expect(b.wrapper.text()).not.toContain("Updated");
-    expect(b.wrapper.text()).not.toContain("Refresh");
+    const view = boundary(async () => ["x"], { staleTime: 0 });
+    await vi.waitFor(() => expect(view.wrapper.text()).toContain("x"));
+    expect(view.wrapper.text()).not.toContain("Updated");
+    expect(view.wrapper.text()).not.toContain("Refresh");
   });
 });

@@ -43,7 +43,7 @@ defineProps<{
         v-bind="field.props"
         :placeholder="placeholder"
         :disabled="disabled"
-        @update:model-value="(x) => (field.input = x as never)"
+        @update:model-value="(value) => (field.input = value as never)"
       />
       <div v-else class="relative">
         <Input
@@ -59,7 +59,7 @@ defineProps<{
           :disabled="disabled"
           :aria-invalid="!!field.errors"
           :class="suffix ? 'pr-20' : undefined"
-          @update:model-value="(x) => (field.input = x as never)"
+          @update:model-value="(value) => (field.input = value as never)"
         />
         <span
           v-if="suffix"

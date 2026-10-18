@@ -15,7 +15,7 @@ import { Separator } from "#/shared/ui/separator";
 import { SidebarTrigger } from "#/shared/ui/sidebar";
 import AlertsButton from "./AlertsButton.vue";
 
-const location = useRouterState({ select: (s) => s.location });
+const location = useRouterState({ select: (state) => state.location });
 const title = computed(() => titleForPath(location.value.pathname));
 const back = computed(() => backToListing(location.value.pathname, location.value.search));
 </script>

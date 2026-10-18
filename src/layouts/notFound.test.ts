@@ -23,13 +23,13 @@ let mounted: VueWrapper | undefined;
 
 const open = async (href: string) => {
   await router.navigate({ href });
-  const w = mount(() => h(RouterProvider, { router }), {
+  const wrapper = mount(() => h(RouterProvider, { router }), {
     attachTo: document.body,
     global: { plugins: [[VueQueryPlugin, { queryClient }]] },
   });
-  mounted = w;
-  await vi.waitFor(() => expect(w.text()).toContain("Page not found"));
-  return w;
+  mounted = wrapper;
+  await vi.waitFor(() => expect(wrapper.text()).toContain("Page not found"));
+  return wrapper;
 };
 
 afterEach(() => {
@@ -44,21 +44,21 @@ beforeEach(() => {
 
 describe("not found pages", () => {
   it("shows the public 404 for an unknown path outside /app", async () => {
-    const w = await open("/nope");
-    expect(w.find('[data-slot="sidebar"]').exists()).toBe(false);
-    expect(w.text()).toContain("Go to home");
+    const wrapper = await open("/nope");
+    expect(wrapper.find('[data-slot="sidebar"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain("Go to home");
   });
 
   it("shows the public 404 for an unknown path under /auth", async () => {
-    const w = await open("/auth/nope");
-    expect(w.text()).toContain("Go to home");
+    const wrapper = await open("/auth/nope");
+    expect(wrapper.text()).toContain("Go to home");
   });
 
   it("shows the dashboard 404 inside the app shell for an unknown path under /app", async () => {
     signIn();
-    const w = await open("/app/nope");
-    expect(w.find('[data-slot="sidebar"]').exists()).toBe(true);
-    expect(w.text()).toContain("Back to rolls");
+    const wrapper = await open("/app/nope");
+    expect(wrapper.find('[data-slot="sidebar"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain("Back to rolls");
   });
 
   it("sends a visitor to login instead of the dashboard 404", async () => {
