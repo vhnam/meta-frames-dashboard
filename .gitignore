@@ -33,3 +33,6 @@ dist-ssr
 .agents/
 .claude/skills/
 skills-lock.json
+
+# GitNexus code index (rebuilt by `gitnexus analyze`)
+.gitnexus/
