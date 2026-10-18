@@ -16,7 +16,7 @@ import AddRollsDialog from "../components/AddRollsDialog.vue";
 import { cn } from "#/shared/lib/utils";
 import { Badge } from "#/shared/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/shared/ui/tabs";
-import { plainText } from "#/shared/lib/format";
+import { plainText, formatDate } from "#/shared/lib/format";
 
 const STATUS_LABELS: Record<RollStatus, string> = {
   in_stock: "In stock",
@@ -31,11 +31,11 @@ type RollTab = "all" | RollStatus;
 /** "All" first, then every status in lifecycle order. */
 const TABS: { value: RollTab; label: string }[] = [
   { value: "all", label: "All" },
-  ...ROLL_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+  ...ROLL_STATUSES.map((status) => ({ value: status, label: STATUS_LABELS[status] })),
 ];
 const tab = ref<RollTab>("all");
-const inTab = (rows: RollRow[], t: RollTab) =>
-  t === "all" ? rows : rows.filter((r) => r.roll.status === t);
+const inTab = (rows: RollRow[], tabValue: RollTab) =>
+  tabValue === "all" ? rows : rows.filter((row) => row.roll.status === tabValue);
 
 const addOpen = ref(false);
 const rolls = useRollList({});
@@ -51,9 +51,9 @@ const TYPE_TEXT: Record<FilmType, string> = {
   bw: "B&W Negative",
   slide: "Color Slide",
 };
-function stockMeta(r: RollRow, st: FilmStock | undefined) {
-  const iso = r.roll.shotIso ?? st?.boxIso;
-  return [st && TYPE_TEXT[st.type], `${r.roll.exposures} Exp`, iso && `ISO ${iso}`]
+function stockMeta(row: RollRow, st: FilmStock | undefined) {
+  const iso = row.roll.shotIso ?? st?.boxIso;
+  return [st && TYPE_TEXT[st.type], `${row.roll.exposures} Exp`, iso && `ISO ${iso}`]
     .filter(Boolean)
     .join(" · ");
 }
@@ -64,36 +64,37 @@ const FORMAT_SIZE: Record<string, string> = {
   "110": "16mm",
   "4x5": "sheet",
 };
-const formatLabel = (f: string) => (FORMAT_SIZE[f] ? `${f} / ${FORMAT_SIZE[f]}` : f);
+const formatLabel = (format: string) =>
+  FORMAT_SIZE[format] ? `${format} / ${FORMAT_SIZE[format]}` : format;
 
-const tabCountClass = (t: RollTab, n: number) =>
-  n === 0
+const tabCountClass = (tabValue: RollTab, count: number) =>
+  count === 0
     ? "text-muted-foreground/70 text-[0.7rem]"
-    : t === "at_lab"
+    : tabValue === "at_lab"
       ? "bg-destructive/15 text-destructive rounded-full px-1.5 text-xs font-semibold"
       : "bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold";
 
-const negativesBadge = (r: RollRow) =>
-  (r.roll.status === "scanned" || r.roll.status === "developed") && r.negativesAtLab;
+const negativesBadge = (row: RollRow) =>
+  (row.roll.status === "scanned" || row.roll.status === "developed") && row.negativesAtLab;
 
 const router = useRouter();
-const openRoll = (r: RollRow) =>
-  router.navigate({ to: "/app/rolls/$rollId", params: { rollId: r.roll.id } });
+const openRoll = (row: RollRow) =>
+  router.navigate({ to: "/app/rolls/$rollId", params: { rollId: row.roll.id } });
 
 const columns: DataTableColumn<RollRow>[] = [
   {
     id: "stock",
     header: "Stock",
-    accessorFn: (r) => r.stockName,
-    cell: ({ row: { original: r } }) => {
-      const st = stockById.value.get(r.roll.stockId);
+    accessorFn: (row) => row.stockName,
+    cell: ({ row: { original: row } }) => {
+      const st = stockById.value.get(row.roll.stockId);
       return stackCell(
         h(
           Link,
-          { to: "/app/rolls/$rollId", params: { rollId: r.roll.id }, class: PRIMARY_LINK },
-          () => r.stockName,
+          { to: "/app/rolls/$rollId", params: { rollId: row.roll.id }, class: PRIMARY_LINK },
+          () => row.stockName,
         ),
-        stockMeta(r, st),
+        stockMeta(row, st),
       );
     },
   },
@@ -101,44 +102,45 @@ const columns: DataTableColumn<RollRow>[] = [
     id: "format",
     enableSorting: false,
     header: "Format",
-    accessorFn: (r) => r.roll.format,
+    accessorFn: (row) => row.roll.format,
     filterFn: "equalsString",
     enableGlobalFilter: false,
     meta: { filter: { label: "Format", placeholder: "All formats", format: formatLabel } },
-    cell: ({ row: { original: r } }) => tagCell(formatLabel(r.roll.format)),
+    cell: ({ row: { original: row } }) => tagCell(formatLabel(row.roll.format)),
   },
   {
     id: "camera",
     header: "Camera",
-    accessorFn: (r) => r.cameraName ?? "—",
-    cell: ({ row: { original: r } }) =>
+    accessorFn: (row) => row.cameraName ?? "—",
+    cell: ({ row: { original: row } }) =>
       stackCell(
         h(
           "span",
-          { class: r.cameraName ? "font-medium" : "text-muted-foreground" },
-          r.cameraName ?? "—",
+          { class: row.cameraName ? "font-medium" : "text-muted-foreground" },
+          row.cameraName ?? "—",
         ),
-        plainText(r.roll.description),
+        plainText(row.roll.description),
       ),
   },
   {
     id: "started",
     header: "Started",
-    accessorFn: (r) => r.roll.startDate ?? "—",
+    // ISO dates sort as text; the cell shows dd/mm/yyyy
+    accessorFn: (row) => row.roll.startDate ?? "",
     enableGlobalFilter: false,
-    cell: ({ row: { original: r } }) => numberCell(r.roll.startDate),
+    cell: ({ row: { original: row } }) => numberCell(formatDate(row.roll.startDate)),
   },
   {
     id: "status",
     enableSorting: false,
     header: "Status",
-    accessorFn: (r) => STATUS_LABELS[r.roll.status],
+    accessorFn: (row) => STATUS_LABELS[row.roll.status],
     filterFn: "equalsString",
     enableGlobalFilter: false,
-    cell: ({ row: { original: r } }) =>
+    cell: ({ row: { original: row } }) =>
       h("div", { class: "flex flex-wrap items-center gap-2" }, [
-        h(RollStatusBadge, { status: r.roll.status }),
-        negativesBadge(r) ? h(Badge, { variant: "outline" }, () => "Negatives at lab") : null,
+        h(RollStatusBadge, { status: row.roll.status }),
+        negativesBadge(row) ? h(Badge, { variant: "outline" }, () => "Negatives at lab") : null,
       ]),
   },
 ];
@@ -158,33 +160,37 @@ const columns: DataTableColumn<RollRow>[] = [
           class="bg-muted h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border p-1.5"
         >
           <TabsTrigger
-            v-for="t in TABS"
-            :key="t.value"
-            :value="t.value"
+            v-for="tabItem in TABS"
+            :key="tabItem.value"
+            :value="tabItem.value"
             class="text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground h-10 flex-none gap-2.5 px-4 data-[state=active]:font-semibold"
           >
-            {{ t.label }}
-            <span :class="cn('tabular-nums', tabCountClass(t.value, inTab(data, t.value).length))">
-              {{ inTab(data, t.value).length }}
+            {{ tabItem.label }}
+            <span
+              :class="
+                cn('tabular-nums', tabCountClass(tabItem.value, inTab(data, tabItem.value).length))
+              "
+            >
+              {{ inTab(data, tabItem.value).length }}
             </span>
           </TabsTrigger>
         </TabsList>
         <!-- one DataTable per tab: each keeps its own pager, reset when the tab changes -->
-        <TabsContent v-for="t in TABS" :key="t.value" :value="t.value">
+        <TabsContent v-for="tabItem in TABS" :key="tabItem.value" :value="tabItem.value">
           <DataTable
             filter-label="Roll"
             filter-placeholder="Search by stock or camera..."
             empty-title="No rolls"
             :empty-text="
-              t.value === 'all'
+              tabItem.value === 'all'
                 ? 'No rolls yet. Add rolls to get started.'
-                : `No rolls ${STATUS_LABELS[t.value].toLowerCase()}.`
+                : `No rolls ${STATUS_LABELS[tabItem.value].toLowerCase()}.`
             "
             :columns="columns"
-            :data="inTab(data, t.value)"
-            :get-row-id="(r) => r.roll.id"
+            :data="inTab(data, tabItem.value)"
+            :get-row-id="(row) => row.roll.id"
             :on-select="openRoll"
-            :row-label="(r) => `Open ${r.stockName} roll`"
+            :row-label="(row) => `Open ${row.stockName} roll`"
           />
         </TabsContent>
       </Tabs>
