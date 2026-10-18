@@ -11,43 +11,46 @@ import { PRIMARY_LINK, numberCell, stackCell, tagCell } from "#/shared/component
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import LensFormDialog from "../components/LensFormDialog.vue";
 import { Switch } from "#/shared/ui/switch";
-import { plainText } from "#/shared/lib/format";
 
 const lenses = useLensList();
 const setActive = useSetLensActive();
 const formOpen = ref(false);
 
 const router = useRouter();
-const openLens = (r: LensRow) =>
-  router.navigate({ to: "/app/lenses/$lensId", params: { lensId: r.lens.id } });
+const openLens = (row: LensRow) =>
+  router.navigate({ to: "/app/lenses/$lensId", params: { lensId: row.lens.id } });
 
 /** Exact match for numeric columns; dropdown values arrive as strings. */
 const sameValue: NonNullable<DataTableColumn<LensRow>["filterFn"]> = (row, columnId, value) =>
   String(row.getValue(columnId)) === String(value);
 
-const lensName = (r: LensRow) => [r.lens.brand, r.lens.model].filter(Boolean).join(" ");
+const lensName = (row: LensRow) => [row.lens.brand, row.lens.model].filter(Boolean).join(" ");
 
 const columns: DataTableColumn<LensRow>[] = [
   {
     id: "lens",
     accessorFn: lensName,
     header: "Lens",
-    cell: ({ row: { original: r } }) =>
+    cell: ({ row: { original: row } }) =>
       stackCell(
         h(
           Link,
-          { to: "/app/lenses/$lensId", params: { lensId: r.lens.id }, class: PRIMARY_LINK },
-          () => lensName(r),
+          { to: "/app/lenses/$lensId", params: { lensId: row.lens.id }, class: PRIMARY_LINK },
+          () => lensName(row),
         ),
-        r.cameraName ? `Built into ${r.cameraName}` : null,
+        row.cameraName ? `Built into ${row.cameraName}` : null,
       ),
   },
   {
     id: "focal",
     meta: {
-      filter: { label: "Focal length", placeholder: "Any focal length", format: (v) => `${v}mm` },
+      filter: {
+        label: "Focal length",
+        placeholder: "Any focal length",
+        format: (value) => `${value}mm`,
+      },
     },
-    accessorFn: (r) => r.lens.focalLength,
+    accessorFn: (row) => row.lens.focalLength,
     header: "Focal",
     enableGlobalFilter: false,
     filterFn: sameValue,
@@ -59,10 +62,10 @@ const columns: DataTableColumn<LensRow>[] = [
       filter: {
         label: "Aperture",
         placeholder: "Any aperture",
-        format: (v) => `f/${Number(v).toFixed(1)}`,
+        format: (value) => `f/${Number(value).toFixed(1)}`,
       },
     },
-    accessorFn: (r) => r.lens.maxAperture,
+    accessorFn: (row) => row.lens.maxAperture,
     header: "Aperture",
     enableGlobalFilter: false,
     filterFn: sameValue,
@@ -72,11 +75,11 @@ const columns: DataTableColumn<LensRow>[] = [
     id: "mount",
     meta: { filter: { label: "Mount", placeholder: "All mounts" } },
     header: "Mount",
-    accessorFn: (r) => (r.lens.builtInCameraId ? "Built-in" : r.lens.mount),
+    accessorFn: (row) => (row.lens.builtInCameraId ? "Built-in" : row.lens.mount),
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
-      tagCell(r.lens.builtInCameraId ? "Built-in" : r.lens.mount || "—"),
+    cell: ({ row: { original: row } }) =>
+      tagCell(row.lens.builtInCameraId ? "Built-in" : row.lens.mount || "—"),
   },
   {
     id: "active",
@@ -85,15 +88,16 @@ const columns: DataTableColumn<LensRow>[] = [
     },
     header: "Active",
     enableSorting: false,
-    accessorFn: (r) => (r.lens.active ? "Active" : "Inactive"),
+    accessorFn: (row) => (row.lens.active ? "Active" : "Inactive"),
     enableGlobalFilter: false,
     filterFn: "equalsString",
-    cell: ({ row: { original: r } }) =>
+    cell: ({ row: { original: row } }) =>
       h(Switch, {
-        modelValue: r.lens.active,
-        disabled: !!r.lens.builtInCameraId,
-        "aria-label": r.lens.active ? "Deactivate lens" : "Activate lens",
-        "onUpdate:modelValue": (v: boolean) => setActive.mutate({ id: r.lens.id, active: v }),
+        modelValue: row.lens.active,
+        disabled: !!row.lens.builtInCameraId,
+        "aria-label": row.lens.active ? "Deactivate lens" : "Activate lens",
+        "onUpdate:modelValue": (active: boolean) =>
+          setActive.mutate({ id: row.lens.id, active: active }),
       }),
   },
 ];
@@ -115,10 +119,10 @@ const columns: DataTableColumn<LensRow>[] = [
         filter-placeholder="Search by brand or model..."
         :columns="columns"
         :data="data"
-        :get-row-id="(r) => r.lens.id"
+        :get-row-id="(row) => row.lens.id"
         :on-select="openLens"
-        :row-label="(r) => `Open ${lensName(r)}`"
-        :row-class="(r) => (r.lens.active ? undefined : 'opacity-60')"
+        :row-label="(row) => `Open ${lensName(row)}`"
+        :row-class="(row) => (row.lens.active ? undefined : 'opacity-60')"
       />
     </template>
   </QueryBoundary>

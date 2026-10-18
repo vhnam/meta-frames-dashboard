@@ -31,19 +31,19 @@ const baseOpen = ref(false);
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  const s = stocks.data.value?.find((r) => r.stock.id === props.stockId)?.stock;
+  const stock = stocks.data.value?.find((row) => row.stock.id === props.stockId)?.stock;
   reset(form, {
     initialInput: {
-      brand: s?.brand ?? "",
-      name: s?.name ?? "",
-      type: s?.type ?? "color",
-      boxIso: s?.boxIso,
-      process: s?.process ?? "C-41",
-      packaging: s?.packaging ?? "factory",
-      stockOrigin: s?.stockOrigin ?? "",
-      packOrigin: s?.packOrigin ?? "",
-      baseStockId: s?.baseStockId ?? "",
-      description: s?.description ?? "",
+      brand: stock?.brand ?? "",
+      name: stock?.name ?? "",
+      type: stock?.type ?? "color",
+      boxIso: stock?.boxIso,
+      process: stock?.process ?? "C-41",
+      packaging: stock?.packaging ?? "factory",
+      stockOrigin: stock?.stockOrigin ?? "",
+      packOrigin: stock?.packOrigin ?? "",
+      baseStockId: stock?.baseStockId ?? "",
+      description: stock?.description ?? "",
     },
   });
 });
@@ -56,9 +56,9 @@ const warnings = computed(() => {
 });
 const baseOptions = computed(() =>
   (stocks.data.value ?? [])
-    .filter((r) => r.stock.id !== props.stockId)
-    .map((r) => ({ value: r.stock.id, label: stockName(r.stock) }))
-    .sort((a, b) => a.label.localeCompare(b.label)),
+    .filter((row) => row.stock.id !== props.stockId)
+    .map((row) => ({ value: row.stock.id, label: stockName(row.stock) }))
+    .sort((left, right) => left.label.localeCompare(right.label)),
 );
 
 // the picker reads "C-41 (Color negative)"
@@ -75,13 +75,13 @@ const pickIso = (iso: number) => setInput(form, { path: ["boxIso"], input: iso }
 
 const editing = computed(() => !!props.stockId);
 
-async function submit(o: v.InferOutput<typeof StockSchema>) {
+async function submit(output: v.InferOutput<typeof StockSchema>) {
   const input = {
-    ...o,
-    stockOrigin: o.stockOrigin.trim(),
-    packOrigin: o.packOrigin.trim(),
-    description: o.description.trim(),
-    baseStockId: o.baseStockId || null,
+    ...output,
+    stockOrigin: output.stockOrigin.trim(),
+    packOrigin: output.packOrigin.trim(),
+    description: output.description.trim(),
+    baseStockId: output.baseStockId || null,
   };
   let id = props.stockId ?? "";
   const ok = await attempt(
@@ -136,6 +136,7 @@ async function submit(o: v.InferOutput<typeof StockSchema>) {
           required
           type="number"
           min="1"
+          step="1"
           suffix="ASA/ISO"
           placeholder="e.g. 400"
         >
@@ -171,7 +172,7 @@ async function submit(o: v.InferOutput<typeof StockSchema>) {
           placeholder="Select packaging"
         />
       </div>
-      <p v-for="w in warnings" :key="w" class="text-sm text-amber-600">{{ w }}</p>
+      <p v-for="warning in warnings" :key="warning" class="text-sm text-amber-600">{{ warning }}</p>
       <div class="border-primary/15 bg-primary/5 rounded-lg border p-5">
         <FormSelect
           :of="form"

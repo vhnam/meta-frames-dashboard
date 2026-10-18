@@ -34,7 +34,7 @@ defineProps<{
         :model-value="(field.input as string | undefined) ?? ''"
         :placeholder="placeholder"
         :disabled="disabled"
-        @update:model-value="(x) => (field.input = x as never)"
+        @update:model-value="(value) => (field.input = value as never)"
       />
     </FormField>
   </Field>

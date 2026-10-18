@@ -6,5 +6,5 @@ export const required = (message: string) =>
 export const integer = (min: number, message: string) =>
   v.pipe(v.number(message), v.integer("Must be a whole number."), v.minValue(min, message));
 
-export const picklist = <const T extends readonly string[]>(options: T) =>
+export const picklist = <const TOptions extends readonly string[]>(options: TOptions) =>
   v.picklist(options, "Select an option.");

@@ -40,7 +40,10 @@ defineProps<{
           :allow-empty="!!optional"
           :disabled="disabled"
           @update:model-value="
-            (x) => (field.input = (numeric ? (x === '' ? undefined : Number(x)) : x) as never)
+            (value) =>
+              (field.input = (
+                numeric ? (value === '' ? undefined : Number(value)) : value
+              ) as never)
           "
         />
         <slot name="action" />

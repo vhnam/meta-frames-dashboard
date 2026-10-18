@@ -33,8 +33,8 @@ describe("AlertsButton", () => {
   it("shows the count and lists the rolls in the panel", async () => {
     const stock = server.addStock({ name: "UltraMax" });
     server.addRoll({ filmStockId: stock.id, expiry: { year: 2020, month: 1 } });
-    const w = render();
-    const bell = () => w.find("button");
+    const view = render();
+    const bell = () => view.find("button");
     await vi.waitFor(() => expect(bell().text()).toBe("1"));
 
     await bell().trigger("focus");

@@ -32,12 +32,12 @@ async function doDelete() {
     router.navigate({ to: "/app/rolls" });
 }
 
-const rowOf = (d: RollDetail): RollRow => ({
-  roll: d.roll,
-  stockName: stockName(d.stock),
-  boxIso: d.stock.boxIso,
-  cameraName: d.camera ? cameraName(d.camera) : null,
-  negativesAtLab: d.negativesAtLab,
+const rowOf = (rollDetail: RollDetail): RollRow => ({
+  roll: rollDetail.roll,
+  stockName: stockName(rollDetail.stock),
+  boxIso: rollDetail.stock.boxIso,
+  cameraName: rollDetail.camera ? cameraName(rollDetail.camera) : null,
+  negativesAtLab: rollDetail.negativesAtLab,
 });
 
 const showNegBadge = (status: string, atLab: boolean) =>
@@ -46,40 +46,40 @@ const showNegBadge = (status: string, atLab: boolean) =>
 
 <template>
   <QueryBoundary :query="detail" empty-text="Roll not found.">
-    <template #default="{ data: d }">
+    <template #default="{ data: loaded }">
       <PageHeader
-        :title="stockName(d.stock)"
-        :description="d.base ? `Base stock: ${stockName(d.base)}` : undefined"
+        :title="stockName(loaded.stock)"
+        :description="loaded.base ? `Base stock: ${stockName(loaded.base)}` : undefined"
       >
         <template #actions>
-          <RollStatusBadge :status="d.roll.status" />
-          <Badge v-if="showNegBadge(d.roll.status, d.negativesAtLab)" variant="outline">
+          <RollStatusBadge :status="loaded.roll.status" />
+          <Badge v-if="showNegBadge(loaded.roll.status, loaded.negativesAtLab)" variant="outline">
             Negatives at lab
           </Badge>
         </template>
       </PageHeader>
 
       <div class="mt-4 grid gap-4">
-        <RollSummaryCard :detail="d" @edit="editOpen = true" @delete="doDelete" />
-        <RollGearCard :detail="d" @manage-lenses="lensesOpen = true" @load="loadOpen = true" />
+        <RollSummaryCard :detail="loaded" @edit="editOpen = true" @delete="doDelete" />
+        <RollGearCard :detail="loaded" @manage-lenses="lensesOpen = true" @load="loadOpen = true" />
         <ProcessingHistoryCard
-          :row="rowOf(d)"
-          :jobs="d.jobs"
-          :process="d.stock.process"
-          :finished-on="d.roll.finishDate"
+          :row="rowOf(loaded)"
+          :jobs="loaded.jobs"
+          :process="loaded.stock.process"
+          :finished-on="loaded.roll.finishDate"
         />
-        <FramesCard :frames="d.frames" />
+        <FramesCard :frames="loaded.frames" />
       </div>
 
-      <RollEditDialog v-model:open="editOpen" :row="rowOf(d)" />
+      <RollEditDialog v-model:open="editOpen" :row="rowOf(loaded)" />
       <RollLensesDialog
         v-model:open="lensesOpen"
-        :roll-id="d.roll.id"
-        :camera-name="d.camera ? cameraName(d.camera) : undefined"
-        :candidates="d.cameraLenses"
-        :selected-ids="d.lenses.map((l) => l.id)"
+        :roll-id="loaded.roll.id"
+        :camera-name="loaded.camera ? cameraName(loaded.camera) : undefined"
+        :candidates="loaded.cameraLenses"
+        :selected-ids="loaded.lenses.map((lens) => lens.id)"
       />
-      <LoadRollDialog v-model:open="loadOpen" :row="rowOf(d)" />
+      <LoadRollDialog v-model:open="loadOpen" :row="rowOf(loaded)" />
     </template>
   </QueryBoundary>
 </template>

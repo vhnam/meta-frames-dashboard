@@ -37,7 +37,7 @@ defineProps<{
         :placeholder="placeholder"
         :disabled="disabled"
         :invalid="!!field.errors"
-        @update:model-value="(x) => (field.input = x as never)"
+        @update:model-value="(value) => (field.input = value as never)"
       />
     </FormField>
   </Field>

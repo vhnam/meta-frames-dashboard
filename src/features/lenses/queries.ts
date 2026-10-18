@@ -11,7 +11,7 @@ export const useLensList = () => useQuery(lensQueries.list());
 export const useLensDetail = (id: MaybeRefOrGetter<string>) =>
   useQuery(() => ({
     ...lensQueries.list(),
-    select: (rows: LensRow[]) => rows.find((r) => r.lens.id === toValue(id)) ?? null,
+    select: (rows: LensRow[]) => rows.find((row) => row.lens.id === toValue(id)) ?? null,
   }));
 
 export const useSaveLens = () =>
@@ -19,7 +19,7 @@ export const useSaveLens = () =>
     fn: saveLens,
     // linked-lens lists on camera pages show lens names
     invalidates: () => [lensKeys.all, cameraKeys.details()],
-    success: (v) => (v.id ? "Lens updated" : "Lens added"),
+    success: (variables) => (variables.id ? "Lens updated" : "Lens added"),
   });
 
 export const useSetLensActive = () =>
@@ -27,10 +27,12 @@ export const useSetLensActive = () =>
     fn: setLensActive,
     optimistic: {
       cancel: () => [lensKeys.lists()],
-      apply: (qc, v) =>
+      apply: (qc, variables) =>
         patchQueries<LensRow[]>(qc, { queryKey: lensKeys.lists() }, (rows) =>
-          rows.map((r) =>
-            r.lens.id === v.id ? { ...r, lens: { ...r.lens, active: v.active } } : r,
+          rows.map((row) =>
+            row.lens.id === variables.id
+              ? { ...row, lens: { ...row.lens, active: variables.active } }
+              : row,
           ),
         ),
     },

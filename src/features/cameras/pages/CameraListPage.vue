@@ -25,24 +25,24 @@ function show(id?: string) {
 }
 
 const router = useRouter();
-const openCamera = (r: CameraRow) =>
-  router.navigate({ to: "/app/cameras/$cameraId", params: { cameraId: r.camera.id } });
+const openCamera = (row: CameraRow) =>
+  router.navigate({ to: "/app/cameras/$cameraId", params: { cameraId: row.camera.id } });
 
 const columns: DataTableColumn<CameraRow>[] = [
   {
     id: "camera",
     header: "Camera",
-    accessorFn: ({ camera: c }) => `${cameraName(c)} ${c.description}`,
+    accessorFn: ({ camera }) => `${cameraName(camera)} ${camera.description}`,
     cell: ({
       row: {
-        original: { camera: c },
+        original: { camera },
       },
     }) =>
       stackCell(
         h(
           Link,
-          { to: "/app/cameras/$cameraId", params: { cameraId: c.id }, class: PRIMARY_LINK },
-          () => cameraName(c),
+          { to: "/app/cameras/$cameraId", params: { cameraId: camera.id }, class: PRIMARY_LINK },
+          () => cameraName(camera),
         ),
       ),
   },
@@ -51,13 +51,13 @@ const columns: DataTableColumn<CameraRow>[] = [
     enableSorting: false,
     meta: { filter: { label: "Mount", placeholder: "All mounts" } },
     header: "Mount",
-    accessorFn: ({ camera: c }) => (c.fixedLens ? "Fixed lens" : c.mount),
+    accessorFn: ({ camera }) => (camera.fixedLens ? "Fixed lens" : camera.mount),
     filterFn: "equalsString",
     cell: ({
       row: {
-        original: { camera: c },
+        original: { camera },
       },
-    }) => tagCell(c.fixedLens ? "Fixed lens" : c.mount || "—"),
+    }) => tagCell(camera.fixedLens ? "Fixed lens" : camera.mount || "—"),
   },
   {
     id: "status",
@@ -67,17 +67,18 @@ const columns: DataTableColumn<CameraRow>[] = [
       filter: { label: "Status", placeholder: "Any status", options: ["Active", "Inactive"] },
     },
     header: "Active",
-    accessorFn: ({ camera: c }) => (c.active ? "Active" : "Inactive"),
+    accessorFn: ({ camera }) => (camera.active ? "Active" : "Inactive"),
     filterFn: "equalsString",
     cell: ({
       row: {
-        original: { camera: c },
+        original: { camera },
       },
     }) =>
       h(Switch, {
-        modelValue: c.active,
-        "aria-label": c.active ? "Deactivate camera" : "Activate camera",
-        "onUpdate:modelValue": (v: boolean) => setActive.mutate({ id: c.id, active: v }),
+        modelValue: camera.active,
+        "aria-label": camera.active ? "Deactivate camera" : "Activate camera",
+        "onUpdate:modelValue": (active: boolean) =>
+          setActive.mutate({ id: camera.id, active: active }),
       }),
   },
 ];
@@ -98,10 +99,10 @@ const columns: DataTableColumn<CameraRow>[] = [
         filter-placeholder="Search by brand, model or description..."
         :columns="columns"
         :data="data"
-        :get-row-id="(r) => r.camera.id"
+        :get-row-id="(row) => row.camera.id"
         :on-select="openCamera"
-        :row-label="(r) => `Open ${cameraName(r.camera)}`"
-        :row-class="(r) => (r.camera.active ? undefined : 'opacity-60')"
+        :row-label="(row) => `Open ${cameraName(row.camera)}`"
+        :row-class="(row) => (row.camera.active ? undefined : 'opacity-60')"
       />
     </template>
   </QueryBoundary>

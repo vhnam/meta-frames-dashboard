@@ -36,15 +36,15 @@ describe("CameraDetailPage", () => {
     server.addRoll({ filmStockId: stock.id, cameraId: camera.id, status: "in_camera" });
     server.addRoll({ filmStockId: stock.id, cameraId: camera.id, status: "developed" });
 
-    const w = render(camera.id);
-    await vi.waitFor(() => expect(w.find("h1").text()).toBe("Olympus XA"));
-    const text = w.text().replace(/\s+/g, " ");
+    const wrapper = render(camera.id);
+    await vi.waitFor(() => expect(wrapper.find("h1").text()).toBe("Olympus XA"));
+    const text = wrapper.text().replace(/\s+/g, " ");
     expect(text).toContain("Fixed lens");
     expect(text).toContain("Built-in lens");
     expect(text).toContain("Zuiko 35mm f/2.8");
-    await vi.waitFor(() => expect(w.text()).toContain("Rolls (2)"));
+    await vi.waitFor(() => expect(wrapper.text()).toContain("Rolls (2)"));
     const stats = Object.fromEntries(
-      w
+      wrapper
         .find("dl")
         .findAll("dt")
         .map((dt) => [dt.text(), dt.element.nextElementSibling?.textContent?.trim()]),

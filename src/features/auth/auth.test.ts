@@ -50,7 +50,7 @@ describe("safeRedirect", () => {
 
 describe("password schemas", () => {
   const issues = (schema: typeof ResetPasswordSchema, input: unknown) =>
-    v.safeParse(schema, input).issues?.map((i) => i.message) ?? [];
+    v.safeParse(schema, input).issues?.map((issue) => issue.message) ?? [];
 
   it("requires the API's password strength", () => {
     expect(issues(ResetPasswordSchema, { password: "weak", confirmPassword: "weak" })).toEqual(

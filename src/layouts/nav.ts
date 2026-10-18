@@ -52,8 +52,10 @@ export const navSections: NavSection[] = [
   },
 ];
 
-const flat = navSections.flatMap((s) => s.items.flatMap((i) => [i, ...(i.children ?? [])]));
-const listPaths = new Set(flat.map((i) => i.to));
+const flat = navSections.flatMap((section) =>
+  section.items.flatMap((item) => [item, ...(item.children ?? [])]),
+);
+const listPaths = new Set(flat.map((item) => item.to));
 
 /** A nav destination that renders a list, such as `/app/rolls` or `/expiry`. */
 export function isListingPath(path: string) {
@@ -64,13 +66,15 @@ export function isListingPath(path: string) {
 export function listingPath(path: string) {
   return [...listPaths]
     .filter((to) => path.startsWith(`${to}/`))
-    .sort((a, b) => b.length - a.length)[0];
+    .sort((left, right) => right.length - left.length)[0];
 }
 
 /** Title for the current path, matching the longest nav prefix. */
 export function titleForPath(path: string) {
   const hit = flat
-    .filter((i) => (i.to === "/" ? path === "/" : path === i.to || path.startsWith(i.to + "/")))
-    .sort((a, b) => b.to.length - a.to.length)[0];
+    .filter((item) =>
+      item.to === "/" ? path === "/" : path === item.to || path.startsWith(item.to + "/"),
+    )
+    .sort((left, right) => right.to.length - left.to.length)[0];
   return hit?.title ?? "Not found";
 }

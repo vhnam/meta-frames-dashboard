@@ -21,7 +21,7 @@ const emit = defineEmits<{ saved: [id: string] }>();
 const lenses = useLensList();
 const save = useSaveLens();
 const remove = useDeleteLens();
-const current = () => lenses.data.value?.find((r) => r.lens.id === props.lensId)?.lens;
+const current = () => lenses.data.value?.find((row) => row.lens.id === props.lensId)?.lens;
 const form = useForm({ schema: LensSchema, initialInput: { builtIn: false } });
 const builtIn = () => !!current()?.builtInCameraId;
 const editing = computed(() => !!props.lensId);
@@ -33,28 +33,28 @@ const brands = useKnownBrands();
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  const l = current();
+  const lens = current();
   reset(form, {
     initialInput: {
-      builtIn: !!l?.builtInCameraId,
-      brand: l?.brand ?? "",
-      model: l?.model ?? "",
-      mount: l?.mount ?? "",
-      focalLength: l?.focalLength,
-      maxAperture: l?.maxAperture,
-      description: l?.description ?? "",
+      builtIn: !!lens?.builtInCameraId,
+      brand: lens?.brand ?? "",
+      model: lens?.model ?? "",
+      mount: lens?.mount ?? "",
+      focalLength: lens?.focalLength,
+      maxAperture: lens?.maxAperture,
+      description: lens?.description ?? "",
     },
   });
 });
 
-async function submit(o: v.InferOutput<typeof LensSchema>) {
+async function submit(output: v.InferOutput<typeof LensSchema>) {
   const input = {
-    brand: o.brand,
-    model: o.model,
-    mount: o.mount,
-    focalLength: o.focalLength,
-    maxAperture: o.maxAperture,
-    description: o.description,
+    brand: output.brand,
+    model: output.model,
+    mount: output.mount,
+    focalLength: output.focalLength,
+    maxAperture: output.maxAperture,
+    description: output.description,
   };
   let id = props.lensId ?? "";
   const ok = await attempt(
@@ -152,7 +152,7 @@ async function doDelete() {
               :values="FOCAL_PICKS"
               :current="getInput(form, { path: ['focalLength'] })"
               label="Common focal lengths"
-              @pick="(n) => setInput(form, { path: ['focalLength'], input: n })"
+              @pick="(value) => setInput(form, { path: ['focalLength'], input: value })"
             />
           </template>
         </FormInput>
@@ -171,8 +171,8 @@ async function doDelete() {
               :values="APERTURE_PICKS"
               :current="getInput(form, { path: ['maxAperture'] })"
               label="Common apertures"
-              :format="(n) => `f/${n}`"
-              @pick="(n) => setInput(form, { path: ['maxAperture'], input: n })"
+              :format="(value) => `f/${value}`"
+              @pick="(value) => setInput(form, { path: ['maxAperture'], input: value })"
             />
           </template>
         </FormInput>

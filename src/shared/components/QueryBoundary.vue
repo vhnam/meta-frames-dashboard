@@ -20,11 +20,11 @@ const props = withDefaults(
   { emptyText: "Nothing here yet.", skeletonRows: 4 },
 );
 
-const q = props.query;
+const result = props.query;
 const now = ref(Date.now());
 useIntervalFn(() => (now.value = Date.now()), 15_000);
 
-const data = computed(() => q.data.value as TData | undefined);
+const data = computed(() => result.data.value as TData | undefined);
 const hasData = computed(() => data.value !== undefined && data.value !== null);
 const empty = computed(() => {
   if (!hasData.value) return true; // loaded but null: not found
@@ -34,7 +34,7 @@ const empty = computed(() => {
 });
 
 const ago = computed(() => {
-  const seconds = Math.max(0, Math.round((now.value - q.dataUpdatedAt.value) / 1000));
+  const seconds = Math.max(0, Math.round((now.value - result.dataUpdatedAt.value) / 1000));
   if (seconds < 60) return "just now";
   const minutes = Math.round(seconds / 60);
   return minutes < 60 ? `${minutes} min ago` : `${Math.round(minutes / 60)} h ago`;
@@ -43,24 +43,29 @@ const ago = computed(() => {
 
 <template>
   <!-- loading: first fetch, nothing cached -->
-  <slot v-if="q.isPending.value" name="loading">
+  <slot v-if="result.isPending.value" name="loading">
     <div class="grid gap-2" role="status" aria-label="Loading">
-      <Skeleton v-for="i in skeletonRows" :key="i" class="h-10 w-full" />
+      <Skeleton v-for="index in skeletonRows" :key="index" class="h-10 w-full" />
     </div>
   </slot>
 
   <!-- error: nothing cached to fall back on -->
   <div
-    v-else-if="q.isError.value && !hasData"
+    v-else-if="result.isError.value && !hasData"
     class="border-destructive/40 flex items-start gap-3 rounded-lg border p-4 text-sm"
     role="alert"
   >
     <IconAlertTriangle class="text-destructive mt-0.5 size-4 shrink-0" />
     <div class="grid flex-1 gap-1">
       <span class="font-medium">Couldn't load this data.</span>
-      <span class="text-muted-foreground">{{ q.error.value?.message }}</span>
+      <span class="text-muted-foreground">{{ result.error.value?.message }}</span>
     </div>
-    <Button size="sm" variant="outline" :disabled="q.isFetching.value" @click="q.refetch()">
+    <Button
+      size="sm"
+      variant="outline"
+      :disabled="result.isFetching.value"
+      @click="result.refetch()"
+    >
       Retry
     </Button>
   </div>
@@ -68,17 +73,17 @@ const ago = computed(() => {
   <template v-else>
     <!-- background refetch / refresh failure -->
     <div
-      v-if="!quiet && (q.isFetching.value || q.isError.value)"
+      v-if="!quiet && (result.isFetching.value || result.isError.value)"
       class="text-muted-foreground flex items-center justify-end gap-2 text-xs"
       aria-live="polite"
     >
-      <template v-if="q.isFetching.value">
+      <template v-if="result.isFetching.value">
         <IconLoader2 class="size-3 animate-spin" /> Updating…
       </template>
-      <template v-else-if="q.isError.value">
+      <template v-else-if="result.isError.value">
         <IconAlertTriangle class="text-destructive size-3" />
         Couldn't refresh · showing data from {{ ago }}
-        <Button size="sm" variant="ghost" class="h-6 px-2" @click="q.refetch()">Retry</Button>
+        <Button size="sm" variant="ghost" class="h-6 px-2" @click="result.refetch()">Retry</Button>
       </template>
     </div>
 
@@ -88,7 +93,10 @@ const ago = computed(() => {
     </slot>
 
     <!-- data; dimmed while placeholder data from the previous key is shown -->
-    <div v-else :class="q.isPlaceholderData.value ? 'opacity-60 transition-opacity' : undefined">
+    <div
+      v-else
+      :class="result.isPlaceholderData.value ? 'opacity-60 transition-opacity' : undefined"
+    >
       <slot :data="data as NonNullable<TData>" />
     </div>
   </template>

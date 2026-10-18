@@ -38,21 +38,22 @@ async function doDelete() {
 const CHIP = "inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm";
 
 const rows = computed(() => rolls.data.value ?? []);
-const unexposed = computed(() => rows.value.filter((r) => r.roll.status === "in_stock"));
+const unexposed = computed(() => rows.value.filter((row) => row.roll.status === "in_stock"));
 
 /** Earliest expiry among unexposed rolls, which is the one to shoot first. */
 const nextExpiry = computed(
   () =>
     unexposed.value
-      .filter((r) => r.roll.expiryYear)
-      .sort((a, b) => +expiryDate(a.roll)! - +expiryDate(b.roll)!)[0]?.roll,
+      .filter((row) => row.roll.expiryYear)
+      .sort((left, right) => +expiryDate(left.roll)! - +expiryDate(right.roll)!)[0]?.roll,
 );
 
 /** Unexposed rolls per format, as on the Inventory page: "2 × 135 · 1 × 120". */
 const byFormat = computed(() => {
   const counts = new Map<string, number>();
-  for (const r of unexposed.value) counts.set(r.roll.format, (counts.get(r.roll.format) ?? 0) + 1);
-  return [...counts].map(([format, n]) => `${n} × ${format}`).join(" · ");
+  for (const row of unexposed.value)
+    counts.set(row.roll.format, (counts.get(row.roll.format) ?? 0) + 1);
+  return [...counts].map(([format, count]) => `${count} × ${format}`).join(" · ");
 });
 
 /** Rolls no longer in stock: loaded, shot, at the lab or developed. */
@@ -61,7 +62,7 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
 
 <template>
   <QueryBoundary :query="detail" empty-text="Stock not found.">
-    <template #default="{ data: d }">
+    <template #default="{ data: loaded }">
       <div class="grid gap-6">
         <!-- header -->
         <section class="bg-card overflow-hidden rounded-xl border shadow-sm">
@@ -75,7 +76,9 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
                   <i class="bg-primary size-1.5 rounded-full" aria-hidden="true" />
                   Film stock
                 </span>
-                <span class="tracking-[0.08em] uppercase">ID: {{ d.stock.id.slice(0, 8) }}</span>
+                <span class="tracking-[0.08em] uppercase"
+                  >ID: {{ loaded.stock.id.slice(0, 8) }}</span
+                >
               </div>
               <div class="flex flex-wrap gap-2">
                 <Button variant="outline" class="bg-card" @click="editOpen = true">
@@ -94,11 +97,11 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
 
             <div class="grid gap-4">
               <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">
-                {{ stockName(d.stock) }}
+                {{ stockName(loaded.stock) }}
               </h1>
               <div class="flex flex-wrap gap-2">
-                <span :class="cn(CHIP, TYPE_TONE[d.stock.type])">
-                  {{ FILM_TYPE_LABELS[d.stock.type] }} ({{ d.stock.process }})
+                <span :class="cn(CHIP, TYPE_TONE[loaded.stock.type])">
+                  {{ FILM_TYPE_LABELS[loaded.stock.type] }} ({{ loaded.stock.process }})
                 </span>
                 <span
                   :class="
@@ -108,18 +111,25 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
                     )
                   "
                 >
-                  Box ISO {{ d.stock.boxIso }}
+                  Box ISO {{ loaded.stock.boxIso }}
                 </span>
-                <span :class="cn(CHIP, PACKAGING_TONE[d.stock.packaging])">
+                <span :class="cn(CHIP, PACKAGING_TONE[loaded.stock.packaging])">
                   <i class="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                  Packaging: {{ PACKAGING_LABELS[d.stock.packaging] }}
+                  Packaging: {{ PACKAGING_LABELS[loaded.stock.packaging] }}
                 </span>
-                <span v-if="d.stock.stockOrigin" :class="cn(CHIP, 'bg-card text-muted-foreground')">
-                  Origin: {{ d.stock.stockOrigin }}
+                <span
+                  v-if="loaded.stock.stockOrigin"
+                  :class="cn(CHIP, 'bg-card text-muted-foreground')"
+                >
+                  Origin: {{ loaded.stock.stockOrigin }}
                 </span>
               </div>
-              <p v-for="w in stockWarnings(d.stock)" :key="w" class="text-sm text-amber-600">
-                {{ w }}
+              <p
+                v-for="warning in stockWarnings(loaded.stock)"
+                :key="warning"
+                class="text-sm text-amber-600"
+              >
+                {{ warning }}
               </p>
             </div>
 
@@ -166,22 +176,25 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="01" title="Primary specifications">
                 <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <SpecTile label="Brand">{{ d.stock.brand }}</SpecTile>
-                  <SpecTile label="Name">{{ d.stock.name }}</SpecTile>
+                  <SpecTile label="Brand">{{ loaded.stock.brand }}</SpecTile>
+                  <SpecTile label="Name">{{ loaded.stock.name }}</SpecTile>
                   <SpecTile label="Type">
                     <span
                       :class="
-                        cn('inline-flex rounded-sm px-2 py-0.5 text-sm', TYPE_TONE[d.stock.type])
+                        cn(
+                          'inline-flex rounded-sm px-2 py-0.5 text-sm',
+                          TYPE_TONE[loaded.stock.type],
+                        )
                       "
                     >
-                      {{ FILM_TYPE_LABELS[d.stock.type] }}
+                      {{ FILM_TYPE_LABELS[loaded.stock.type] }}
                     </span>
                   </SpecTile>
                   <SpecTile label="Box ISO">
                     <span
                       class="inline-flex rounded-sm border border-amber-300 bg-amber-50 px-2 py-0.5 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
                     >
-                      ISO {{ d.stock.boxIso }}
+                      ISO {{ loaded.stock.boxIso }}
                     </span>
                   </SpecTile>
                 </div>
@@ -192,13 +205,17 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
               <FormSection no="02" title="Provenance & notes">
                 <div class="grid gap-3 sm:grid-cols-2">
                   <SpecTile label="Stock origin">
-                    <span :class="{ 'text-muted-foreground font-normal': !d.stock.stockOrigin }">
-                      {{ d.stock.stockOrigin || "Not set" }}
+                    <span
+                      :class="{ 'text-muted-foreground font-normal': !loaded.stock.stockOrigin }"
+                    >
+                      {{ loaded.stock.stockOrigin || "Not set" }}
                     </span>
                   </SpecTile>
                   <SpecTile label="Pack origin">
-                    <span :class="{ 'text-muted-foreground font-normal': !d.stock.packOrigin }">
-                      {{ d.stock.packOrigin || "Not set" }}
+                    <span
+                      :class="{ 'text-muted-foreground font-normal': !loaded.stock.packOrigin }"
+                    >
+                      {{ loaded.stock.packOrigin || "Not set" }}
                     </span>
                   </SpecTile>
                 </div>
@@ -207,8 +224,8 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
                     Darkroom notes &amp; characteristics
                   </span>
                   <RichText
-                    v-if="d.stock.description"
-                    :markdown="d.stock.description"
+                    v-if="loaded.stock.description"
+                    :markdown="loaded.stock.description"
                     class="bg-background/60 rounded-lg border p-4 text-sm"
                   />
                   <p
@@ -227,49 +244,49 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="REL" title="Same emulsion">
                 <p
-                  v-if="!d.base && !d.siblings.length && !d.children.length"
+                  v-if="!loaded.base && !loaded.siblings.length && !loaded.children.length"
                   class="text-muted-foreground text-sm"
                 >
                   No base stock and no stocks based on this one.
                 </p>
                 <dl v-else class="grid gap-3 text-sm">
-                  <div v-if="d.base" class="grid gap-1">
+                  <div v-if="loaded.base" class="grid gap-1">
                     <dt class="text-muted-foreground text-xs">Base</dt>
                     <dd>
                       <Link
                         to="/app/stocks/$stockId"
-                        :params="{ stockId: d.base.id }"
+                        :params="{ stockId: loaded.base.id }"
                         class="font-medium hover:underline"
                       >
-                        {{ stockName(d.base) }}
+                        {{ stockName(loaded.base) }}
                       </Link>
                     </dd>
                   </div>
-                  <div v-if="d.siblings.length" class="grid gap-1">
+                  <div v-if="loaded.siblings.length" class="grid gap-1">
                     <dt class="text-muted-foreground text-xs">Also based on it</dt>
                     <dd class="flex flex-wrap gap-x-3 gap-y-1">
                       <Link
-                        v-for="s in d.siblings"
-                        :key="s.id"
+                        v-for="stock in loaded.siblings"
+                        :key="stock.id"
                         to="/app/stocks/$stockId"
-                        :params="{ stockId: s.id }"
+                        :params="{ stockId: stock.id }"
                         class="font-medium hover:underline"
                       >
-                        {{ stockName(s) }}
+                        {{ stockName(stock) }}
                       </Link>
                     </dd>
                   </div>
-                  <div v-if="d.children.length" class="grid gap-1">
+                  <div v-if="loaded.children.length" class="grid gap-1">
                     <dt class="text-muted-foreground text-xs">Repacked as</dt>
                     <dd class="flex flex-wrap gap-x-3 gap-y-1">
                       <Link
-                        v-for="s in d.children"
-                        :key="s.id"
+                        v-for="stock in loaded.children"
+                        :key="stock.id"
                         to="/app/stocks/$stockId"
-                        :params="{ stockId: s.id }"
+                        :params="{ stockId: stock.id }"
                         class="font-medium hover:underline"
                       >
-                        {{ stockName(s) }}
+                        {{ stockName(stock) }}
                       </Link>
                     </dd>
                   </div>
@@ -281,22 +298,22 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
               <FormSection no="LOG" :title="`Rolls (${rows.length})`">
                 <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto">
                   <Link
-                    v-for="r in rows"
-                    :key="r.roll.id"
+                    v-for="row in rows"
+                    :key="row.roll.id"
                     to="/app/rolls/$rollId"
-                    :params="{ rollId: r.roll.id }"
+                    :params="{ rollId: row.roll.id }"
                     class="hover:bg-accent/40 group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm"
                   >
                     <span class="grid gap-0.5">
                       <span class="font-medium">
-                        {{ r.roll.format }} · {{ r.roll.exposures }} exp
+                        {{ row.roll.format }} · {{ row.roll.exposures }} exp
                       </span>
                       <span class="text-muted-foreground text-xs">
-                        Exp: {{ formatExpiry(r.roll) }}
+                        Exp: {{ formatExpiry(row.roll) }}
                       </span>
                     </span>
                     <span class="flex items-center gap-2">
-                      <RollStatusBadge :status="r.roll.status" />
+                      <RollStatusBadge :status="row.roll.status" />
                       <IconChevronRight
                         class="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5"
                         aria-hidden="true"
@@ -311,8 +328,8 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
         </div>
       </div>
 
-      <StockFormDialog v-model:open="editOpen" :stock-id="d.stock.id" />
-      <AddRollsDialog v-model:open="addOpen" :stock-id="d.stock.id" />
+      <StockFormDialog v-model:open="editOpen" :stock-id="loaded.stock.id" />
+      <AddRollsDialog v-model:open="addOpen" :stock-id="loaded.stock.id" />
     </template>
   </QueryBoundary>
 </template>

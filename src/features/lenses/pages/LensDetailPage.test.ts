@@ -34,25 +34,25 @@ describe("LensDetailPage", () => {
     server.addRoll({ filmStockId: stock.id, status: "developed", lensIds: [lens.id] });
     server.addRoll({ filmStockId: stock.id, status: "developed", lensIds: [other.id] });
 
-    const w = render(lens.id);
-    await vi.waitFor(() => expect(w.find("h1").text()).toBe("Canon FD 50mm f/1.4"));
-    const text = w.text().replace(/\s+/g, " ");
+    const wrapper = render(lens.id);
+    await vi.waitFor(() => expect(wrapper.find("h1").text()).toBe("Canon FD 50mm f/1.4"));
+    const text = wrapper.text().replace(/\s+/g, " ");
     expect(text).toContain("Mount: FD");
     expect(text).toContain("Delete");
-    await vi.waitFor(() => expect(w.text()).toContain("Rolls (1)"));
-    expect(w.text()).toContain("Ilford HP5");
+    await vi.waitFor(() => expect(wrapper.text()).toContain("Rolls (1)"));
+    expect(wrapper.text()).toContain("Ilford HP5");
   });
 
   it("links a built-in lens to its camera and hides Delete", async () => {
     const camera = server.addCamera({ brand: "Olympus", model: "XA", hasFixedLens: true });
-    const w = render(camera.builtInLensId!);
-    await vi.waitFor(() => expect(w.text()).toContain("Built into"));
-    expect(w.text()).toContain("Olympus XA");
-    expect(w.text()).not.toContain("Delete");
+    const wrapper = render(camera.builtInLensId!);
+    await vi.waitFor(() => expect(wrapper.text()).toContain("Built into"));
+    expect(wrapper.text()).toContain("Olympus XA");
+    expect(wrapper.text()).not.toContain("Delete");
   });
 
   it("says when the lens does not exist", async () => {
-    const w = render("missing");
-    await vi.waitFor(() => expect(w.text()).toContain("Lens not found."));
+    const wrapper = render("missing");
+    await vi.waitFor(() => expect(wrapper.text()).toContain("Lens not found."));
   });
 });

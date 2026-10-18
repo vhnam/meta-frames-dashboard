@@ -31,19 +31,19 @@ const model = defineModel<string>({ default: "" });
 
 const open = ref(false);
 const term = ref(model.value);
-watch(model, (v) => (term.value = v));
+watch(model, (value) => (term.value = value));
 
 const query = computed(() => term.value.trim());
 const filtered = computed(() => {
-  const q = query.value.toLowerCase();
+  const needle = query.value.toLowerCase();
   // the full list while the text is still the chosen value, so other values stay one click away
-  if (!q || query.value === model.value) return props.options;
-  return props.options.filter((o) => o.value.toLowerCase().includes(q));
+  if (!needle || query.value === model.value) return props.options;
+  return props.options.filter((option) => option.value.toLowerCase().includes(needle));
 });
 const canCreate = computed(
   () =>
     !!query.value &&
-    !props.options.some((o) => o.value.toLowerCase() === query.value.toLowerCase()),
+    !props.options.some((option) => option.value.toLowerCase() === query.value.toLowerCase()),
 );
 
 function commit() {
@@ -86,18 +86,18 @@ function commit() {
       >
         <ComboboxViewport class="max-h-60 overflow-y-auto p-1">
           <ComboboxItem
-            v-for="o in filtered"
-            :key="o.value"
-            :value="o.value"
+            v-for="option in filtered"
+            :key="option.value"
+            :value="option.value"
             class="data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none"
           >
-            <span class="min-w-0 flex-1 truncate">{{ o.value }}</span>
+            <span class="min-w-0 flex-1 truncate">{{ option.value }}</span>
             <span
-              v-if="o.count"
+              v-if="option.count"
               class="text-muted-foreground ml-3 text-xs tabular-nums"
-              :aria-label="`used by ${o.count}`"
+              :aria-label="`used by ${option.count}`"
             >
-              {{ o.count }}
+              {{ option.count }}
             </span>
             <ComboboxItemIndicator class="absolute right-2 flex items-center">
               <IconCheck class="size-4" aria-hidden="true" />

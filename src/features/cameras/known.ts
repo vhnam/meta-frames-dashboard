@@ -11,12 +11,12 @@ import type { Camera } from "./types";
  */
 export const countUnique = (values: (string | undefined)[]): ComboOption[] => {
   const byKey = new Map<string, ComboOption>();
-  for (const v of values.map((x) => x?.trim()).filter(Boolean) as string[]) {
-    const known = byKey.get(v.toLowerCase());
+  for (const value of values.map((entry) => entry?.trim()).filter(Boolean) as string[]) {
+    const known = byKey.get(value.toLowerCase());
     if (known) known.count! += 1;
-    else byKey.set(v.toLowerCase(), { value: v, count: 1 });
+    else byKey.set(value.toLowerCase(), { value: value, count: 1 });
   }
-  return [...byKey.values()].sort((a, b) => a.value.localeCompare(b.value));
+  return [...byKey.values()].sort((left, right) => left.value.localeCompare(right.value));
 };
 
 /** Values already used on any camera or lens, inactive ones included, for pick-or-add fields. */
@@ -25,11 +25,11 @@ function useKnown(pick: (gear: Camera | Lens) => string | undefined) {
   const lenses = useLensList();
   return computed(() =>
     countUnique([
-      ...(cameras.data.value ?? []).map((r) => pick(r.camera)),
-      ...(lenses.data.value ?? []).map((r) => pick(r.lens)),
+      ...(cameras.data.value ?? []).map((row) => pick(row.camera)),
+      ...(lenses.data.value ?? []).map((row) => pick(row.lens)),
     ]),
   );
 }
 
-export const useKnownMounts = () => useKnown((g) => g.mount);
-export const useKnownBrands = () => useKnown((g) => g.brand);
+export const useKnownMounts = () => useKnown((camera) => camera.mount);
+export const useKnownBrands = () => useKnown((camera) => camera.brand);

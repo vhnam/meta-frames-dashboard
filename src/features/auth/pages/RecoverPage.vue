@@ -13,8 +13,8 @@ import { RecoverSchema } from "../schema";
 const recover = useStartRecovery();
 const form = useForm({ schema: RecoverSchema, initialInput: { email: "" } });
 
-async function submit(o: v.InferOutput<typeof RecoverSchema>) {
-  await recover.mutateAsync(o).catch(() => {}); // shown inline
+async function submit(output: v.InferOutput<typeof RecoverSchema>) {
+  await recover.mutateAsync(output).catch(() => {}); // shown inline
 }
 </script>
 

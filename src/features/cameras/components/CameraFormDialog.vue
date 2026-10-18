@@ -31,16 +31,16 @@ const APERTURE_PICKS = [1.4, 2, 2.8];
 
 type Detail = NonNullable<typeof detail.data.value>;
 
-function fill(d?: Detail) {
-  const c = d?.camera;
-  const lens = c?.fixedLens ? d?.lenses[0] : undefined;
+function fill(loaded?: Detail) {
+  const camera = loaded?.camera;
+  const lens = camera?.fixedLens ? loaded?.lenses[0] : undefined;
   reset(form, {
     initialInput: {
-      brand: c?.brand ?? "",
-      model: c?.model ?? "",
-      fixedLens: c?.fixedLens ?? false,
-      mount: c?.mount ?? "",
-      description: c?.description ?? "",
+      brand: camera?.brand ?? "",
+      model: camera?.model ?? "",
+      fixedLens: camera?.fixedLens ?? false,
+      mount: camera?.mount ?? "",
+      description: camera?.description ?? "",
       focalLength: lens?.focalLength,
       maxAperture: lens?.maxAperture,
     },
@@ -52,31 +52,31 @@ let waitingForDetail = false;
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  const d = detail.data.value ?? undefined;
-  waitingForDetail = !!props.cameraId && !d;
-  fill(props.cameraId ? d : undefined);
+  const loaded = detail.data.value ?? undefined;
+  waitingForDetail = !!props.cameraId && !loaded;
+  fill(props.cameraId ? loaded : undefined);
 });
 
 watch(
   () => detail.data.value,
-  (d) => {
-    if (!open.value || !waitingForDetail || !d) return;
+  (loaded) => {
+    if (!open.value || !waitingForDetail || !loaded) return;
     waitingForDetail = false;
-    fill(d);
+    fill(loaded);
   },
 );
 
-async function submit(o: v.InferOutput<typeof CameraSchema>) {
+async function submit(output: v.InferOutput<typeof CameraSchema>) {
   const input = {
-    brand: o.brand,
-    model: o.model,
-    mount: o.mount,
-    description: o.description,
-    fixedLens: o.fixedLens,
+    brand: output.brand,
+    model: output.model,
+    mount: output.mount,
+    description: output.description,
+    fixedLens: output.fixedLens,
   };
   const builtIn =
-    o.fixedLens && !props.cameraId
-      ? { focalLength: o.focalLength!, maxAperture: o.maxAperture! }
+    output.fixedLens && !props.cameraId
+      ? { focalLength: output.focalLength!, maxAperture: output.maxAperture! }
       : undefined;
   let id = props.cameraId ?? "";
   const ok = await attempt(
@@ -170,6 +170,7 @@ async function submit(o: v.InferOutput<typeof CameraSchema>) {
           required
           type="number"
           min="1"
+          step="1"
           suffix="mm"
           placeholder="e.g. 35"
         >
@@ -178,7 +179,7 @@ async function submit(o: v.InferOutput<typeof CameraSchema>) {
               :values="FOCAL_PICKS"
               :current="getInput(form, { path: ['focalLength'] })"
               label="Common focal lengths"
-              @pick="(n) => setInput(form, { path: ['focalLength'], input: n })"
+              @pick="(value) => setInput(form, { path: ['focalLength'], input: value })"
             />
           </template>
         </FormInput>
@@ -197,8 +198,8 @@ async function submit(o: v.InferOutput<typeof CameraSchema>) {
               :values="APERTURE_PICKS"
               :current="getInput(form, { path: ['maxAperture'] })"
               label="Common apertures"
-              :format="(n) => `f/${n}`"
-              @pick="(n) => setInput(form, { path: ['maxAperture'], input: n })"
+              :format="(value) => `f/${value}`"
+              @pick="(value) => setInput(form, { path: ['maxAperture'], input: value })"
             />
           </template>
         </FormInput>

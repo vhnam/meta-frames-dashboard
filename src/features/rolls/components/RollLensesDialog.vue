@@ -39,17 +39,17 @@ async function submit() {
     <p v-if="!candidates.length" class="text-muted-foreground text-sm">
       The camera has no lenses yet. Link lenses to it first.
     </p>
-    <label v-for="l in candidates" :key="l.id" class="flex items-start gap-3 text-sm">
+    <label v-for="lens in candidates" :key="lens.id" class="flex items-start gap-3 text-sm">
       <Checkbox
         class="mt-0.5"
-        :model-value="selected.includes(l.id)"
+        :model-value="selected.includes(lens.id)"
         @update:model-value="
-          (on) => (selected = on ? [...selected, l.id] : selected.filter((id) => id !== l.id))
+          (on) => (selected = on ? [...selected, lens.id] : selected.filter((id) => id !== lens.id))
         "
       />
       <span class="grid">
-        <span>{{ [l.brand, l.model].filter(Boolean).join(" ") }}</span>
-        <span class="text-muted-foreground text-xs">{{ l.mount }} mount</span>
+        <span>{{ [lens.brand, lens.model].filter(Boolean).join(" ") }}</span>
+        <span class="text-muted-foreground text-xs">{{ lens.mount }} mount</span>
       </span>
     </label>
   </PlainDialog>

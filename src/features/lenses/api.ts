@@ -23,17 +23,17 @@ export interface ApiLens {
 }
 
 /** `builtInCameraId` is not on the wire: callers pass the owning camera when they know it. */
-export const toLens = (l: ApiLens, builtInCameraId: string | null = null): Lens => ({
-  id: l.id,
-  brand: l.brand,
-  model: l.model,
-  mount: l.mount ?? "",
-  focalLength: l.focalLength,
-  maxAperture: l.maxAperture,
-  description: l.description ?? "",
-  active: l.isActive,
+export const toLens = (lens: ApiLens, builtInCameraId: string | null = null): Lens => ({
+  id: lens.id,
+  brand: lens.brand,
+  model: lens.model,
+  mount: lens.mount ?? "",
+  focalLength: lens.focalLength,
+  maxAperture: lens.maxAperture,
+  description: lens.description ?? "",
+  active: lens.isActive,
   // built-in lenses always carry a camera id, even if we could not resolve it
-  builtInCameraId: l.isBuiltIn ? (builtInCameraId ?? "unknown") : null,
+  builtInCameraId: lens.isBuiltIn ? (builtInCameraId ?? "unknown") : null,
 });
 
 interface ApiCameraRef {
@@ -54,17 +54,19 @@ export const lensQueries = {
         ]);
         // a built-in lens belongs to the camera that points at it
         const owner = new Map(
-          cameras.filter((c) => c.builtInLensId).map((c) => [c.builtInLensId, c]),
+          cameras
+            .filter((camera) => camera.builtInLensId)
+            .map((camera) => [camera.builtInLensId, camera]),
         );
         return lenses
-          .map((l): LensRow => {
-            const camera = owner.get(l.id);
+          .map((lens): LensRow => {
+            const camera = owner.get(lens.id);
             return {
-              lens: toLens(l, camera?.id ?? null),
+              lens: toLens(lens, camera?.id ?? null),
               cameraName: camera ? cameraName({ brand: camera.brand, model: camera.model }) : null,
             };
           })
-          .sort((a, b) => a.lens.focalLength - b.lens.focalLength);
+          .sort((left, right) => left.lens.focalLength - right.lens.focalLength);
       },
     }),
 };
@@ -78,17 +80,17 @@ const toApiInput = (input: LensInput) => ({
   maxAperture: input.maxAperture,
 });
 
-export const saveLens = async (v: { id?: string; input: LensInput }) => {
-  const body = toApiInput(v.input);
-  if (v.id) {
-    await http.put(`/lenses/${v.id}`, body);
-    return v.id;
+export const saveLens = async (variables: { id?: string; input: LensInput }) => {
+  const body = toApiInput(variables.input);
+  if (variables.id) {
+    await http.put(`/lenses/${variables.id}`, body);
+    return variables.id;
   }
   return (await http.post<ApiLens>("/lenses", body)).data.id;
 };
 
-export const setLensActive = async (v: { id: string; active: boolean }) => {
-  await http.put(`/lenses/${v.id}/active`, { isActive: v.active });
+export const setLensActive = async (variables: { id: string; active: boolean }) => {
+  await http.put(`/lenses/${variables.id}/active`, { isActive: variables.active });
 };
 
 export const deleteLens = async (id: string) => {

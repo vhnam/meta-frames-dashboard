@@ -6,7 +6,9 @@ import { ask } from "#/shared/lib/ui";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
 const button = (name: string) =>
-  [...document.body.querySelectorAll("button")].find((b) => b.textContent?.trim() === name)!;
+  [...document.body.querySelectorAll("button")].find(
+    (right) => right.textContent?.trim() === name,
+  )!;
 
 async function open(message: string) {
   const answer = ask(message);

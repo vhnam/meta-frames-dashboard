@@ -47,9 +47,9 @@ const editor = useEditor({
 
 // Outside changes (a form reset) replace the content; our own updates are skipped.
 watch(model, (value) => {
-  const e = editor.value;
-  if (!e || value === (e.isEmpty ? "" : e.getMarkdown())) return;
-  e.commands.setContent(value, { contentType: "markdown", emitUpdate: false });
+  const instance = editor.value;
+  if (!instance || value === (instance.isEmpty ? "" : instance.getMarkdown())) return;
+  instance.commands.setContent(value, { contentType: "markdown", emitUpdate: false });
 });
 watch(
   () => props.disabled,

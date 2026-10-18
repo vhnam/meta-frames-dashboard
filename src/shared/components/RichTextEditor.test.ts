@@ -10,64 +10,64 @@ import RichTextEditor from "./RichTextEditor.vue";
 const notes = ref("");
 const editorOf = async (value: string) => {
   notes.value = value;
-  const w = mount(
+  const wrapper = mount(
     defineComponent(
       () => () =>
         h(RichTextEditor, {
           modelValue: notes.value,
-          "onUpdate:modelValue": (x: string) => (notes.value = x),
+          "onUpdate:modelValue": (next: string) => (notes.value = next),
         }),
     ),
     { attachTo: document.body },
   );
   await flushPromises();
-  return w;
+  return wrapper;
 };
 
 describe("RichTextEditor", () => {
   it("shows Markdown as formatted text", async () => {
-    const w = await editorOf("Push **one stop**\n\n- fine grain\n- warm");
-    expect(w.find("strong").text()).toBe("one stop");
-    expect(w.findAll("li")).toHaveLength(2);
-    w.unmount();
+    const wrapper = await editorOf("Push **one stop**\n\n- fine grain\n- warm");
+    expect(wrapper.find("strong").text()).toBe("one stop");
+    expect(wrapper.findAll("li")).toHaveLength(2);
+    wrapper.unmount();
   });
 
   it("writes formatting back as Markdown", async () => {
-    const w = await editorOf("grain");
+    const wrapper = await editorOf("grain");
     // select all, then bold it from the toolbar
-    const editor = w.findComponent({ name: "EditorContent" }).props("editor") as Editor;
+    const editor = wrapper.findComponent({ name: "EditorContent" }).props("editor") as Editor;
     editor.commands.selectAll();
-    await w.find('button[aria-label="Bold"]').trigger("click");
+    await wrapper.find('button[aria-label="Bold"]').trigger("click");
     await flushPromises();
     expect(notes.value).toBe("**grain**");
-    expect(w.find('button[aria-label="Bold"]').attributes("aria-pressed")).toBe("true");
-    w.unmount();
+    expect(wrapper.find('button[aria-label="Bold"]').attributes("aria-pressed")).toBe("true");
+    wrapper.unmount();
   });
 
   it("takes outside changes, e.g. a form reset", async () => {
-    const w = await editorOf("old notes");
+    const wrapper = await editorOf("old notes");
     notes.value = "## New";
     await flushPromises();
-    expect(w.find("h2").text()).toBe("New");
+    expect(wrapper.find("h2").text()).toBe("New");
     notes.value = "";
     await flushPromises();
-    expect(w.text()).not.toContain("New");
-    w.unmount();
+    expect(wrapper.text()).not.toContain("New");
+    wrapper.unmount();
   });
 
   it("keeps plain-text notes as they are", async () => {
-    const w = await editorOf("Rated at 320.");
-    expect(w.find("p").text()).toBe("Rated at 320.");
-    w.unmount();
+    const wrapper = await editorOf("Rated at 320.");
+    expect(wrapper.find("p").text()).toBe("Rated at 320.");
+    wrapper.unmount();
   });
 });
 
 describe("RichText", () => {
   it("renders Markdown read-only", async () => {
-    const w = mount(RichText, { props: { markdown: "*soft* highlights" } });
+    const wrapper = mount(RichText, { props: { markdown: "*soft* highlights" } });
     await flushPromises();
-    expect(w.find("em").text()).toBe("soft");
-    expect(w.find('[contenteditable="true"]').exists()).toBe(false);
-    w.unmount();
+    expect(wrapper.find("em").text()).toBe("soft");
+    expect(wrapper.find('[contenteditable="true"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 });
