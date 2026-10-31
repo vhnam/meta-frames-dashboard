@@ -1,8 +1,9 @@
 import axios, { isAxiosError } from "axios";
+import { env } from "#/shared/lib/env";
 
 /** Shared axios instance for the Meta-Frame API. Sends the session cookie on every request. */
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8080",
+  baseURL: env.VITE_API_URL,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
