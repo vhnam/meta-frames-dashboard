@@ -2,6 +2,7 @@
 import { cameraName } from "#/features/cameras";
 import { stockName } from "#/features/film-stocks";
 import { useDeleteRoll, useRollDetail } from "../queries";
+import { isRollComplete, negativesStillAtLab } from "../types";
 import type { RollDetail, RollRow } from "../types";
 import { useRouter } from "@tanstack/vue-router";
 import { ref } from "vue";
@@ -39,9 +40,6 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
   cameraName: rollDetail.camera ? cameraName(rollDetail.camera) : null,
   negativesAtLab: rollDetail.negativesAtLab,
 });
-
-const showNegBadge = (status: string, atLab: boolean) =>
-  (status === "scanned" || status === "developed") && atLab;
 </script>
 
 <template>
@@ -53,8 +51,17 @@ const showNegBadge = (status: string, atLab: boolean) =>
       >
         <template #actions>
           <RollStatusBadge :status="loaded.roll.status" />
-          <Badge v-if="showNegBadge(loaded.roll.status, loaded.negativesAtLab)" variant="outline">
+          <Badge
+            v-if="negativesStillAtLab(loaded.roll.status, loaded.negativesAtLab)"
+            variant="outline"
+          >
             Negatives at lab
+          </Badge>
+          <Badge
+            v-if="isRollComplete(loaded.roll.status, loaded.negativesAtLab)"
+            variant="secondary"
+          >
+            Complete
           </Badge>
         </template>
       </PageHeader>

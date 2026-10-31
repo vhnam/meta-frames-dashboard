@@ -159,6 +159,21 @@ export interface LoadRollInput {
 
 export const PROCESSING_TYPES = ["develop", "develop_scan", "scan", "print"] as const;
 export type ProcessingType = (typeof PROCESSING_TYPES)[number];
+/**
+ * Jobs that take a negatives-returned date. A print job closes only on it (PR-6), and a lab keeps
+ * "Negatives at lab" set until it is recorded, so a scan at a lab takes one too (RO-25).
+ */
+export const recordsNegativesReturned = (type: ProcessingType, atLab: boolean) =>
+  developsFilm(type) || type === "print" || (type === "scan" && atLab);
+/** Processed rolls whose negatives a lab still holds. */
+export const negativesStillAtLab = (status: RollStatus, negativesAtLab: boolean) =>
+  (status === "scanned" || status === "developed") && negativesAtLab;
+/**
+ * A roll with nothing left to wait for: processed, no job open and the negatives home. Derived,
+ * not a status, so a later re-scan or print simply reopens it.
+ */
+export const isRollComplete = (status: RollStatus, negativesAtLab: boolean) =>
+  (status === "scanned" || status === "developed") && !negativesAtLab;
 /** Job types that produce scans, and so need at least one scanner. */
 export const producesScans = (type: ProcessingType) => type === "develop_scan" || type === "scan";
 /** Job types that develop the film, so the lab returns negatives. */
