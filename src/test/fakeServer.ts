@@ -55,7 +55,71 @@ interface LabRec {
   id: string;
   name: string;
   address?: string;
+  scannerIds?: string[];
 }
+interface ScannerRec {
+  id: string;
+  brand: string;
+  model: string;
+  name: string;
+  kind?: string;
+  notes?: string;
+  defaultSettings: Record<string, unknown>;
+  builtIn: boolean;
+}
+
+const resolution = {
+  key: "resolution",
+  label: "Resolution",
+  type: "enum",
+  values: [
+    { value: "standard", label: "Standard" },
+    { value: "hi_res", label: "Hi-res" },
+  ],
+  default: "standard",
+};
+/** A part of the API's scan options: enough for each field type. */
+export const scannerKinds = [
+  { kind: "minilab", label: "Lab minilab", options: [resolution] },
+  {
+    kind: "flatbed",
+    label: "Flatbed",
+    options: [
+      {
+        key: "dpi",
+        label: "Resolution (dpi)",
+        type: "integer",
+        min: 300,
+        max: 12800,
+        default: 3200,
+      },
+      { key: "dust_removal", label: "Dust removal (ICE)", type: "boolean", default: false },
+    ],
+  },
+  { label: "Unknown kind", options: [resolution] },
+];
+
+/** The API's two built-in scanners, with their fixed ids. */
+const builtInScanners = (): ScannerRec[] => [
+  {
+    id: "e2bf4cbd-87a8-4a17-8340-516b1a1cc6bc",
+    brand: "Frontier",
+    model: "SP-3000",
+    name: "Frontier SP-3000",
+    kind: "minilab",
+    defaultSettings: {},
+    builtIn: true,
+  },
+  {
+    id: "d177cb3c-a850-4232-a4ca-75189b7b279b",
+    brand: "Noritsu",
+    model: "HS-1800",
+    name: "Noritsu HS-1800",
+    kind: "minilab",
+    defaultSettings: {},
+    builtIn: true,
+  },
+];
 
 let counter = 0;
 const id = () => `00000000-0000-4000-8000-${String(++counter).padStart(12, "0")}`;
@@ -66,6 +130,7 @@ export const server = {
   stocks: [] as StockRec[],
   rolls: [] as RollRec[],
   labs: [] as LabRec[],
+  scanners: builtInScanners(),
   requests: [] as { method: string; url: string; body: unknown }[],
 
   reset() {
@@ -74,6 +139,7 @@ export const server = {
     this.stocks = [];
     this.rolls = [];
     this.labs = [];
+    this.scanners = builtInScanners();
     this.requests = [];
   },
   addStock(overrides: Partial<StockRec> = {}): StockRec {
@@ -140,6 +206,27 @@ export const server = {
     const lab: LabRec = { id: id(), name: "Saigon Lab", ...overrides };
     this.labs.push(lab);
     return lab;
+  },
+  /** A scanner of the account's own. */
+  addScanner(
+    overrides: Partial<Omit<ScannerRec, "name" | "builtIn" | "defaultSettings">> & {
+      defaultSettings?: Record<string, unknown>;
+    } = {},
+  ): ScannerRec {
+    const brand = overrides.brand ?? "Epson";
+    const model = overrides.model ?? "V850";
+    const scanner: ScannerRec = {
+      id: id(),
+      kind: "flatbed",
+      defaultSettings: {},
+      ...overrides,
+      brand,
+      model,
+      name: model ? `${brand} ${model}` : brand,
+      builtIn: false,
+    };
+    this.scanners.push(scanner);
+    return scanner;
   },
 };
 
@@ -257,6 +344,12 @@ export function installFakeServer() {
       return respond(200, items);
     }
     if (method === "get" && url === "/labs") return respond(200, server.labs);
+    if (method === "post" && url === "/labs")
+      return respond(201, server.addLab({ ...body, scannerIds: body.scannerIds ?? [] }));
+    if (method === "get" && url === "/scanners") return respond(200, server.scanners);
+    if (method === "get" && url === "/scanner-kinds") return respond(200, scannerKinds);
+    if (method === "post" && url === "/scanners")
+      return respond(201, server.addScanner({ ...body }));
     if (method === "get" && url === "/rolls") {
       return respond(
         200,

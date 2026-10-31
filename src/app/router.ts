@@ -11,6 +11,7 @@ import { filmStocksRoutes } from "#/features/film-stocks/routes";
 import { labsRoutes } from "#/features/labs/routes";
 import { lensesRoutes } from "#/features/lenses/routes";
 import { rollsRoutes } from "#/features/rolls/routes";
+import { scannersRoutes } from "#/features/scanners/routes";
 
 // `/` is kept for public pages (landing, about, ...); until then it opens the app.
 const indexRoute = createRoute({
@@ -39,6 +40,7 @@ const routeTree = rootRoute.addChildren([
     ...lensesRoutes,
     ...filmStocksRoutes,
     ...labsRoutes,
+    ...scannersRoutes,
     ...auditRoutes,
   ]),
 ]);

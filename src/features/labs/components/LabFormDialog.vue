@@ -3,12 +3,13 @@ import { useDeleteLab, useLabList, useSaveLab } from "../queries";
 import { LabSchema } from "../schema";
 import { reset, useForm } from "@formisch/vue";
 import type * as v from "valibot";
-import { computed, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import FormInput from "#/shared/components/FormInput.vue";
 import FormSection from "#/shared/components/FormSection.vue";
 import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
 import { Button } from "#/shared/ui/button";
 import { ask, attempt } from "#/shared/lib/ui";
+import LabScannerPicker from "./LabScannerPicker.vue";
 
 const props = defineProps<{ labId?: string }>();
 const open = defineModel<boolean>("open", { required: true });
@@ -19,16 +20,21 @@ const save = useSaveLab();
 const remove = useDeleteLab();
 const form = useForm({ schema: LabSchema });
 const editing = computed(() => !!props.labId);
+/** The lab's scanners, the default first. */
+const scannerIds = ref<string[]>([]);
 watch(open, (isOpen) => {
   if (!isOpen) return;
   const lab = labs.data.value?.find((entry) => entry.id === props.labId);
   reset(form, { initialInput: { name: lab?.name ?? "", address: lab?.address ?? "" } });
+  scannerIds.value = [...(lab?.scannerIds ?? [])];
 });
 
 async function submit(output: v.InferOutput<typeof LabSchema>) {
   let id = props.labId ?? "";
   const ok = await attempt(
-    save.mutateAsync({ id: props.labId, ...output }).then((saved) => (id = saved)),
+    save
+      .mutateAsync({ id: props.labId, ...output, scannerIds: scannerIds.value })
+      .then((saved) => (id = saved)),
   );
   if (ok) {
     open.value = false;
@@ -50,7 +56,7 @@ async function doDelete() {
     :title="editing ? 'Edit Lab' : 'Add Lab'"
     :description="
       editing
-        ? 'Update the name and address of this lab'
+        ? 'Update this lab and the scanners it runs'
         : 'Register a lab you send film to for developing and scanning'
     "
     :submit-label="editing ? 'Save changes' : 'Add lab'"
@@ -74,6 +80,14 @@ async function doDelete() {
           placeholder="e.g. 12 Nguyen Hue, District 1"
         />
       </div>
+    </FormSection>
+
+    <FormSection
+      no="02"
+      title="Scanners"
+      note="Jobs sent to this lab offer these, the default first"
+    >
+      <LabScannerPicker v-model="scannerIds" />
     </FormSection>
 
     <template v-if="editing" #footer-start>
