@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A "Complete" badge on the Rolls list and the roll page for a Developed or Scanned roll whose
+  negatives are back from the lab. It is not a new status: a later re-scan or print opens the
+  roll again.
 - A "Page not found" page for unknown addresses. Under `/app` it shows inside the dashboard,
   with links back to Rolls and to the previous page; elsewhere it shows as a standalone page
   with a link home. Visitors who are not signed in still go to the login page for `/app` paths.
@@ -20,8 +23,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scanned, to scan the negatives again at another lab or at home. Earlier jobs and their scans
   stay. "Send to lab" is then hidden, so print jobs are only offered for a roll's first job.
 - Scanning or printing at home is labelled "Self-scan (at home)" or "Self-print (at home)" in
-  place of "Self-develop", and a new scan at home starts with "Other scanner" picked; picking a
-  lab switches it to the Noritsu until the scanners are changed by hand.
+  place of "Self-develop", and a new scan at home starts with your first own scanner picked
+  (none when you have none); picking a lab switches it to the lab's default scanner (the
+  Noritsu HS-1800 for a lab that names none) until the scanners are changed by hand.
+- A Scanners page at `/app/scanners` (under Film & Lab) listing the built-in Noritsu HS-1800 and
+  Frontier SP-3000, which are shared and read-only, next to your own scanners: another lab's
+  machine, a flatbed or a camera rig, each with a brand, an optional model (a lab's Noritsu of
+  unknown model is just "Noritsu"), optional kind and Markdown notes
+  (edited with the rich text editor, shown as plain text in the list). Every row opens: a
+  built-in scanner shows read-only, with its kind and default scan settings. Your
+  scanners can be added, edited and deleted (not while a job or scan uses them).
+- Labs name the scanners they run: the Add/Edit Lab dialog has a Scanners section to tick them,
+  the first being the lab's default ("Make default" moves another to the top), and an "Add a
+  scanner this lab runs" button. The Labs list shows each lab's scanners.
+- The scanner picker of Send to lab, Re-scan and job editing lists the chosen lab's scanners,
+  in its order, with "Show all scanners" for the rest; at home, or for a lab that names none, it
+  lists every scanner you can use. An "Add a scanner of your own" button creates one and orders
+  it straight away.
+  Jobs show each scanner by its name from the API.
+- Scan settings follow the scanner's kind in place of the Hi-res checkbox: a minilab offers
+  resolution and file format; a flatbed or film scanner dpi, bit depth, dust removal and
+  multi-exposure; a camera rig file format, pixel shift and shots stitched. Every scanner offers
+  the framing: cropped, with the film border, or with border and sprockets. Each ordered
+  scanner shows its settings in one line that opens into the fields, and starts from the
+  scanner's default settings, which the scanner dialog edits. The job history lists the settings
+  of each scanner.
 - Developing or scanning at home records when the negatives were developed and the roll was
   scanned, both today by default, so the job is complete as soon as it is saved. Dates a lab
   would give ("expected back") are not asked for. Editing a home job can change both dates.
@@ -31,6 +57,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Each job in a roll's Processing history reads top to bottom: the lab, with the service,
+  process and price on one line under it; a Dates table with a row for sending the roll (or
+  starting it at home) and for each thing that comes back (negatives, prints or scans), giving
+  the expected date, the actual date and a status: Done, late by some days, overdue by some
+  days in red, due in some days, or Waiting when no date is set; each ordered scanner with its
+  settings as tags ("Default settings" when none were changed); and the notes last.
+- Processing history lists the latest job first, by date sent.
+- Environment variables are validated at startup with t3-env and valibot
+  (`src/shared/lib/env.ts`). An invalid `VITE_API_URL` stops the app with an error naming the
+  variable; an empty one falls back to the default.
 - List tables open a record by clicking anywhere on its row (or Enter on a focused row), with a
   chevron at the end of the row. Rolls, Film stocks, Inventory, Expiry, Cameras and Lenses open
   the detail page; Labs, which have no detail page, open the edit dialog.
@@ -88,6 +124,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A print job, and a scan job at a lab, can record the day the negatives came back. A print job
+  used to stay open, keeping the roll At lab, and a lab scan kept "Negatives at lab" on the roll
+  for good. A print at home records the day it was printed.
 - In Add rolls, choosing 135 or 120 sets the default exposures again (36 or 12).
 
 ## [2.0.0] - 2026-10-08
