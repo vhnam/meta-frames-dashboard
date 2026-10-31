@@ -187,6 +187,9 @@ importers:
       '@formisch/vue':
         specifier: ^1.1.0
         version: 1.1.0(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(vue@3.5.43(typescript@6.0.3))
+      '@t3-oss/env-core':
+        specifier: ^0.13.11
+        version: 0.13.11(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(zod@3.25.76)
       '@tabler/icons-vue':
         specifier: ^3.48.0
         version: 3.48.0(vue@3.5.43(typescript@6.0.3))
@@ -878,6 +881,23 @@ packages:
 
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
+
+  '@t3-oss/env-core@0.13.11':
+    resolution: {integrity: sha512-sM7GYY+KL7H/Hl0BE0inWfk3nRHZOLhmVn7sHGxaZt9FAR6KqREXAE+6TqKfiavfXmpRxO/OZ2QgKRd+oiBYRQ==}
+    peerDependencies:
+      arktype: ^2.1.0
+      typescript: '>=5.0.0'
+      valibot: ^1.0.0-beta.7 || ^1.0.0
+      zod: ^3.24.0 || ^4.0.0
+    peerDependenciesMeta:
+      arktype:
+        optional: true
+      typescript:
+        optional: true
+      valibot:
+        optional: true
+      zod:
+        optional: true
 
   '@tabler/icons-vue@3.48.0':
     resolution: {integrity: sha512-HXv8qVtZgYMhF/yxoBKddhc2BRQ9OGX8iiwSglOXvzST2qKMYeAj1uYJ9JNxn4EhyI93ySlbPqG1+yz1i+1xdw==}
@@ -4229,6 +4249,12 @@ snapshots:
   '@swc/helpers@0.5.23':
     dependencies:
       tslib: 2.8.1
+
+  '@t3-oss/env-core@0.13.11(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(zod@3.25.76)':
+    optionalDependencies:
+      typescript: 6.0.3
+      valibot: 1.5.0(typescript@6.0.3)
+      zod: 3.25.76
 
   '@tabler/icons-vue@3.48.0(vue@3.5.43(typescript@6.0.3))':
     dependencies:
