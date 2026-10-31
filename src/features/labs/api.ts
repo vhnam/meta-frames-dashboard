@@ -12,12 +12,14 @@ export interface ApiLab {
   id: string;
   name: string;
   address?: string;
+  scannerIds?: string[];
 }
 
 const toLab = (apiLab: ApiLab): Lab => ({
   id: apiLab.id,
   name: apiLab.name,
   address: apiLab.address ?? "",
+  scannerIds: apiLab.scannerIds ?? [],
 });
 
 export const labQueries = {
@@ -31,8 +33,17 @@ export const labQueries = {
     }),
 };
 
-export const saveLab = async (variables: { id?: string; name: string; address: string }) => {
-  const body = { name: variables.name.trim(), address: variables.address.trim() || undefined };
+export const saveLab = async (variables: {
+  id?: string;
+  name: string;
+  address: string;
+  scannerIds: string[];
+}) => {
+  const body = {
+    name: variables.name.trim(),
+    address: variables.address.trim() || undefined,
+    scannerIds: variables.scannerIds,
+  };
   if (variables.id) {
     await http.put(`/labs/${variables.id}`, body);
     return variables.id;

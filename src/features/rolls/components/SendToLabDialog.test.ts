@@ -43,22 +43,37 @@ const receipts = () =>
     .map((request) => ({ what: request.url.split("/").pop(), body: request.body }));
 const today = () => new Date().toLocaleDateString("en-CA");
 
+const NORITSU = "d177cb3c-a850-4232-a4ca-75189b7b279b";
+
 describe("SendToLabDialog re-scan", () => {
-  it("scans at home on another scanner by default", async () => {
+  it("scans at home on your own scanner by default", async () => {
+    const epson = server.addScanner();
     const { wrapper } = await mountRescan();
     expect(document.body.textContent).toContain("Re-scan Roll");
     expect(document.body.textContent).toContain("Self-scan (at home)");
+    await vi.waitFor(() => expect(document.body.textContent).toContain("Epson V850"));
     submit();
     await vi.waitFor(() => expect(jobPut()).toBeDefined());
     expect(jobPut()).toMatchObject({
       type: "scan",
-      scanOrders: [{ scanner: "other", hiRes: false }],
+      scanOrders: [{ scannerId: epson.id, settings: { dpi: 3200, dust_removal: false } }],
     });
     expect(jobPut()!.labId).toBeUndefined();
     // scanned at home: done when recorded, so the scans are received the same day
     await vi.waitFor(() =>
       expect(receipts()).toEqual([{ what: "scans-received", body: { date: today() } }]),
     );
+    wrapper.unmount();
+  });
+
+  it("asks for a scanner at home when you have none of your own", async () => {
+    const { wrapper } = await mountRescan();
+    await vi.waitFor(() => expect(document.body.textContent).toContain("Noritsu HS-1800"));
+    submit();
+    await vi.waitFor(() =>
+      expect(document.body.textContent).toContain("Pick at least one scanner."),
+    );
+    expect(jobPut()).toBeUndefined();
     wrapper.unmount();
   });
 
@@ -77,16 +92,72 @@ describe("SendToLabDialog re-scan", () => {
     expect(jobPut()).toMatchObject({
       type: "scan",
       labId: lab.id,
-      scanOrders: [{ scanner: "noritsu", hiRes: false }],
+      scanOrders: [{ scannerId: NORITSU, settings: { resolution: "standard" } }],
     });
     await flushPromises();
     expect(receipts()).toEqual([]);
+    wrapper.unmount();
+  });
+  it("offers the scanners the lab runs, its default first", async () => {
+    // this lab runs a Noritsu whose model nobody knows, and a Frontier
+    const noritsu = server.addScanner({ brand: "Noritsu", model: "", kind: "minilab" });
+    const FRONTIER = "e2bf4cbd-87a8-4a17-8340-516b1a1cc6bc";
+    const lab = server.addLab({ name: "Other Lab", scannerIds: [noritsu.id, FRONTIER] });
+    const { wrapper } = await mountRescan();
+    await vi.waitFor(() =>
+      expect(document.body.querySelector(`option[value="${lab.id}"]`)).not.toBeNull(),
+    );
+    const labSelect = document.body.querySelector("select") as HTMLSelectElement;
+    labSelect.value = lab.id;
+    labSelect.dispatchEvent(new Event("change"));
+    await flushPromises();
+    const picker = document.body.querySelector("fieldset")!.textContent!;
+    expect(picker).toContain("Frontier SP-3000");
+    expect(picker).not.toContain("Noritsu HS-1800");
+    expect(picker).toContain("Show all scanners");
+    submit();
+    await vi.waitFor(() => expect(jobPut()).toBeDefined());
+    expect(jobPut()).toMatchObject({ labId: lab.id, scanOrders: [{ scannerId: noritsu.id }] });
+    wrapper.unmount();
+  });
+});
+
+describe("SendToLabDialog scan settings", () => {
+  it("orders the lab's scanner with the settings picked for it", async () => {
+    const lab = server.addLab({ name: "Saigon Film Lab" });
+    const { wrapper } = await mountRescan();
+    await vi.waitFor(() =>
+      expect(document.body.querySelector(`option[value="${lab.id}"]`)).not.toBeNull(),
+    );
+    const labSelect = document.body.querySelector("select") as HTMLSelectElement;
+    labSelect.value = lab.id;
+    labSelect.dispatchEvent(new Event("change"));
+    await flushPromises();
+    // the order's settings fold under a summary; opening it shows a field per option
+    const summary = [...document.body.querySelectorAll("button[aria-expanded]")].find(
+      (button) => button.textContent?.trim() === "Standard",
+    ) as HTMLButtonElement;
+    summary.click();
+    await flushPromises();
+    const resolution = document.body.querySelector(
+      `select[aria-label="Resolution"]`,
+    ) as HTMLSelectElement;
+    resolution.value = "hi_res";
+    resolution.dispatchEvent(new Event("change"));
+    await flushPromises();
+    expect(summary.textContent?.trim()).toBe("Hi-res");
+    submit();
+    await vi.waitFor(() => expect(jobPut()).toBeDefined());
+    expect(jobPut()).toMatchObject({
+      scanOrders: [{ scannerId: NORITSU, settings: { resolution: "hi_res" } }],
+    });
     wrapper.unmount();
   });
 });
 
 describe("SendToLabDialog at home", () => {
   it("records negatives developed and scans as done", async () => {
+    server.addScanner();
     const stock = server.addStock({ name: "Portra", brand: "Kodak" });
     const rec = server.addRoll({ filmStockId: stock.id, status: "done_shooting" });
     const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
@@ -101,6 +172,7 @@ describe("SendToLabDialog at home", () => {
     await flushPromises();
     expect(document.body.textContent).toContain("Negatives developed");
     expect(document.body.textContent).not.toContain("expected back");
+    await vi.waitFor(() => expect(document.body.textContent).toContain("Epson V850"));
     submit();
     await vi.waitFor(() => expect(receipts()).toHaveLength(2));
     expect(jobPut()).toMatchObject({ type: "develop_scan" });
@@ -114,6 +186,7 @@ describe("SendToLabDialog at home", () => {
 
 describe("SendToLabDialog editing a job", () => {
   it("keeps the lab and lets a home develop job add scanning", async () => {
+    const epson = server.addScanner();
     const stock = server.addStock({ name: "Portra", brand: "Kodak" });
     const rec = server.addRoll({ filmStockId: stock.id, status: "developed" });
     const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
@@ -159,8 +232,89 @@ describe("SendToLabDialog editing a job", () => {
     await vi.waitFor(() => expect(jobPut()).toBeDefined());
     expect(jobPut()).toMatchObject({
       type: "develop_scan",
-      scanOrders: [{ scanner: "other", hiRes: false }],
+      scanOrders: [{ scannerId: epson.id, settings: { dpi: 3200, dust_removal: false } }],
     });
+    wrapper.unmount();
+  });
+
+  it.each(["print", "scan"] as const)("closes a %s job at a lab on the negatives", async (type) => {
+    const lab = server.addLab({ name: "Saigon Film Lab" });
+    const stock = server.addStock({ name: "Portra", brand: "Kodak" });
+    const rec = server.addRoll({ filmStockId: stock.id, status: "at_lab" });
+    const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
+      (row) => row.roll.id === rec.id,
+    )!;
+    const job = {
+      id: "job-2",
+      labId: lab.id,
+      labName: lab.name,
+      type,
+      process: "C-41" as const,
+      sentDate: "2026-10-01",
+      scansExpectedDate: null,
+      negativesExpectedDate: null,
+      scansReceivedDate: type === "scan" ? "2026-10-03" : null,
+      negativesReturnedDate: null,
+      price: null,
+      notes: "",
+      scanOrders:
+        type === "scan"
+          ? [
+              {
+                scannerId: NORITSU,
+                scannerName: "Noritsu HS-1800",
+                settings: { resolution: "hi_res" },
+                scanCount: 0,
+              },
+            ]
+          : [],
+      open: type === "print",
+    };
+    const wrapper = mount(SendToLabDialog, {
+      attachTo: document.body,
+      props: { open: false, row, job },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Select: SelectStub } },
+    });
+    await wrapper.setProps({ open: true } as never);
+    await flushPromises();
+    expect(document.body.textContent).toContain("Negatives returned");
+    // formisch names a field by its JSON path
+    const returned = document.body.querySelector(
+      "input[name='[\"negativesReturnedAt\"]']",
+    ) as HTMLInputElement;
+    returned.value = "2026-10-08";
+    returned.dispatchEvent(new Event("input"));
+    await flushPromises();
+    submit();
+    await vi.waitFor(() =>
+      expect(receipts()).toContainEqual({
+        what: "negatives-returned",
+        body: { date: "2026-10-08" },
+      }),
+    );
+    wrapper.unmount();
+  });
+});
+
+describe("SendToLabDialog printing at home", () => {
+  it("records the day the prints were made", async () => {
+    const stock = server.addStock({ name: "Portra", brand: "Kodak" });
+    const rec = server.addRoll({ filmStockId: stock.id, status: "developed" });
+    const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
+      (row) => row.roll.id === rec.id,
+    )!;
+    const wrapper = mount(SendToLabDialog, {
+      attachTo: document.body,
+      props: { open: false, row, types: ["print"] },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Select: SelectStub } },
+    });
+    await wrapper.setProps({ open: true } as never);
+    await flushPromises();
+    expect(document.body.textContent).toContain("Printed");
+    submit();
+    await vi.waitFor(() =>
+      expect(receipts()).toEqual([{ what: "negatives-returned", body: { date: today() } }]),
+    );
     wrapper.unmount();
   });
 });

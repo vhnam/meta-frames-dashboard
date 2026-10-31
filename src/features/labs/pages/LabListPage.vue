@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useLabList } from "../queries";
+import { useScannerList } from "#/features/scanners";
 import type { Lab } from "../types";
 import { ref } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
@@ -11,6 +12,13 @@ import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import LabFormDialog from "../components/LabFormDialog.vue";
 
 const labs = useLabList();
+const scanners = useScannerList();
+/** The lab's scanner names, the default first. */
+const scannerNames = (lab: Lab) =>
+  lab.scannerIds
+    .map((scannerId) => scanners.data.value?.find((scanner) => scanner.id === scannerId)?.name)
+    .filter(Boolean)
+    .join(", ") || "No scanners";
 const open = ref(false);
 const editing = ref<string>();
 function show(id?: string) {
@@ -30,6 +38,12 @@ const columns: DataTableColumn<Lab>[] = [
     header: "Address",
     accessorFn: (lab) => lab.address || "No address",
     cell: ({ row }) => mutedCell(row.original.address || "No address"),
+  },
+  {
+    id: "scanners",
+    header: "Scanners",
+    accessorFn: scannerNames,
+    cell: ({ row }) => mutedCell(scannerNames(row.original)),
   },
 ];
 </script>
