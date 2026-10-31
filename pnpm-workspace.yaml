@@ -1,4 +1,20 @@
 allowBuilds:
+  "@ladybugdb/core": true
+  gitnexus: true
+  tree-sitter: true
+  tree-sitter-javascript: true
+  tree-sitter-typescript: true
+  tree-sitter-c-sharp: false
+  tree-sitter-cpp: false
+  tree-sitter-go: false
+  tree-sitter-java: false
+  tree-sitter-php: false
+  tree-sitter-python: false
+  tree-sitter-ruby: false
+  tree-sitter-rust: false
+  "@scarf/scarf": false
+  protobufjs: false
+  onnxruntime-node: false
   vue-demi: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@1.0.0
