@@ -8,6 +8,7 @@ import type { ApiStock } from "#/features/film-stocks/api";
 import type { Process } from "#/features/film-stocks/types";
 import { toLens } from "#/features/lenses/api";
 import type { ApiLens } from "#/features/lenses/api";
+import type { ScanSettings } from "#/features/scanners/types";
 import { expiryDate, isExpired } from "./format";
 import type {
   AddRollsInput,
@@ -19,7 +20,6 @@ import type {
   SendToLabInput,
   ProcessingType,
   RollStatus,
-  Scanner,
   UpdateRollInput,
 } from "./types";
 
@@ -84,7 +84,12 @@ interface ApiRollDetail {
     negativesReturnedAt?: string;
     price?: number;
     notes?: string;
-    scanOrders?: { scanner: Scanner; hiRes: boolean; scanCount: number }[];
+    scanOrders?: {
+      scannerId: string;
+      scannerName: string;
+      settings?: ScanSettings;
+      scanCount: number;
+    }[];
     isOpen: boolean;
   }[];
   totals: { total: number; incomplete: boolean };
@@ -178,7 +183,12 @@ export const rollQueries = {
             negativesReturnedDate: job.negativesReturnedAt ?? null,
             price: job.price ?? null,
             notes: job.notes ?? "",
-            scanOrders: job.scanOrders ?? [],
+            scanOrders: (job.scanOrders ?? []).map((order) => ({
+              scannerId: order.scannerId,
+              scannerName: order.scannerName,
+              settings: order.settings ?? {},
+              scanCount: order.scanCount,
+            })),
             open: job.isOpen,
           })),
           frames: data.frames.map((frame) => ({
@@ -268,7 +278,10 @@ const putJob = async (rollId: string, jobId: string, input: SendToLabInput) => {
     scansExpectedAt: input.scansExpectedAt || undefined,
     negativesExpectedAt: input.negativesExpectedAt || undefined,
     notes: input.notes || undefined,
-    scanOrders: input.scanOrders,
+    scanOrders: input.scanOrders.map((order) => ({
+      scannerId: order.scannerId,
+      settings: order.settings,
+    })),
   });
 };
 

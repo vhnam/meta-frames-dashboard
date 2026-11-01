@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { formatDate, formatVnd } from "#/shared/lib/format";
 import { useDeleteJob } from "../queries";
-import { PROCESSING_TYPE_LABELS, SCANNER_LABELS, developsFilm, producesScans } from "../types";
+import { PROCESSING_TYPE_LABELS, producesScans, recordsNegativesReturned } from "../types";
 import type { RollJob, RollRow } from "../types";
 import type { Process } from "#/features/film-stocks/types";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import EmptyState from "#/shared/components/EmptyState.vue";
 import { RichText } from "#/shared/components/richText";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#/shared/ui/table";
 import { ask, attempt } from "#/shared/lib/ui";
 import SendToLabDialog from "./SendToLabDialog.vue";
+import {
+  optionsForKind,
+  settingsParts,
+  useScannerKinds,
+  useScannerList,
+} from "#/features/scanners";
 
 const props = defineProps<{
   row: RollRow;
@@ -21,6 +26,27 @@ const props = defineProps<{
 }>();
 
 const rollId = () => props.row.roll.id;
+
+const scanners = useScannerList();
+const kinds = useScannerKinds();
+/** Options of an ordered scanner's kind, to word its settings. */
+const optionsOfScanner = (scannerId: string) =>
+  optionsForKind(
+    kinds.data.value,
+    scanners.data.value?.find((scanner) => scanner.id === scannerId)?.kind,
+  );
+
+/** Latest job first. ISO dates compare as strings; jobs sent the same day keep the later one on
+ * top. */
+const newestFirst = computed(() =>
+  props.jobs
+    .map((job, index) => ({ job, index }))
+    .sort(
+      (left, right) =>
+        right.job.sentDate.localeCompare(left.job.sentDate) || right.index - left.index,
+    )
+    .map(({ job }) => job),
+);
 const deleteJob = useDeleteJob();
 
 const editing = ref<RollJob>();
@@ -36,131 +62,186 @@ async function remove(job: RollJob) {
     await attempt(deleteJob.mutateAsync({ rollId: rollId(), jobId: job.id }));
 }
 
-/** ISO dates compare as strings. */
-const isOverdue = (job: RollJob) =>
-  !job.scansReceivedDate &&
-  !!job.scansExpectedDate &&
-  job.scansExpectedDate < new Date().toLocaleDateString("en-CA");
+/** The service, the process and the price, as one line under the lab. */
+const jobSummary = (job: RollJob) =>
+  [
+    PROCESSING_TYPE_LABELS[job.type],
+    job.process,
+    job.price == null ? undefined : formatVnd(job.price),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
-const isNegativesOverdue = (job: RollJob) =>
-  !job.negativesReturnedDate &&
-  !!job.negativesExpectedDate &&
-  job.negativesExpectedDate < new Date().toLocaleDateString("en-CA");
+type Tone = "done" | "late" | "overdue" | "due" | "pending";
 
-function jobFacts(job: RollJob) {
-  return [
-    { label: "Type", value: PROCESSING_TYPE_LABELS[job.type] },
-    { label: "Process", value: job.process },
-    { label: "Sent", value: formatDate(job.sentDate) },
-    // a scanning job always shows when its scans are due, even before a date is set
-    ...(job.scanOrders.length || job.scansExpectedDate
-      ? [
-          {
-            label: "Scans expected",
-            value: formatDate(job.scansExpectedDate),
-            overdue: isOverdue(job),
-          },
-        ]
-      : []),
-    // a lab that develops keeps the negatives until they are returned: show when they are due
-    ...((developsFilm(job.type) && job.labId) || job.negativesExpectedDate
-      ? [
-          {
-            label: "Negatives expected",
-            value: formatDate(job.negativesExpectedDate),
-            overdue: isNegativesOverdue(job),
-          },
-        ]
-      : []),
-    // receipts follow the service: scans from a scanning job, negatives from developing
-    ...(producesScans(job.type)
-      ? [{ label: "Scans received", value: formatDate(job.scansReceivedDate) }]
-      : []),
-    ...(developsFilm(job.type)
-      ? [{ label: "Negatives returned", value: formatDate(job.negativesReturnedDate) }]
-      : []),
+interface Step {
+  label: string;
+  /** Absent when no date is ever expected: sending the roll, or work done at home. */
+  expected?: string | null;
+  actual: string | null;
+  status: { text: string; tone: Tone };
+}
+
+const today = () => new Date().toLocaleDateString("en-CA");
+
+/** Whole days from one ISO date to another; read as UTC days so DST cannot shift them. */
+const daysBetween = (from: string, to: string) =>
+  Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+
+const plural = (count: number) => `${count} day${count === 1 ? "" : "s"}`;
+
+/** Where a step stands: done (on time or late), or still waiting (overdue, due, no date). */
+function statusOf(expected: string | null, actual: string | null): Step["status"] {
+  if (actual) {
+    const late = expected ? daysBetween(expected, actual) : 0;
+    return late > 0
+      ? { text: `${plural(late)} late`, tone: "late" }
+      : { text: "Done", tone: "done" };
+  }
+  if (!expected) return { text: "Waiting", tone: "pending" };
+  const left = daysBetween(today(), expected);
+  if (left < 0) return { text: `Overdue ${plural(-left)}`, tone: "overdue" };
+  return { text: left ? `Due in ${plural(left)}` : "Due today", tone: "due" };
+}
+
+const TONE_CLASSES: Record<Tone, string> = {
+  done: "text-emerald-700 dark:text-emerald-400",
+  late: "text-amber-700 dark:text-amber-400",
+  overdue: "text-destructive font-medium",
+  due: "text-foreground",
+  pending: "text-muted-foreground",
+};
+
+/**
+ * The job's steps in order: the roll goes out, then the negatives (or prints) and the scans come
+ * back. Negatives come back from developing, printing or a lab scan. A lab step always has an
+ * expected cell, so a date not set yet still shows; work at home has none.
+ */
+function jobSteps(job: RollJob): Step[] {
+  const atLab = !!job.labId;
+  const steps: Step[] = [
+    {
+      label: atLab ? "Sent" : "Started",
+      actual: job.sentDate,
+      status: { text: "Done", tone: "done" },
+    },
   ];
+  if (recordsNegativesReturned(job.type, atLab) || job.negativesExpectedDate)
+    steps.push({
+      label: !atLab && job.type === "print" ? "Prints" : atLab ? "Negatives back" : "Negatives",
+      expected: atLab ? job.negativesExpectedDate : undefined,
+      actual: job.negativesReturnedDate,
+      status: statusOf(job.negativesExpectedDate, job.negativesReturnedDate),
+    });
+  if (producesScans(job.type))
+    steps.push({
+      label: atLab ? "Scans back" : "Scans",
+      expected: atLab ? job.scansExpectedDate : undefined,
+      actual: job.scansReceivedDate,
+      status: statusOf(job.scansExpectedDate, job.scansReceivedDate),
+    });
+  return steps;
 }
 </script>
 
 <template>
   <EmptyState v-if="!jobs.length" text="Not sent for processing yet." />
   <ul v-else class="grid gap-3">
-    <li v-for="job in jobs" :key="job.id" class="grid gap-4 rounded-lg border p-4">
-      <div class="flex items-start justify-between gap-3">
+    <li
+      v-for="job in newestFirst"
+      :key="job.id"
+      class="grid min-w-0 gap-5 rounded-lg border p-4 sm:p-5"
+    >
+      <header class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <p class="text-base leading-snug font-semibold text-balance">{{ job.labName }}</p>
-          <RichText
-            v-if="job.notes"
-            :markdown="job.notes"
-            class="text-muted-foreground mt-1 text-sm leading-relaxed"
-          />
+          <p class="text-muted-foreground mt-0.5 text-sm">{{ jobSummary(job) }}</p>
         </div>
-        <div class="flex shrink-0 flex-col items-end gap-1">
-          <Badge :variant="job.open ? 'destructive' : 'secondary'">
-            {{ job.open ? "Open" : "Closed" }}
-          </Badge>
-          <p class="text-sm font-semibold tabular-nums">{{ formatVnd(job.price) }}</p>
-        </div>
-      </div>
+        <Badge :variant="job.open ? 'destructive' : 'secondary'" class="shrink-0">
+          {{ job.open ? "Open" : "Closed" }}
+        </Badge>
+      </header>
 
-      <div class="grid items-start gap-4 sm:grid-cols-2">
-        <div class="grid gap-2">
-          <p class="bg-muted rounded-md px-2 py-1 text-sm font-semibold">Processing</p>
-          <Table>
-            <TableBody>
-              <TableRow
-                v-for="fact in jobFacts(job)"
-                :key="fact.label"
-                class="hover:bg-transparent"
-              >
-                <TableHead
-                  scope="row"
-                  class="text-muted-foreground h-auto px-2 py-1.5 text-left text-sm font-normal whitespace-normal"
+      <section class="grid gap-2" aria-label="Dates">
+        <h4 class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Dates</h4>
+        <div class="overflow-x-auto rounded-md border">
+          <!-- fixed widths keep every job's columns in line, filled in or not -->
+          <table class="w-full min-w-[36rem] table-fixed text-sm">
+            <colgroup>
+              <col />
+              <col class="w-32" />
+              <col class="w-32" />
+              <col class="w-40" />
+            </colgroup>
+            <thead class="bg-muted/50">
+              <tr class="text-muted-foreground text-left text-xs">
+                <th scope="col" class="px-3 py-2 font-medium">Step</th>
+                <th scope="col" class="px-3 py-2 font-medium">Expected</th>
+                <th scope="col" class="px-3 py-2 font-medium">Actual</th>
+                <th scope="col" class="px-3 py-2 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y border-t">
+              <tr v-for="step in jobSteps(job)" :key="step.label">
+                <th scope="row" class="px-3 py-2.5 text-left font-medium">{{ step.label }}</th>
+                <td
+                  class="px-3 py-2.5 tabular-nums"
+                  :class="!step.expected && 'text-muted-foreground'"
                 >
-                  {{ fact.label }}
-                </TableHead>
-                <TableCell
-                  class="px-2 py-1.5 tabular-nums"
-                  :class="fact.overdue && 'text-destructive font-medium'"
+                  {{ formatDate(step.expected) }}
+                </td>
+                <td
+                  class="px-3 py-2.5 tabular-nums"
+                  :class="!step.actual && 'text-muted-foreground'"
                 >
-                  {{ fact.value }}
-                  <span v-if="fact.overdue" class="text-xs">(overdue)</span>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                  {{ formatDate(step.actual) }}
+                </td>
+                <td class="px-3 py-2.5" :class="TONE_CLASSES[step.status.tone]">
+                  <span class="inline-flex items-center gap-2">
+                    <span class="size-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" />
+                    {{ step.status.text }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </section>
 
-        <div class="grid gap-2">
-          <p class="bg-muted rounded-md px-2 py-1 text-sm font-semibold">Scans</p>
-          <Table>
-            <TableHeader>
-              <TableRow class="hover:bg-transparent">
-                <TableHead class="h-8 px-2">Scanner</TableHead>
-                <TableHead class="h-8 px-2">Resolution</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow v-if="!job.scanOrders.length" class="hover:bg-transparent">
-                <TableCell colspan="2" class="text-muted-foreground px-2 py-1.5">None</TableCell>
-              </TableRow>
-              <TableRow
-                v-for="order in job.scanOrders"
-                :key="order.scanner"
-                class="hover:bg-transparent"
+      <section v-if="job.scanOrders.length" class="grid gap-2" aria-label="Scans">
+        <h4 class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Scans</h4>
+        <ul class="divide-y rounded-md border">
+          <li
+            v-for="order in job.scanOrders"
+            :key="order.scannerId"
+            class="grid gap-1.5 px-3 py-2.5 sm:grid-cols-[minmax(0,12rem)_1fr] sm:items-center sm:gap-4"
+          >
+            <span class="text-sm font-medium">{{ order.scannerName }}</span>
+            <span class="flex flex-wrap gap-1.5">
+              <span
+                v-for="part in settingsParts(order.settings, optionsOfScanner(order.scannerId))"
+                :key="part"
+                class="bg-muted rounded px-1.5 py-0.5 text-xs"
               >
-                <TableCell class="px-2 py-1.5 whitespace-normal">
-                  {{ SCANNER_LABELS[order.scanner] }}
-                </TableCell>
-                <TableCell class="px-2 py-1.5">{{ order.hiRes ? "Hi-res" : "Standard" }}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                {{ part }}
+              </span>
+              <span
+                v-if="!settingsParts(order.settings, optionsOfScanner(order.scannerId)).length"
+                class="text-muted-foreground text-xs"
+              >
+                Default settings
+              </span>
+            </span>
+          </li>
+        </ul>
+      </section>
 
-      <div class="flex justify-end gap-2 border-t pt-3">
+      <section v-if="job.notes" class="grid gap-2" aria-label="Notes">
+        <h4 class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Notes</h4>
+        <RichText :markdown="job.notes" class="text-sm leading-relaxed" />
+      </section>
+
+      <footer class="flex justify-end gap-2 border-t pt-3">
         <Button type="button" size="sm" variant="outline" @click="edit(job)">Edit</Button>
         <Button
           type="button"
@@ -171,7 +252,7 @@ function jobFacts(job: RollJob) {
         >
           Delete
         </Button>
-      </div>
+      </footer>
     </li>
   </ul>
   <SendToLabDialog

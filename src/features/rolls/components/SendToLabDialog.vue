@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { useLabList } from "#/features/labs";
+import {
+  NORITSU_HS1800,
+  sameSettings,
+  startingSettings,
+  useScannerKinds,
+  useScannerList,
+} from "#/features/scanners";
 import { PROCESSES } from "#/features/film-stocks/types";
 import { PROCESS_LABELS } from "#/features/film-stocks/types";
 import type { Process } from "#/features/film-stocks/types";
@@ -10,7 +17,13 @@ import {
   useUpdateJob,
 } from "../queries";
 import { SendToLabSchema } from "../schema";
-import { PROCESSING_TYPES, PROCESSING_TYPE_LABELS, developsFilm, producesScans } from "../types";
+import {
+  PROCESSING_TYPES,
+  PROCESSING_TYPE_LABELS,
+  developsFilm,
+  producesScans,
+  recordsNegativesReturned,
+} from "../types";
 import type { ProcessingType, RollJob, RollRow, ScanOrder } from "../types";
 import { getInput, reset, useForm } from "@formisch/vue";
 import type * as v from "valibot";
@@ -40,6 +53,8 @@ const props = defineProps<{
 const open = defineModel<boolean>("open", { required: true });
 
 const labs = useLabList();
+const scanners = useScannerList();
+const kinds = useScannerKinds();
 const send = useSendToLab();
 const update = useUpdateJob();
 const scansReceived = useRecordScansReceived();
@@ -56,7 +71,7 @@ watch(open, (isOpen) => {
   scanError.value = undefined;
   const job = props.job;
   if (job) {
-    scanOrders.value = job.scanOrders.map(({ scanner, hiRes }) => ({ scanner, hiRes }));
+    scanOrders.value = job.scanOrders.map(({ scannerId, settings }) => ({ scannerId, settings }));
     reset(form, {
       initialInput: {
         labId: job.labId ?? SELF,
@@ -91,8 +106,14 @@ watch(open, (isOpen) => {
 const type = computed(() => getInput(form, { path: ["type"] }));
 const lockedScanners = computed(
   () =>
-    props.job?.scanOrders.filter((order) => order.scanCount > 0).map((order) => order.scanner) ??
+    props.job?.scanOrders.filter((order) => order.scanCount > 0).map((order) => order.scannerId) ??
     [],
+);
+/** Names of the job's scanners, for one the scanner list no longer holds. */
+const orderedNames = computed(() =>
+  Object.fromEntries(
+    props.job?.scanOrders.map((order) => [order.scannerId, order.scannerName]) ?? [],
+  ),
 );
 const needsScanners = computed(() => !!type.value && producesScans(type.value));
 const labId = computed(() => getInput(form, { path: ["labId"] }));
@@ -101,27 +122,56 @@ const atHome = computed(() => labId.value === SELF);
 const expectsNegatives = computed(
   () => !!type.value && developsFilm(type.value) && !!labId.value && !atHome.value,
 );
-/** Negatives are recorded for a service that develops, at a lab or at home. */
-const recordsNegatives = computed(() => !!type.value && developsFilm(type.value));
+/** Developing and printing close on the negatives, and a lab scan holds them until returned. */
+const recordsNegatives = computed(
+  () => !!type.value && recordsNegativesReturned(type.value, !atHome.value),
+);
+/** At home the date marks the work done; from a lab, the negatives coming back. */
+const negativesLabel = computed(() =>
+  !atHome.value ? "Negatives returned" : type.value === "print" ? "Printed" : "Negatives developed",
+);
 /** Receipt dates are asked for when editing a job, and for work done at home. */
 const showReceipts = computed(() => !!props.job || atHome.value);
 /** Stand-in value for working at home: the API takes no lab id then. */
 const SELF = "self";
-/** A lab scans on its Noritsu by default; at home it is some other scanner. */
-const defaultScanOrders = (lab: string | undefined): ScanOrder[] => [
-  { scanner: lab === SELF ? "other" : "noritsu", hiRes: false },
-];
-const isDefaultOrder = (orders: ScanOrder[]) =>
-  orders.length === 1 &&
-  !orders[0].hiRes &&
-  (orders[0].scanner === "noritsu" || orders[0].scanner === "other");
+/** The scanner used at home by default: the first of the account's own, if any. */
+const homeScanner = computed(() => scanners.data.value?.find((scanner) => !scanner.builtIn)?.id);
+/** The scanners a lab runs, the default first; none at home or for a lab that names none. */
+const scannersOfLab = (lab: string | undefined) =>
+  labs.data.value?.find((entry) => entry.id === lab)?.scannerIds ?? [];
+/** Scanners the picker offers: the chosen lab's, or every scanner when it names none. */
+const labScanners = computed(() => scannersOfLab(labId.value));
+/**
+ * A lab scans on its default scanner, or the Noritsu when it names none; at home on your own
+ * scanner, when you have one.
+ */
+const defaultScanOrders = (lab: string | undefined): ScanOrder[] => {
+  const scannerId = lab === SELF ? homeScanner.value : (scannersOfLab(lab)[0] ?? NORITSU_HS1800);
+  const scanner = scanners.data.value?.find((candidate) => candidate.id === scannerId);
+  return scannerId
+    ? [{ scannerId, settings: scanner ? startingSettings(kinds.data.value, scanner) : {} }]
+    : [];
+};
+/** Untouched since it was picked for the lab: no scanner, or the default one with its defaults. */
+const isDefaultOrder = (orders: ScanOrder[]) => {
+  if (orders.length === 0) return true;
+  const [order] = orders;
+  const defaults = [
+    NORITSU_HS1800,
+    homeScanner.value,
+    ...(labs.data.value ?? []).map((lab) => lab.scannerIds[0]),
+  ];
+  if (orders.length > 1 || !defaults.includes(order.scannerId)) return false;
+  const scanner = scanners.data.value?.find((candidate) => candidate.id === order.scannerId);
+  return !scanner || sameSettings(order.settings, startingSettings(kinds.data.value, scanner));
+};
 
 watch(needsScanners, (needs) => {
   if (needs && !scanOrders.value.length) scanOrders.value = defaultScanOrders(labId.value);
 });
 // a new job follows the lab with its scanner until the scanners are picked by hand
-watch(labId, (lab) => {
-  if (!props.job && needsScanners.value && isDefaultOrder(scanOrders.value))
+watch([labId, homeScanner, () => kinds.data.value, () => labs.data.value], ([lab]) => {
+  if (open.value && !props.job && needsScanners.value && isDefaultOrder(scanOrders.value))
     scanOrders.value = defaultScanOrders(lab);
 });
 
@@ -294,7 +344,13 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
     </FormSection>
 
     <FormSection v-if="needsScanners" :no="no.scans" title="Scans" note="One order per scanner">
-      <ScanOrderPicker v-model="scanOrders" :error="scanError" :locked="lockedScanners" />
+      <ScanOrderPicker
+        v-model="scanOrders"
+        :error="scanError"
+        :locked="lockedScanners"
+        :names="orderedNames"
+        :offered="labScanners"
+      />
     </FormSection>
 
     <FormSection :no="no.dates" title="Dates" note="Leave blank when not known yet">
@@ -327,7 +383,7 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
             v-if="recordsNegatives"
             :of="form"
             :path="['negativesReturnedAt']"
-            :label="atHome ? 'Negatives developed' : 'Negatives returned'"
+            :label="negativesLabel"
             optional
             type="date"
           />

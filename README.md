@@ -54,6 +54,9 @@ vp dev
 | -------------- | ----------------------- | ------------------------------- |
 | `VITE_API_URL` | `http://localhost:8080` | Base URL of the Meta-Frame API. |
 
+Variables are validated at startup in `src/shared/lib/env.ts`. Add new ones to its schema and
+read them from `env`, not `import.meta.env`.
+
 The session is an HTTP-only cookie, so every request is sent with credentials. The API must allow
 this app's origin with credentials (CORS), and its `APP_URL` must point at this app: recovery
 emails link to `{APP_URL}/recover/end` and Google sign-in returns to `{APP_URL}/app/...` or
