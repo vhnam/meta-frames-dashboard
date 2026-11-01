@@ -25,6 +25,8 @@ withDefaults(
     submitLabel?: string;
     /** Disables Save while the request runs. */
     pending?: boolean;
+    /** Shows the record without Save: the footer only closes the dialog. */
+    readOnly?: boolean;
     size?: "md" | "lg";
   }>(),
   { submitLabel: "Save", size: "lg" },
@@ -84,8 +86,10 @@ const FIELDS = [
           <!-- left side of the footer, e.g. Delete when editing -->
           <slot name="footer-start" />
           <div class="ml-auto flex gap-3">
-            <Button type="button" variant="outline" @click="open = false">Cancel</Button>
-            <Button type="submit" :disabled="pending">{{ submitLabel }}</Button>
+            <Button type="button" variant="outline" @click="open = false">
+              {{ readOnly ? "Close" : "Cancel" }}
+            </Button>
+            <Button v-if="!readOnly" type="submit" :disabled="pending">{{ submitLabel }}</Button>
           </div>
         </div>
       </Form>

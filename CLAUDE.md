@@ -8,7 +8,7 @@
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **meta-frames-dashboard** (2386 symbols, 5059 relationships, 40 execution flows).
+This project is indexed by GitNexus as **meta-frames-dashboard** (2441 symbols, 5110 relationships, 40 execution flows).
 
 > Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
 

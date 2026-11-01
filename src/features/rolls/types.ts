@@ -1,3 +1,4 @@
+import type { ScanSettings } from "#/features/scanners/types";
 import type { Camera } from "#/features/cameras/types";
 import type { FilmStock, Process } from "#/features/film-stocks/types";
 import type { Lens } from "#/features/lenses/types";
@@ -79,21 +80,16 @@ export interface RollRow {
   cameraName: string | null;
   negativesAtLab: boolean;
 }
-export const SCANNERS = ["noritsu", "frontier", "other"] as const;
-export type Scanner = (typeof SCANNERS)[number];
-/** Display names are client-side labels; the API only knows the ids. */
-export const SCANNER_LABELS: Record<Scanner, string> = {
-  noritsu: "Noritsu HS-1800",
-  frontier: "Frontier SP-3000",
-  other: "Other scanner",
-};
-
+/** One scanner ordered on a job; scanners live in their own list (see `#/features/scanners`). */
 export interface ScanOrder {
-  scanner: Scanner;
-  hiRes: boolean;
+  scannerId: string;
+  /** Chosen scan options, by key; which ones exist depends on the scanner's kind. */
+  settings: ScanSettings;
 }
 
 export interface RollJobScanOrder extends ScanOrder {
+  /** Brand and model, as the API names the scanner. */
+  scannerName: string;
   /** Scans imported for this scanner so far. */
   scanCount: number;
 }
@@ -163,6 +159,21 @@ export type ProcessingType = (typeof PROCESSING_TYPES)[number];
 export const producesScans = (type: ProcessingType) => type === "develop_scan" || type === "scan";
 /** Job types that develop the film, so the lab returns negatives. */
 export const developsFilm = (type: ProcessingType) => type === "develop" || type === "develop_scan";
+/**
+ * Jobs that take a negatives-returned date. A print job closes only on it (PR-6), and a lab keeps
+ * "Negatives at lab" set until it is recorded, so a scan at a lab takes one too (RO-25).
+ */
+export const recordsNegativesReturned = (type: ProcessingType, atLab: boolean) =>
+  developsFilm(type) || type === "print" || (type === "scan" && atLab);
+/** Processed rolls whose negatives a lab still holds. */
+export const negativesStillAtLab = (status: RollStatus, negativesAtLab: boolean) =>
+  (status === "scanned" || status === "developed") && negativesAtLab;
+/**
+ * A roll with nothing left to wait for: processed, no job open and the negatives home. Derived,
+ * not a status, so a later re-scan or print simply reopens it.
+ */
+export const isRollComplete = (status: RollStatus, negativesAtLab: boolean) =>
+  (status === "scanned" || status === "developed") && !negativesAtLab;
 /**
  * Services a roll can be sent for now. Developing happens once: after the first job only scan and
  * print remain, and none while the roll is still at the lab or not yet finished.

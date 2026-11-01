@@ -218,6 +218,9 @@ In stock ──load──▶ In camera ──finish──▶ Done shooting ─�
   is missing.
 - **RO-25 [API]** "Negatives at lab" is true when any job at a lab has no negatives-returned
   date, whatever the job type. The badge is shown only on Developed and Scanned rolls.
+  **[UI]** A Developed or Scanned roll without negatives at a lab is marked Complete: no job is
+  open and the negatives are home. Complete is derived, not a status, so a later scan or print
+  job reopens the roll without a backward transition (RO-3).
 - **RO-26 [API]** The list filters by status, stock, camera, lens, format and start-date range.
 - **RO-27 [API]** Expiry ends on the last day of the expiry month, or on 31 December when the
   month is unknown. The expiry report lists In stock rolls that are expired or expire within 6
@@ -290,9 +293,10 @@ scan orders (scanner and hi-res flag; scanners `noritsu`, `frontier`, `other`).
   in a row (create the job, record scans, record negatives) without a transaction.
 - **PR-15 [UI]** On edit, a receipt date is sent only when it is non-empty and different from
   the stored one.
-- **PR-16 [UI]** The "Negatives returned" field is shown only for `develop` and `develop_scan`.
-  **Defect:** a `print` job cannot be closed from the dashboard (PR-6), so the roll stays At lab.
-  A `scan` job at a lab keeps "Negatives at lab" true forever (RO-25).
+- **PR-16 [UI]** The "Negatives returned" field is shown for `develop`, `develop_scan` and
+  `print`, and for a `scan` job at a lab. A `print` job closes on it (PR-6), and a lab `scan` job
+  clears "Negatives at lab" with it (RO-25). At home the field reads "Printed" for a `print` job
+  and "Negatives developed" otherwise; a home `scan` job has none.
 - **PR-17 [UI]** A new lab job defaults to the Noritsu scanner; a home job defaults to "other".
 - **PR-18 [API only]** The list of jobs whose negatives are still at a lab, with days since sent.
   It includes `scan` and `print` jobs.
@@ -373,7 +377,7 @@ Verdicts:
 | 3   | Shot ISO cannot be corrected after load                                                   | RO-9, RO-14               | UI only   |                                                                                                                                  |
 | 4   | Film not shot in a catalogued camera must be loaded and finished first                    | PR-2                      | Confirmed |                                                                                                                                  |
 | 5   | Prints only on the first job                                                              | PR-2, PR-13               | UI only   | API allows `print` on Developed and Scanned rolls.                                                                               |
-| 6   | A print job does not record that negatives left the house                                 | RO-25, PR-6               | Incorrect | The opposite: print and scan jobs count as negatives at lab, and the dashboard cannot close them (PR-16).                        |
+| 6   | A print job does not record that negatives left the house                                 | RO-25, PR-6               | Incorrect | The opposite: print and scan jobs count as negatives at lab. The dashboard now records their return (PR-16).                     |
 | 7   | Deleting the only job leaves the roll with no next action                                 | PR-12                     | Incorrect | Roll returns to Done shooting and "Send to lab" is shown again.                                                                  |
 | 8   | Re-scan ignores "Negatives at lab"                                                        | PR-8                      | Confirmed | Neither UI nor API checks it.                                                                                                    |
 | 9   | Home work can be saved unfinished; three requests                                         | PR-14                     | Confirmed | Also an API gap: no atomic way to record a finished home job.                                                                    |
@@ -399,8 +403,8 @@ Verdicts:
 | #    | Gap                                                                             | Rules               | Impact                                                                         |
 | ---- | ------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------ |
 | G-1  | 4×5 rolls cannot be saved: the dashboard sends `NaN` as the format              | RO-6                | Add and edit fail for 4×5. The API also accepts any integer as a format.       |
-| G-2  | A `print` job never closes from the dashboard                                   | PR-6, PR-16         | The roll stays At lab with no way forward in the UI.                           |
-| G-3  | A `scan` or `print` job at a lab keeps "Negatives at lab" true                  | RO-25, PR-16, PR-18 | The badge and the negatives-at-lab list never clear.                           |
+| G-2  | A `print` job never closes from the dashboard                                   | PR-6, PR-16         | Fixed in the dashboard: the job takes a negatives-returned date (PR-16).       |
+| G-3  | A `scan` or `print` job at a lab keeps "Negatives at lab" true                  | RO-25, PR-16, PR-18 | Fixed in the dashboard: the job takes a negatives-returned date (PR-16).       |
 | G-4  | Stock type, process and ISO stay editable when rolls exist                      | FS-6                | Editing a stock rewrites the history of rolls already shot.                    |
 | G-5  | Frame notes can be added to an In stock roll, with any frame number             | FR-1                | Frames above the exposure count, or on unshot film.                            |
 | G-6  | Deleting scans leaves the scans-received date and the Scanned status            | SC-7                | A roll can be Scanned with no scans.                                           |

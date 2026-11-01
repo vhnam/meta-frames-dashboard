@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useStockList, type FilmStock, type FilmType } from "#/features/film-stocks";
 import { useRollList } from "../queries";
-import { ROLL_STATUSES } from "../types";
+import { ROLL_STATUSES, isRollComplete, negativesStillAtLab } from "../types";
 import type { RollRow, RollStatus } from "../types";
 import { Link, useRouter } from "@tanstack/vue-router";
 import { computed, h, ref } from "vue";
@@ -74,9 +74,6 @@ const tabCountClass = (tabValue: RollTab, count: number) =>
       ? "bg-destructive/15 text-destructive rounded-full px-1.5 text-xs font-semibold"
       : "bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold";
 
-const negativesBadge = (row: RollRow) =>
-  (row.roll.status === "scanned" || row.roll.status === "developed") && row.negativesAtLab;
-
 const router = useRouter();
 const openRoll = (row: RollRow) =>
   router.navigate({ to: "/app/rolls/$rollId", params: { rollId: row.roll.id } });
@@ -140,7 +137,12 @@ const columns: DataTableColumn<RollRow>[] = [
     cell: ({ row: { original: row } }) =>
       h("div", { class: "flex flex-wrap items-center gap-2" }, [
         h(RollStatusBadge, { status: row.roll.status }),
-        negativesBadge(row) ? h(Badge, { variant: "outline" }, () => "Negatives at lab") : null,
+        negativesStillAtLab(row.roll.status, row.negativesAtLab)
+          ? h(Badge, { variant: "outline" }, () => "Negatives at lab")
+          : null,
+        isRollComplete(row.roll.status, row.negativesAtLab)
+          ? h(Badge, { variant: "secondary" }, () => "Complete")
+          : null,
       ]),
   },
 ];
