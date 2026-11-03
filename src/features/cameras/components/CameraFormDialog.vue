@@ -24,7 +24,7 @@ const form = useForm({ schema: CameraSchema, initialInput: { fixedLens: false } 
 const fixedLens = computed(() => !!getInput(form, { path: ["fixedLens"] }));
 const editing = computed(() => !!props.cameraId);
 const mounts = useKnownMounts();
-const brands = useKnownBrands();
+const brands = useKnownBrands("camera");
 
 const FOCAL_PICKS = [24, 35, 50];
 const APERTURE_PICKS = [1.4, 2, 2.8];
