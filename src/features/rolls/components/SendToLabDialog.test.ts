@@ -102,7 +102,11 @@ describe("SendToLabDialog re-scan", () => {
     // this lab runs a Noritsu whose model nobody knows, and a Frontier
     const noritsu = server.addScanner({ brand: "Noritsu", model: "", kind: "minilab" });
     const FRONTIER = "e2bf4cbd-87a8-4a17-8340-516b1a1cc6bc";
-    const lab = server.addLab({ name: "Other Lab", scannerIds: [noritsu.id, FRONTIER] });
+    const lab = server.addLab({
+      name: "Other Lab",
+      scannerIds: [noritsu.id, FRONTIER],
+      defaultScannerId: noritsu.id,
+    });
     const { wrapper } = await mountRescan();
     await vi.waitFor(() =>
       expect(document.body.querySelector(`option[value="${lab.id}"]`)).not.toBeNull(),
@@ -118,6 +122,27 @@ describe("SendToLabDialog re-scan", () => {
     submit();
     await vi.waitFor(() => expect(jobPut()).toBeDefined());
     expect(jobPut()).toMatchObject({ labId: lab.id, scanOrders: [{ scannerId: noritsu.id }] });
+    wrapper.unmount();
+  });
+  it("picks no scanner for a lab that runs scanners but has no default", async () => {
+    const FRONTIER = "e2bf4cbd-87a8-4a17-8340-516b1a1cc6bc";
+    const lab = server.addLab({ name: "Other Lab", scannerIds: [FRONTIER] });
+    const { wrapper } = await mountRescan();
+    await vi.waitFor(() =>
+      expect(document.body.querySelector(`option[value="${lab.id}"]`)).not.toBeNull(),
+    );
+    const labSelect = document.body.querySelector("select") as HTMLSelectElement;
+    labSelect.value = lab.id;
+    labSelect.dispatchEvent(new Event("change"));
+    await flushPromises();
+    const picker = document.body.querySelector("fieldset")!;
+    expect(picker.textContent).toContain("Frontier SP-3000");
+    expect(picker.querySelector("[role=checkbox][aria-checked=true]")).toBeNull();
+    submit();
+    await vi.waitFor(() =>
+      expect(document.body.textContent).toContain("Pick at least one scanner."),
+    );
+    expect(jobPut()).toBeUndefined();
     wrapper.unmount();
   });
 });
@@ -277,7 +302,7 @@ describe("SendToLabDialog editing a job", () => {
     });
     await wrapper.setProps({ open: true } as never);
     await flushPromises();
-    expect(document.body.textContent).toContain("Negatives returned");
+    expect(document.body.textContent).toContain("Negatives received");
     // formisch names a field by its JSON path
     const returned = document.body.querySelector(
       "input[name='[\"negativesReturnedAt\"]']",
@@ -292,6 +317,49 @@ describe("SendToLabDialog editing a job", () => {
         body: { date: "2026-10-08" },
       }),
     );
+    wrapper.unmount();
+  });
+});
+
+describe("SendToLabDialog dates", () => {
+  it("lays out a lab job's dates in three rows", async () => {
+    const lab = server.addLab({ name: "Saigon Film Lab" });
+    const stock = server.addStock({ name: "Portra", brand: "Kodak" });
+    const rec = server.addRoll({ filmStockId: stock.id, status: "at_lab" });
+    const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
+      (candidate) => candidate.roll.id === rec.id,
+    )!;
+    const job = {
+      id: "job-3",
+      labId: lab.id,
+      labName: lab.name,
+      type: "develop_scan",
+      process: "C-41",
+      sentDate: "2026-09-12",
+      scanOrders: [],
+      open: true,
+    };
+    const wrapper = mount(SendToLabDialog, {
+      attachTo: document.body,
+      props: { open: false, row, job: job as never },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Select: SelectStub } },
+    });
+    await wrapper.setProps({ open: true } as never);
+    await flushPromises();
+    const rowOf = (field: string) =>
+      document.body
+        .querySelector(`input[name='["${field}"]']`)!
+        .closest(".sm\\:grid-cols-2")!
+        .querySelectorAll("input[type=date]");
+    const names = (field: string) => [...rowOf(field)].map((input) => input.getAttribute("name"));
+    expect(names("sentAt")).toEqual(['["sentAt"]']);
+    expect(names("scansExpectedAt")).toEqual(['["scansExpectedAt"]', '["scansReceivedAt"]']);
+    expect(names("negativesExpectedAt")).toEqual([
+      '["negativesExpectedAt"]',
+      '["negativesReturnedAt"]',
+    ]);
+    expect(document.body.textContent).toContain("Sent to Lab");
+    expect(document.body.textContent).toContain("Negatives received");
     wrapper.unmount();
   });
 });
