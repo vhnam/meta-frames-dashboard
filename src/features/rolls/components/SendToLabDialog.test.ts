@@ -229,6 +229,7 @@ describe("SendToLabDialog editing a job", () => {
       scansReceivedDate: null,
       negativesReturnedDate: "2026-10-01",
       price: null,
+      order: null,
       notes: "",
       scanOrders: [],
       open: false,
@@ -281,6 +282,7 @@ describe("SendToLabDialog editing a job", () => {
       scansReceivedDate: type === "scan" ? "2026-10-03" : null,
       negativesReturnedDate: null,
       price: null,
+      order: null,
       notes: "",
       scanOrders:
         type === "scan"
@@ -383,6 +385,95 @@ describe("SendToLabDialog printing at home", () => {
     await vi.waitFor(() =>
       expect(receipts()).toEqual([{ what: "negatives-returned", body: { date: today() } }]),
     );
+    wrapper.unmount();
+  });
+});
+
+describe("SendToLabDialog order", () => {
+  it("bills a lab job on an order line instead of a price", async () => {
+    const lab = server.addLab({ name: "Lab A", scannerIds: [] });
+    server.saveLabOrder("order", {
+      labId: lab.id,
+      code: "0510006",
+      orderedAt: "2026-10-05T03:03:00Z",
+      vat: 44800,
+      items: [
+        { id: "bw", product: "35mm B&W", quantity: 1, unitPrice: 125000 },
+        { id: "colour", product: "35mm Colour", quantity: 3, unitPrice: 145000 },
+      ],
+    });
+    const { wrapper } = await mountRescan();
+    const select = (name: string) =>
+      document.body.querySelector(`select[name='["${name}"]']`) as HTMLSelectElement;
+    const choose = async (name: string, value: string) => {
+      select(name).value = value;
+      select(name).dispatchEvent(new Event("change"));
+      await flushPromises();
+    };
+    await vi.waitFor(() => expect(select("labId").textContent).toContain("Lab A"));
+    // at home there is no order to pick
+    expect(select("orderItemId")).toBeNull();
+
+    await choose("labId", lab.id);
+    expect(select("orderItemId").textContent).toContain("#0510006 · 35mm Colour (0 of 3)");
+    await choose("orderItemId", "colour");
+    expect(document.body.textContent).toContain("Price from the order");
+    expect(document.body.querySelector(`[name='["price"]']`)).toBeNull();
+
+    submit();
+    await vi.waitFor(() => expect(jobPut()).toBeDefined());
+    expect(jobPut()).toMatchObject({ labId: lab.id, orderItemId: "colour" });
+    expect(jobPut()!.price).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("keeps a job on its order line when it is edited, even a full one", async () => {
+    const lab = server.addLab({ name: "Lab A", scannerIds: [] });
+    server.saveLabOrder("order", {
+      labId: lab.id,
+      code: "0510006",
+      orderedAt: "2026-10-05T03:03:00Z",
+      items: [{ id: "bw", product: "35mm B&W", quantity: 1, unitPrice: 125000 }],
+    });
+    server.labOrders[0].items[0].jobs = [{ id: "job" }];
+    const stock = server.addStock({ name: "Tri-X", brand: "Kodak" });
+    const rec = server.addRoll({ filmStockId: stock.id, status: "at_lab" });
+    const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
+      (candidate) => candidate.roll.id === rec.id,
+    )!;
+    const wrapper = mount(SendToLabDialog, {
+      attachTo: document.body,
+      props: {
+        open: false,
+        row,
+        job: {
+          id: "job",
+          labId: lab.id,
+          labName: "Lab A",
+          type: "develop",
+          process: "BW",
+          sentDate: "2026-10-05",
+          scansExpectedDate: null,
+          negativesExpectedDate: null,
+          scansReceivedDate: null,
+          negativesReturnedDate: null,
+          price: 125000,
+          order: { id: "order", code: "0510006", itemId: "bw", product: "35mm B&W" },
+          notes: "",
+          scanOrders: [],
+          open: true,
+        },
+      },
+      global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Select: SelectStub } },
+    });
+    await wrapper.setProps({ open: true } as never);
+    await vi.waitFor(() => expect(document.body.textContent).toContain("Price from the order"));
+    expect(document.body.querySelector(`[name='["price"]']`)).toBeNull();
+
+    submit();
+    await vi.waitFor(() => expect(jobPut()).toBeDefined());
+    expect(jobPut()).toMatchObject({ orderItemId: "bw" });
+    expect(jobPut()!.price).toBeUndefined();
     wrapper.unmount();
   });
 });

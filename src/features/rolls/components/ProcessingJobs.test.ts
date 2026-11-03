@@ -28,6 +28,7 @@ const job = (id: string, labName: string, sentDate: string): RollJob => ({
   scansReceivedDate: sentDate,
   negativesReturnedDate: null,
   price: null,
+  order: null,
   notes: "",
   scanOrders: [],
   open: false,
