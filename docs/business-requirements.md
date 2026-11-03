@@ -303,6 +303,34 @@ scan orders (scanner and hi-res flag; scanners `noritsu`, `frontier`, `other`).
 
 ---
 
+## 6a. Lab orders
+
+### Data
+
+Lab, code, created date and time, due date, VAT and discount (amounts), notes, and lines: product,
+options, quantity, unit price. A scan order (section 6) is different: it says which scanners a job
+uses, and it stays on the job.
+
+- **LO-1 [API]** A code is unique per lab within the account, ignoring case
+  (`order_code_taken`). An order needs at least one line (`items_required`). The discount cannot
+  exceed the subtotal plus VAT (`invalid_discount`).
+- **LO-2 [API]** A job goes on one line. The order must be from the job's lab
+  (`order_lab_mismatch`), so a home job cannot go on an order. A line takes up to its quantity of
+  jobs (`order_item_full`). A roll's re-scan is a separate job, so it can go on another order.
+- **LO-3 [API]** A job on an order costs the line's unit price plus its share of the order's VAT
+  less discount, split by price and rounded to the dong. A roll's cost and the spending statistics
+  use this price. The units of an order can add up to a few dong off its total. VAT and discount
+  on lines with no job yet count in no roll's cost.
+- **LO-4 [API]** Putting a job on a line clears the job's own price (`price_from_order` if both
+  are sent). Taking it off leaves the job with no price, which marks the roll's cost incomplete.
+- **LO-5 [API]** A line with jobs cannot be removed (`order_item_in_use`) or take fewer rolls than
+  it has (`order_item_over_quantity`). An order with jobs cannot be deleted or move to another lab
+  (`order_has_jobs`). A deleted job leaves its line. A lab with orders cannot be deleted
+  (`lab_in_use`).
+- **LO-6 [UI]** A roll joins an order from the order's page, or from the Send to Lab and Edit
+  Processing Job dialogs. The order's page offers only jobs at that lab on no order: a roll must
+  be sent first, because a job needs a service and scanners that an order does not hold.
+
 ## 7. Frames and scans
 
 - **FR-1 [API]** A frame is identified by its number on the roll (≥ 0). It exists when it has a

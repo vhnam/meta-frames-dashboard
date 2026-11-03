@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+This release needs a Meta-Frame API with lab orders (`/lab-orders`).
+
+### Added
+
+- An Orders page under Film & Lab records what a lab billed: code, dates, lines with product, options, quantity and unit price, then VAT, discount and total. An order's page shows the rolls on each line, and adds or removes them. Only rolls already sent to that lab, and on no order yet, can be added.
+- The Send to Lab and Edit Processing Job dialogs pick an order line for a lab job. A job on an order links to it from the roll's Processing history.
+
+### Changed
+
+- A job on an order takes its price from the line, with the order's VAT and discount shared out by price, and the Price field is hidden. Work at home and jobs on no order keep the Price field.
+
 ## [2.1.0] - 2026-11-03
 
 This release needs a Meta-Frame API that serves a film stock's `boxIso` as a string and accepts a
