@@ -13,6 +13,7 @@ export interface ApiLab {
   name: string;
   address?: string;
   scannerIds?: string[];
+  defaultScannerId?: string;
 }
 
 const toLab = (apiLab: ApiLab): Lab => ({
@@ -20,6 +21,7 @@ const toLab = (apiLab: ApiLab): Lab => ({
   name: apiLab.name,
   address: apiLab.address ?? "",
   scannerIds: apiLab.scannerIds ?? [],
+  defaultScannerId: apiLab.defaultScannerId,
 });
 
 export const labQueries = {
@@ -38,11 +40,13 @@ export const saveLab = async (variables: {
   name: string;
   address: string;
   scannerIds: string[];
+  defaultScannerId?: string;
 }) => {
   const body = {
     name: variables.name.trim(),
     address: variables.address.trim() || undefined,
     scannerIds: variables.scannerIds,
+    defaultScannerId: variables.defaultScannerId,
   };
   if (variables.id) {
     await http.put(`/labs/${variables.id}`, body);

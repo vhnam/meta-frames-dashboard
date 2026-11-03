@@ -56,6 +56,7 @@ interface LabRec {
   name: string;
   address?: string;
   scannerIds?: string[];
+  defaultScannerId?: string;
 }
 interface ScannerRec {
   id: string;
