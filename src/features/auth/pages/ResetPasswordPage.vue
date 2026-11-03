@@ -4,7 +4,7 @@ import { Link, useRouter } from "@tanstack/vue-router";
 import { isAxiosError } from "axios";
 import type * as v from "valibot";
 import { computed } from "vue";
-import { toast } from "vue-sonner";
+import { notify } from "#/shared/lib/toast";
 import { errorMessage } from "#/shared/api/client";
 import { Button } from "#/shared/ui/button";
 import AuthCard from "../components/AuthCard.vue";
@@ -34,7 +34,7 @@ async function submit({ password }: v.InferOutput<typeof ResetPasswordSchema>) {
   } catch {
     return; // shown inline
   }
-  toast.success("Password changed. Log in with your new password.");
+  notify.success("Password changed. Log in with your new password.");
   await router.navigate({ to: "/auth/login" });
 }
 </script>
