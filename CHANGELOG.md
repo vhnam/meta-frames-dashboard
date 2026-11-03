@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-03
+
+This release needs a Meta-Frame API that serves a film stock's `boxIso` as a string and accepts a
+`date` when a roll is finished.
+
 ### Added
 
 - A "Complete" badge on the Rolls list and the roll page for a Developed or Scanned roll whose
@@ -25,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scanning or printing at home is labelled "Self-scan (at home)" or "Self-print (at home)" in
   place of "Self-develop", and a new scan at home starts with your first own scanner picked
   (none when you have none); picking a lab switches it to the lab's default scanner (the
-  Noritsu HS-1800 for a lab that names none) until the scanners are changed by hand.
+  Noritsu HS-1800 for a lab that names none, and no scanner for a lab that names scanners but no
+  default) until the scanners are changed by hand.
 - A Scanners page at `/app/scanners` (under Film & Lab) listing the built-in Noritsu HS-1800 and
   Frontier SP-3000, which are shared and read-only, next to your own scanners: another lab's
   machine, a flatbed or a camera rig, each with a brand, an optional model (a lab's Noritsu of
@@ -34,8 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   built-in scanner shows read-only, with its kind and default scan settings. Your
   scanners can be added, edited and deleted (not while a job or scan uses them).
 - Labs name the scanners they run: the Add/Edit Lab dialog has a Scanners section to tick them,
-  the first being the lab's default ("Make default" moves another to the top), and an "Add a
-  scanner this lab runs" button. The Labs list shows each lab's scanners.
+  an optional default (a "Default" switch on each ticked scanner, which moves it to the top), and an
+  "Add a scanner this lab runs" button. The Labs list shows each lab's scanners.
 - The scanner picker of Send to lab, Re-scan and job editing lists the chosen lab's scanners,
   in its order, with "Show all scanners" for the rest; at home, or for a lab that names none, it
   lists every scanner you can use. An "Add a scanner of your own" button creates one and orders
@@ -57,6 +63,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- "Negatives back" in a roll's Processing history shows Done once the negatives are back, never
+  "X days late", because they can come back with the scans.
+- The Dates section of a processing job has three rows: "Sent to Lab" (was "Date sent"), then
+  scans expected and received, then negatives expected and received (was "Negatives returned").
+- "Mark as finished" on a roll opens a dialog to choose the finish date, starting on today. The
+  date cannot be in the future or before the roll was loaded.
+- A film stock's box ISO can be a range as well as a single speed, like 100-400 or 50-200. Loading
+  a roll of such a stock offers the two ends of the range as quick picks.
+- Toasts have a Close action, so a message can be dismissed before it times out.
+- A lens is named by its brand and model on the Lenses list, the lens page and the camera page.
+  The focal length and aperture no longer repeat in the name.
+- Delete comes first in the actions on the camera, lens and film stock pages.
 - Each job in a roll's Processing history reads top to bottom: the lab, with the service,
   process and price on one line under it; a Dates table with a row for sending the roll (or
   starting it at home) and for each thing that comes back (negatives, prints or scans), giving
@@ -119,11 +137,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Film tracker" under the sidebar logo is in the accent colour, as on the account pages.
 - Dates show as dd/mm/yyyy: the Started column and field of rolls, the finish date and job dates
   in Processing history and Send to lab, and the audit log (with the time as HH:mm).
-- Processing jobs show "Scans received" only for services that scan and "Negatives returned"
+- Processing jobs show "Scans received" only for services that scan and "Negatives received"
   only for services that develop, in Processing history and in Edit processing job.
 
 ### Fixed
 
+- The brand list of Add Lens and Add Camera counts only that kind of gear, so one Nikon lens and
+  one Nikon camera no longer read as "Nikon 2" when adding a lens. Brands used only on the other
+  kind stay listed with no number, and brands that differ only by invisible characters merge into
+  one.
 - A print job, and a scan job at a lab, can record the day the negatives came back. A print job
   used to stay open, keeping the roll At lab, and a lab scan kept "Negatives at lab" on the roll
   for good. A print at home records the day it was printed.
@@ -307,6 +329,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/vhnam/meta-frames-dashboard/releases/tag/v1.0.0
