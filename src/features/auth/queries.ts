@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useRouter } from "@tanstack/vue-router";
-import { toast } from "vue-sonner";
+import { notify } from "#/shared/lib/toast";
 import {
   authKeys,
   authQueries,
@@ -43,7 +43,7 @@ export const useLogout = () => {
       qc.setQueryData(authKeys.me(), null);
       await router.navigate({ to: "/auth/login" });
       qc.clear();
-      toast.success("You have been logged out");
+      notify.success("You have been logged out");
     },
   });
 };

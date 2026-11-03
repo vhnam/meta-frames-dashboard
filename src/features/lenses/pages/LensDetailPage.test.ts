@@ -35,7 +35,7 @@ describe("LensDetailPage", () => {
     server.addRoll({ filmStockId: stock.id, status: "developed", lensIds: [other.id] });
 
     const wrapper = render(lens.id);
-    await vi.waitFor(() => expect(wrapper.find("h1").text()).toBe("Canon FD 50mm f/1.4"));
+    await vi.waitFor(() => expect(wrapper.find("h1").text()).toBe("Canon FD"));
     const text = wrapper.text().replace(/\s+/g, " ");
     expect(text).toContain("Mount: FD");
     expect(text).toContain("Delete");

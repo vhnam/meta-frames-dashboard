@@ -104,7 +104,7 @@ export const useDeleteJob = () =>
 export const useFinishRoll = () =>
   useApiMutation({
     fn: finishRoll,
-    invalidates: (id) => [rollKeys.detail(id), rollKeys.lists(), stockKeys.all, cameraKeys.all],
+    invalidates: ({ id }) => [rollKeys.detail(id), rollKeys.lists(), stockKeys.all, cameraKeys.all],
     success: "Roll marked as finished",
   });
 

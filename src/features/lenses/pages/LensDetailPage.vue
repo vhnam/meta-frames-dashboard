@@ -70,7 +70,14 @@ const shot = computed(
                 >
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <!-- a built-in lens follows its camera: no Active toggle, no Delete -->
+                <Button
+                  v-if="!detail.lens.builtInCameraId"
+                  variant="outline"
+                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  @click="doDelete"
+                >
+                  <IconTrash aria-hidden="true" /> Delete
+                </Button>
                 <Button
                   v-if="!detail.lens.builtInCameraId"
                   variant="outline"
@@ -83,14 +90,6 @@ const shot = computed(
                 </Button>
                 <Button variant="outline" class="bg-card" @click="editOpen = true">
                   <IconPencil aria-hidden="true" /> Edit lens
-                </Button>
-                <Button
-                  v-if="!detail.lens.builtInCameraId"
-                  variant="outline"
-                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  @click="doDelete"
-                >
-                  <IconTrash aria-hidden="true" /> Delete
                 </Button>
               </div>
             </div>

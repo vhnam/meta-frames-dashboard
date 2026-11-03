@@ -131,7 +131,10 @@ function jobSteps(job: RollJob): Step[] {
       label: !atLab && job.type === "print" ? "Prints" : atLab ? "Negatives back" : "Negatives",
       expected: atLab ? job.negativesExpectedDate : undefined,
       actual: job.negativesReturnedDate,
-      status: statusOf(job.negativesExpectedDate, job.negativesReturnedDate),
+      // negatives can come back with the scans, so a later return is not counted as late
+      status: job.negativesReturnedDate
+        ? { text: "Done", tone: "done" }
+        : statusOf(job.negativesExpectedDate, null),
     });
   if (producesScans(job.type))
     steps.push({

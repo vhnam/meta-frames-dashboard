@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 describe("Labs", () => {
-  it("saves the scanners a lab runs, the default first", async () => {
+  it("saves the scanners a lab runs, with an optional default", async () => {
     const noritsu = server.addScanner({ brand: "Noritsu", model: "", kind: "minilab" });
     const wrapper = mount(LabFormDialog, {
       attachTo: document.body,
@@ -41,13 +41,52 @@ describe("Labs", () => {
     };
     await tick("Frontier SP-3000");
     await tick("Noritsu");
-    expect(rowOf("Frontier SP-3000").textContent).toContain("Default");
-    // the lab's own Noritsu becomes the default
-    (
-      [...rowOf("Noritsu").querySelectorAll("button")].find((button) =>
-        button.textContent?.includes("Make default"),
-      ) as HTMLButtonElement
-    ).click();
+    // ticking a scanner does not make it the default
+    const defaultSwitch = (text: string) =>
+      rowOf(text).querySelector("[role=switch]") as HTMLButtonElement;
+    const flip = async (text: string) => {
+      defaultSwitch(text).click();
+      await flushPromises();
+    };
+    expect(defaultSwitch("Frontier SP-3000").getAttribute("aria-checked")).toBe("false");
+    // a default can be set and cleared again
+    await flip("Frontier SP-3000");
+    expect(defaultSwitch("Frontier SP-3000").getAttribute("aria-checked")).toBe("true");
+    await flip("Frontier SP-3000");
+    expect(defaultSwitch("Frontier SP-3000").getAttribute("aria-checked")).toBe("false");
+    // only one scanner can be the default
+    await flip("Frontier SP-3000");
+    await flip("Noritsu");
+    expect(defaultSwitch("Frontier SP-3000").getAttribute("aria-checked")).toBe("false");
+    expect(defaultSwitch("Noritsu").getAttribute("aria-checked")).toBe("true");
+
+    (document.body.querySelector("button[type=submit]") as HTMLButtonElement).click();
+    await vi.waitFor(() => expect(wrapper.emitted("saved")).toBeDefined());
+    const posted = server.requests.find(
+      (request) => request.method === "post" && request.url === "/labs",
+    );
+    expect(posted?.body).toEqual({
+      name: "Other Lab",
+      scannerIds: [noritsu.id, FRONTIER],
+      defaultScannerId: noritsu.id,
+    });
+    wrapper.unmount();
+  });
+  it("saves a lab with scanners and no default", async () => {
+    const wrapper = mount(LabFormDialog, {
+      attachTo: document.body,
+      props: { open: false },
+      global: { plugins },
+    });
+    await wrapper.setProps({ open: true } as never);
+    await vi.waitFor(() => expect(document.body.textContent).toContain("Frontier SP-3000"));
+    const name = document.body.querySelector(`[name='["name"]']`) as HTMLInputElement;
+    name.value = "Other Lab";
+    name.dispatchEvent(new Event("input"));
+    const frontier = [...document.body.querySelectorAll("fieldset > div")].find((row) =>
+      row.textContent?.includes("Frontier SP-3000"),
+    )!;
+    (frontier.querySelector("[role=checkbox]") as HTMLButtonElement).click();
     await flushPromises();
 
     (document.body.querySelector("button[type=submit]") as HTMLButtonElement).click();
@@ -55,7 +94,7 @@ describe("Labs", () => {
     const posted = server.requests.find(
       (request) => request.method === "post" && request.url === "/labs",
     );
-    expect(posted?.body).toEqual({ name: "Other Lab", scannerIds: [noritsu.id, FRONTIER] });
+    expect(posted?.body).toEqual({ name: "Other Lab", scannerIds: [FRONTIER] });
     wrapper.unmount();
   });
 });

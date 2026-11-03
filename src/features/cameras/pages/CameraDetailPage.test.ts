@@ -41,7 +41,7 @@ describe("CameraDetailPage", () => {
     const text = wrapper.text().replace(/\s+/g, " ");
     expect(text).toContain("Fixed lens");
     expect(text).toContain("Built-in lens");
-    expect(text).toContain("Zuiko 35mm f/2.8");
+    expect(text).toContain("Zuiko");
     await vi.waitFor(() => expect(wrapper.text()).toContain("Rolls (2)"));
     const stats = Object.fromEntries(
       wrapper

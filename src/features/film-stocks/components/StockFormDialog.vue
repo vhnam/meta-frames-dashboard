@@ -71,7 +71,7 @@ const packagingOptions = PACKAGINGS.map((value) => ({ value, label: PACKAGING_LA
 
 const ISO_PICKS = [100, 200, 400, 800];
 const boxIso = computed(() => Number(getInput(form, { path: ["boxIso"] })));
-const pickIso = (iso: number) => setInput(form, { path: ["boxIso"], input: iso });
+const pickIso = (iso: number) => setInput(form, { path: ["boxIso"], input: String(iso) });
 
 const editing = computed(() => !!props.stockId);
 
@@ -134,11 +134,8 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
           :path="['boxIso']"
           label="Box ISO"
           required
-          type="number"
-          min="1"
-          step="1"
           suffix="ASA/ISO"
-          placeholder="e.g. 400"
+          placeholder="e.g. 400 or 100-400"
         >
           <template #aside>
             <QuickPicks

@@ -116,7 +116,7 @@ function toApiRow(apiRoll: ApiRoll): RollRow {
       createdAt: "",
     },
     stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(" "),
-    boxIso: 0,
+    boxIso: "",
     cameraName: apiRoll.cameraName ?? null,
     negativesAtLab: apiRoll.negativesAtLab,
   };
@@ -339,8 +339,8 @@ export const deleteJob = async (variables: { rollId: string; jobId: string }) =>
   await http.delete(`/processing/${variables.jobId}`);
 };
 
-export const finishRoll = async (id: string) => {
-  await http.put(`/rolls/${id}/finish`, {});
+export const finishRoll = async (variables: { id: string; date: string }) => {
+  await http.put(`/rolls/${variables.id}/finish`, { date: variables.date });
 };
 
 export const setRollLenses = async (variables: { id: string; lensIds: string[] }) => {

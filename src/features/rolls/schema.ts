@@ -62,6 +62,22 @@ export const LoadRollSchema = v.object({
   shotIso: v.optional(integer(1, "ISO must be at least 1.")),
 });
 
+/** A finish date is required, not in the future and not before the roll was loaded. */
+export const finishRollSchema = (loadedOn: () => string | null | undefined) =>
+  v.object({
+    finishedAt: v.pipe(
+      required("Select the date the roll was finished."),
+      v.check(
+        (date) => date <= new Date().toLocaleDateString("en-CA"),
+        "The finish date cannot be in the future.",
+      ),
+      v.check(
+        (date) => date >= (loadedOn() ?? ""),
+        "The finish date cannot be before the roll was loaded.",
+      ),
+    ),
+  });
+
 export const SendToLabSchema = v.object({
   labId: v.optional(v.string()),
   type: picklist(PROCESSING_TYPES),

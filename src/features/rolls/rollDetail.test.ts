@@ -12,7 +12,7 @@ beforeEach(() => {
 
 describe("roll detail", () => {
   it("maps GET /rolls/{id} into the detail view model", async () => {
-    const stock = server.addStock({ name: "ColorPlus 200", boxIso: 200 });
+    const stock = server.addStock({ name: "ColorPlus 200", boxIso: "200" });
     const roll = server.addRoll({
       filmStockId: stock.id,
       price: 341000,
