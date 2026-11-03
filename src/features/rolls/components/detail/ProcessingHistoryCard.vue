@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import type { Process } from "#/features/film-stocks/types";
-import { useFinishRoll } from "../../queries";
 import { sendableTypes } from "../../types";
 import type { RollJob, RollRow } from "../../types";
 import { computed, ref } from "vue";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
-import { attempt } from "#/shared/lib/ui";
 import { formatDate } from "#/shared/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
+import FinishRollDialog from "../FinishRollDialog.vue";
 import ProcessingJobs from "../ProcessingJobs.vue";
 import SendToLabDialog from "../SendToLabDialog.vue";
 
@@ -21,7 +20,7 @@ const props = defineProps<{
 
 const sendOpen = ref(false);
 const rescanOpen = ref(false);
-const finishRoll = useFinishRoll();
+const finishOpen = ref(false);
 const types = computed(() => sendableTypes(props.row.roll.status, props.jobs.length));
 /** Once the roll has been processed, scanning it again is the only action left; prints are not
  * offered after the first job. */
@@ -41,8 +40,7 @@ const canSend = computed(() => !props.jobs.length && types.value.length > 0);
           v-if="row.roll.status === 'in_camera'"
           type="button"
           size="sm"
-          :disabled="finishRoll.isPending.value"
-          @click="attempt(finishRoll.mutateAsync(row.roll.id))"
+          @click="finishOpen = true"
         >
           Mark as finished
         </Button>
@@ -61,6 +59,7 @@ const canSend = computed(() => !props.jobs.length && types.value.length > 0);
       </dl>
       <ProcessingJobs :row="row" :jobs="jobs" :process="process" :finished-on="finishedOn" />
     </CardContent>
+    <FinishRollDialog v-model:open="finishOpen" :row="row" />
     <SendToLabDialog
       v-model:open="sendOpen"
       :row="row"

@@ -397,7 +397,7 @@ export function installFakeServer() {
       const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
       roll.status = "done_shooting";
-      roll.finishedAt ??= "2026-10-05";
+      roll.finishedAt = body?.date ?? roll.finishedAt ?? "2026-10-05";
       return respond(200, {});
     }
     route = match(/^\/rolls\/([^/]+)\/load$/);
