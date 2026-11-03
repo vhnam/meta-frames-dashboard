@@ -12,7 +12,7 @@ interface StockRec {
   brand: string;
   name: string;
   type: "color" | "bw" | "slide";
-  boxIso: number;
+  boxIso: string;
   process: string;
   packaging: string;
   stockOrigin?: string;
@@ -56,6 +56,7 @@ interface LabRec {
   name: string;
   address?: string;
   scannerIds?: string[];
+  defaultScannerId?: string;
 }
 interface ScannerRec {
   id: string;
@@ -148,7 +149,7 @@ export const server = {
       brand: "Kodak",
       name: "UltraMax 400",
       type: "color",
-      boxIso: 400,
+      boxIso: "400",
       process: "C-41",
       packaging: "factory",
       ...overrides,
@@ -276,7 +277,7 @@ export function installFakeServer() {
               loadedRoll: roll && {
                 rollId: roll.id,
                 stockName: st?.name ?? "",
-                shotIso: st?.boxIso ?? 0,
+                shotIso: Number(st?.boxIso ?? 0),
                 daysLoaded: 0,
               },
             };
@@ -396,7 +397,7 @@ export function installFakeServer() {
       const roll = server.rolls.find((record) => record.id === route![1]);
       if (!roll) return notFound("roll");
       roll.status = "done_shooting";
-      roll.finishedAt ??= "2026-10-05";
+      roll.finishedAt = body?.date ?? roll.finishedAt ?? "2026-10-05";
       return respond(200, {});
     }
     route = match(/^\/rolls\/([^/]+)\/load$/);

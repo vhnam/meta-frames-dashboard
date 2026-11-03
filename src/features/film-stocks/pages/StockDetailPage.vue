@@ -81,15 +81,15 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
                 >
               </div>
               <div class="flex flex-wrap gap-2">
-                <Button variant="outline" class="bg-card" @click="editOpen = true">
-                  <IconPencil aria-hidden="true" /> Edit stock
-                </Button>
                 <Button
                   variant="outline"
                   class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                   @click="doDelete"
                 >
                   <IconTrash aria-hidden="true" /> Delete
+                </Button>
+                <Button variant="outline" class="bg-card" @click="editOpen = true">
+                  <IconPencil aria-hidden="true" /> Edit stock
                 </Button>
                 <Button @click="addOpen = true"><IconPlus aria-hidden="true" /> Add rolls</Button>
               </div>

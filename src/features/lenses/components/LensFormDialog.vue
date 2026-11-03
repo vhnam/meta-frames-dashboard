@@ -29,7 +29,7 @@ const editing = computed(() => !!props.lensId);
 const FOCAL_PICKS = [24, 35, 50];
 const APERTURE_PICKS = [1.4, 2, 2.8];
 const mounts = useKnownMounts();
-const brands = useKnownBrands();
+const brands = useKnownBrands("lens");
 
 watch(open, (isOpen) => {
   if (!isOpen) return;

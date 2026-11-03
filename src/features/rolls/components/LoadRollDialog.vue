@@ -30,9 +30,12 @@ const cameraOptions = computed(() =>
     .map((row) => ({ value: row.camera.id, label: cameraName(row.camera) })),
 );
 
-/** Pull one stop, box speed, push one and two stops. The list endpoint has no box ISO. */
+/** The stock's box speeds: a range's two ends, or a single ISO. The list endpoint has neither. */
+const boxSpeeds = computed(() => props.row?.boxIso.split("-").filter(Boolean).map(Number) ?? []);
+/** A range's two ends, or pull one stop, box speed, push one and two stops. */
 const isoPicks = computed(() => {
-  const box = props.row?.boxIso;
+  const [box, high] = boxSpeeds.value;
+  if (high) return [box, high];
   return box ? [box / 2, box, box * 2, box * 4] : [];
 });
 
@@ -100,7 +103,11 @@ async function submit(output: v.InferOutput<typeof LoadRollSchema>) {
           <QuickPicks
             :values="isoPicks"
             :current="getInput(form, { path: ['shotIso'] })"
-            label="Pull one stop, box speed, push one or two stops"
+            :label="
+              boxSpeeds.length > 1
+                ? 'Lowest and highest box speed'
+                : 'Pull one stop, box speed, push one or two stops'
+            "
             @pick="(value) => setInput(form, { path: ['shotIso'], input: value })"
           />
         </template>

@@ -18,7 +18,7 @@ beforeEach(() => {
 
 describe("LoadRollDialog", () => {
   it("shows the roll summary and requires a camera", async () => {
-    const stock = server.addStock({ name: "Portra", brand: "Kodak", boxIso: 400 });
+    const stock = server.addStock({ name: "Portra", brand: "Kodak", boxIso: "400" });
     const rec = server.addRoll({ filmStockId: stock.id, status: "in_stock" });
     const listed = (await queryClient.fetchQuery(rollQueries.list({}))).find(
       (row) => row.roll.id === rec.id,

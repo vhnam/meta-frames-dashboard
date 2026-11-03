@@ -128,7 +128,7 @@ const recordsNegatives = computed(
 );
 /** At home the date marks the work done; from a lab, the negatives coming back. */
 const negativesLabel = computed(() =>
-  !atHome.value ? "Negatives returned" : type.value === "print" ? "Printed" : "Negatives developed",
+  !atHome.value ? "Negatives received" : type.value === "print" ? "Printed" : "Negatives developed",
 );
 /** Receipt dates are asked for when editing a job, and for work done at home. */
 const showReceipts = computed(() => !!props.job || atHome.value);
@@ -136,17 +136,23 @@ const showReceipts = computed(() => !!props.job || atHome.value);
 const SELF = "self";
 /** The scanner used at home by default: the first of the account's own, if any. */
 const homeScanner = computed(() => scanners.data.value?.find((scanner) => !scanner.builtIn)?.id);
-/** The scanners a lab runs, the default first; none at home or for a lab that names none. */
+/** The scanners a lab runs, in order; none at home or for a lab that names none. */
 const scannersOfLab = (lab: string | undefined) =>
   labs.data.value?.find((entry) => entry.id === lab)?.scannerIds ?? [];
 /** Scanners the picker offers: the chosen lab's, or every scanner when it names none. */
 const labScanners = computed(() => scannersOfLab(labId.value));
+/** The scanner a job at this lab starts with: none when the lab names scanners but no default. */
+const defaultScannerOfLab = (lab: string | undefined) => {
+  if (lab === SELF) return homeScanner.value;
+  const entry = labs.data.value?.find((candidate) => candidate.id === lab);
+  return entry?.scannerIds.length ? entry.defaultScannerId : NORITSU_HS1800;
+};
 /**
  * A lab scans on its default scanner, or the Noritsu when it names none; at home on your own
  * scanner, when you have one.
  */
 const defaultScanOrders = (lab: string | undefined): ScanOrder[] => {
-  const scannerId = lab === SELF ? homeScanner.value : (scannersOfLab(lab)[0] ?? NORITSU_HS1800);
+  const scannerId = defaultScannerOfLab(lab);
   const scanner = scanners.data.value?.find((candidate) => candidate.id === scannerId);
   return scannerId
     ? [{ scannerId, settings: scanner ? startingSettings(kinds.data.value, scanner) : {} }]
@@ -159,7 +165,7 @@ const isDefaultOrder = (orders: ScanOrder[]) => {
   const defaults = [
     NORITSU_HS1800,
     homeScanner.value,
-    ...(labs.data.value ?? []).map((lab) => lab.scannerIds[0]),
+    ...(labs.data.value ?? []).map((lab) => lab.defaultScannerId),
   ];
   if (orders.length > 1 || !defaults.includes(order.scannerId)) return false;
   const scanner = scanners.data.value?.find((candidate) => candidate.id === order.scannerId);
@@ -354,48 +360,55 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
     </FormSection>
 
     <FormSection :no="no.dates" title="Dates" note="Leave blank when not known yet">
-      <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
-        <FormInput
-          :of="form"
-          :path="['sentAt']"
-          :label="atHome ? 'Date started' : 'Date sent'"
-          optional
-          type="date"
-        />
-        <FormInput
-          v-if="needsScanners && !atHome"
-          :of="form"
-          :path="['scansExpectedAt']"
-          label="Scans expected back"
-          optional
-          type="date"
-        />
-        <FormInput
-          v-if="expectsNegatives"
-          :of="form"
-          :path="['negativesExpectedAt']"
-          label="Negatives expected back"
-          optional
-          type="date"
-        />
-        <template v-if="showReceipts">
+      <div class="grid gap-y-6">
+        <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
           <FormInput
-            v-if="recordsNegatives"
             :of="form"
-            :path="['negativesReturnedAt']"
-            :label="negativesLabel"
+            :path="['sentAt']"
+            :label="atHome ? 'Date started' : 'Sent to Lab'"
+            optional
+            type="date"
+          />
+        </div>
+        <div v-if="needsScanners" class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+          <FormInput
+            v-if="!atHome"
+            :of="form"
+            :path="['scansExpectedAt']"
+            label="Scans expected back"
             optional
             type="date"
           />
           <FormInput
-            v-if="needsScanners"
+            v-if="showReceipts"
             :of="form"
             :path="['scansReceivedAt']"
             :label="atHome ? 'Scanned' : 'Scans received'"
             optional
             type="date"
           />
-        </template>
+        </div>
+        <div
+          v-if="expectsNegatives || (showReceipts && recordsNegatives)"
+          class="grid gap-x-5 gap-y-6 sm:grid-cols-2"
+        >
+          <FormInput
+            v-if="expectsNegatives"
+            :of="form"
+            :path="['negativesExpectedAt']"
+            label="Negatives expected back"
+            optional
+            type="date"
+          />
+          <FormInput
+            v-if="showReceipts && recordsNegatives"
+            :of="form"
+            :path="['negativesReturnedAt']"
+            :label="negativesLabel"
+            optional
+            type="date"
+          />
+        </div>
       </div>
     </FormSection>
 

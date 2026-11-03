@@ -84,6 +84,13 @@ const shot = computed(
               <div class="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
+                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  @click="doDelete"
+                >
+                  <IconTrash aria-hidden="true" /> Delete
+                </Button>
+                <Button
+                  variant="outline"
                   :class="detail.camera.active ? DEACTIVATE_TONE : ACTIVATE_TONE"
                   :disabled="setActive.isPending.value"
                   @click="setActive.mutate({ id: detail.camera.id, active: !detail.camera.active })"
@@ -93,13 +100,6 @@ const shot = computed(
                 </Button>
                 <Button variant="outline" class="bg-card" @click="editOpen = true">
                   <IconPencil aria-hidden="true" /> Edit camera
-                </Button>
-                <Button
-                  variant="outline"
-                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  @click="doDelete"
-                >
-                  <IconTrash aria-hidden="true" /> Delete
                 </Button>
               </div>
             </div>

@@ -13,7 +13,7 @@ import LabFormDialog from "../components/LabFormDialog.vue";
 
 const labs = useLabList();
 const scanners = useScannerList();
-/** The lab's scanner names, the default first. */
+/** The lab's scanner names, in order. */
 const scannerNames = (lab: Lab) =>
   lab.scannerIds
     .map((scannerId) => scanners.data.value?.find((scanner) => scanner.id === scannerId)?.name)

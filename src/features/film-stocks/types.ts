@@ -30,7 +30,8 @@ export interface FilmStock {
   brand: string;
   name: string;
   type: FilmType;
-  boxIso: number;
+  /** A single ISO ("400") or a rising range ("100-400"). */
+  boxIso: string;
   process: Process;
   packaging: Packaging;
   stockOrigin: string;

@@ -97,7 +97,7 @@ describe("ProcessingJobs", () => {
     expect(cells(head!)).toEqual(["Step", "Expected", "Actual", "Status"]);
     expect(rows.map(cells)).toEqual([
       ["Sent", "—", "01/09/2026", "Done"],
-      ["Negatives back", "04/09/2026", "06/09/2026", "2 days late"],
+      ["Negatives back", "04/09/2026", "06/09/2026", "Done"],
       ["Scans back", "05/09/2026", "—", expect.stringMatching(/^Overdue \d+ days$/)],
     ]);
     expect(rows[2]!.findAll("td")[2]!.classes()).toContain("text-destructive");

@@ -1,5 +1,5 @@
 import { MutationCache, QueryClient } from "@tanstack/vue-query";
-import { toast } from "vue-sonner";
+import { notify } from "#/shared/lib/toast";
 
 export const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Something went wrong.";
@@ -17,7 +17,7 @@ export const queryClient = new QueryClient({
   },
   mutationCache: new MutationCache({
     onError: (error, _vars, _context, mutation) => {
-      if (!mutation.meta?.quiet) toast.error(errorMessage(error));
+      if (!mutation.meta?.quiet) notify.error(errorMessage(error));
     },
   }),
 });
