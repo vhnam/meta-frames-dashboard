@@ -5,7 +5,7 @@ import {
   type QueryFilters,
   type QueryKey,
 } from "@tanstack/vue-query";
-import { toast } from "vue-sonner";
+import { notify } from "#/shared/lib/toast";
 
 /** Optimistically patches every cached query under `filters`; returns a rollback. */
 export function patchQueries<TData>(
@@ -55,7 +55,7 @@ export function useApiMutation<TVars, TData = void>(spec: MutationSpec<TVars, TD
     onError: (_error, _vars, context) => context?.rollback?.(),
     onSuccess: (data, vars) => {
       const message = typeof spec.success === "function" ? spec.success(vars, data) : spec.success;
-      if (message) toast.success(message);
+      if (message) notify.success(message);
     },
     onSettled: async (data, _error, vars) => {
       await Promise.all(
