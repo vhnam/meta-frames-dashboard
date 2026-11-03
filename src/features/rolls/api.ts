@@ -83,6 +83,7 @@ interface ApiRollDetail {
     negativesExpectedAt?: string;
     negativesReturnedAt?: string;
     price?: number;
+    order?: { id: string; code: string; itemId: string; product: string };
     notes?: string;
     scanOrders?: {
       scannerId: string;
@@ -182,6 +183,7 @@ export const rollQueries = {
             scansReceivedDate: job.scansReceivedAt ?? null,
             negativesReturnedDate: job.negativesReturnedAt ?? null,
             price: job.price ?? null,
+            order: job.order ?? null,
             notes: job.notes ?? "",
             scanOrders: (job.scanOrders ?? []).map((order) => ({
               scannerId: order.scannerId,
@@ -274,6 +276,7 @@ const putJob = async (rollId: string, jobId: string, input: SendToLabInput) => {
     labId: input.labId || undefined,
     process: input.process,
     price: input.price ?? undefined,
+    orderItemId: input.orderItemId || undefined,
     sentAt: input.sentAt || undefined,
     scansExpectedAt: input.scansExpectedAt || undefined,
     negativesExpectedAt: input.negativesExpectedAt || undefined,

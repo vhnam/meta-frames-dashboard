@@ -4,6 +4,7 @@ import { useDeleteJob } from "../queries";
 import { PROCESSING_TYPE_LABELS, producesScans, recordsNegativesReturned } from "../types";
 import type { RollJob, RollRow } from "../types";
 import type { Process } from "#/features/film-stocks/types";
+import { Link } from "@tanstack/vue-router";
 import { computed, ref } from "vue";
 import EmptyState from "#/shared/components/EmptyState.vue";
 import { RichText } from "#/shared/components/richText";
@@ -159,6 +160,14 @@ function jobSteps(job: RollJob): Step[] {
         <div class="min-w-0">
           <p class="text-base leading-snug font-semibold text-balance">{{ job.labName }}</p>
           <p class="text-muted-foreground mt-0.5 text-sm">{{ jobSummary(job) }}</p>
+          <Link
+            v-if="job.order"
+            to="/app/orders/$orderId"
+            :params="{ orderId: job.order.id }"
+            class="text-primary mt-0.5 block text-sm underline-offset-2 hover:underline"
+          >
+            Order #{{ job.order.code }} · {{ job.order.product }}
+          </Link>
         </div>
         <Badge :variant="job.open ? 'destructive' : 'secondary'" class="shrink-0">
           {{ job.open ? "Open" : "Closed" }}

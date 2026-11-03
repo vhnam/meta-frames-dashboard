@@ -7,6 +7,7 @@ import {
   IconFlask,
   IconHistory,
   IconMovie,
+  IconReceipt,
   IconScan,
   IconStack2,
 } from "@tabler/icons-vue";
@@ -45,6 +46,7 @@ export const navSections: NavSection[] = [
       { title: "Inventory", to: "/app/inventory", icon: IconArchive },
       { title: "Expiry", to: "/app/expiry", icon: IconCalendarTime },
       { title: "Labs", to: "/app/labs", icon: IconFlask },
+      { title: "Orders", to: "/app/orders", icon: IconReceipt },
       { title: "Scanners", to: "/app/scanners", icon: IconScan },
     ],
   },

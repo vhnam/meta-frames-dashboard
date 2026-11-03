@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { roomOnLine, useLabOrderList } from "#/features/lab-orders";
 import { useLabList } from "#/features/labs";
 import {
   NORITSU_HS1800,
@@ -25,7 +26,7 @@ import {
   recordsNegativesReturned,
 } from "../types";
 import type { ProcessingType, RollJob, RollRow, ScanOrder } from "../types";
-import { getInput, reset, useForm } from "@formisch/vue";
+import { getInput, reset, setInput, useForm } from "@formisch/vue";
 import type * as v from "valibot";
 import { computed, ref, watch } from "vue";
 import ScanOrderPicker from "./ScanOrderPicker.vue";
@@ -35,7 +36,7 @@ import FormSection from "#/shared/components/FormSection.vue";
 import FormSelect from "#/shared/components/FormSelect.vue";
 import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
 import { attempt } from "#/shared/lib/ui";
-import { formatDate } from "#/shared/lib/format";
+import { formatDate, formatVnd } from "#/shared/lib/format";
 
 const props = defineProps<{
   row?: RollRow;
@@ -53,6 +54,7 @@ const props = defineProps<{
 const open = defineModel<boolean>("open", { required: true });
 
 const labs = useLabList();
+const orders = useLabOrderList();
 const scanners = useScannerList();
 const kinds = useScannerKinds();
 const send = useSendToLab();
@@ -77,7 +79,9 @@ watch(open, (isOpen) => {
         labId: job.labId ?? SELF,
         type: job.type,
         process: job.process,
-        price: job.price ?? undefined,
+        // a job on an order takes its price from the line
+        price: job.order ? undefined : (job.price ?? undefined),
+        orderItemId: job.order?.itemId,
         sentAt: job.sentDate,
         scansExpectedAt: job.scansExpectedDate ?? undefined,
         negativesExpectedAt: job.negativesExpectedDate ?? undefined,
@@ -118,6 +122,30 @@ const orderedNames = computed(() =>
 const needsScanners = computed(() => !!type.value && producesScans(type.value));
 const labId = computed(() => getInput(form, { path: ["labId"] }));
 const atHome = computed(() => labId.value === SELF);
+const orderItemId = computed(() => getInput(form, { path: ["orderItemId"] }) || undefined);
+/** Lines of this lab's orders with room for the roll; the job's own line always counts. */
+const orderLines = computed(() =>
+  (orders.data.value ?? [])
+    .filter((order) => order.labId === labId.value)
+    .flatMap((order) =>
+      order.lines
+        .filter((line) => roomOnLine(line) > 0 || line.id === props.job?.order?.itemId)
+        .map((line) => ({ order, line })),
+    ),
+);
+const orderOptions = computed(() =>
+  orderLines.value.map(({ order, line }) => ({
+    value: line.id,
+    label: `#${order.code} · ${line.product} (${line.jobs.length} of ${line.quantity})`,
+  })),
+);
+const orderLinePrice = computed(
+  () => orderLines.value.find(({ line }) => line.id === orderItemId.value)?.line.unitCost,
+);
+// an order belongs to one lab, so another lab leaves its line behind
+watch(labId, () => {
+  if (open.value && !props.job) setInput(form, { path: ["orderItemId"], input: undefined });
+});
 /** A lab that develops the film returns the negatives; home and scan-only or print jobs do not. */
 const expectsNegatives = computed(
   () => !!type.value && developsFilm(type.value) && !!labId.value && !atHome.value,
@@ -251,6 +279,8 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
     scansExpectedAt: needsScanners.value && !atHome.value ? fields.scansExpectedAt : undefined,
     negativesExpectedAt: expectsNegatives.value ? fields.negativesExpectedAt : undefined,
     labId: output.labId === SELF ? undefined : output.labId,
+    orderItemId: atHome.value ? undefined : fields.orderItemId || undefined,
+    price: !atHome.value && fields.orderItemId ? undefined : fields.price,
     scanOrders: needsScanners.value ? scanOrders.value : [],
   };
   const rollId = props.row.roll.id;
@@ -292,7 +322,7 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
     :title="job ? 'Edit Processing Job' : rescan ? 'Re-scan Roll' : 'Send to Lab'"
     :description="
       job
-        ? 'Update the lab, price, scanners and dates of this job'
+        ? 'Update the order, price, scanners and dates of this job'
         : rescan
           ? 'Scan the negatives again, at another lab or yourself. Earlier jobs and scans stay'
           : atHome
@@ -335,7 +365,24 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
           required
           :options="processOptions"
         />
+        <FormSelect
+          v-if="!atHome"
+          :of="form"
+          :path="['orderItemId']"
+          label="Order"
+          optional
+          placeholder="Not on an order"
+          :options="orderOptions"
+          :hint="
+            orderItemId
+              ? `Price from the order: ${formatVnd(orderLinePrice)}`
+              : orderOptions.length
+                ? undefined
+                : 'This lab has no order with room. Add one under Orders'
+          "
+        />
         <FormInput
+          v-if="atHome || !orderItemId"
           :of="form"
           :path="['price']"
           label="Price"
