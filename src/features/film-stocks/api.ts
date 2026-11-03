@@ -28,7 +28,7 @@ export interface ApiStock {
   brand: string;
   name: string;
   type: FilmStock["type"];
-  boxIso: number;
+  boxIso: string;
   process: FilmStock["process"];
   packaging: FilmStock["packaging"];
   stockOrigin?: string;

@@ -116,7 +116,7 @@ function toApiRow(apiRoll: ApiRoll): RollRow {
       createdAt: "",
     },
     stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(" "),
-    boxIso: 0,
+    boxIso: "",
     cameraName: apiRoll.cameraName ?? null,
     negativesAtLab: apiRoll.negativesAtLab,
   };

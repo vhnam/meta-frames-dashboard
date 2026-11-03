@@ -75,8 +75,8 @@ export interface UpdateRollInput {
 export interface RollRow {
   roll: Roll;
   stockName: string;
-  /** Box ISO of the roll's stock. */
-  boxIso: number;
+  /** Box ISO of the roll's stock: a single ISO or a range. */
+  boxIso: string;
   cameraName: string | null;
   negativesAtLab: boolean;
 }

@@ -32,7 +32,7 @@ describe("StockDetailPage", () => {
     const stock = server.addStock({
       brand: "CineStill",
       name: "800T",
-      boxIso: 800,
+      boxIso: "800",
       process: "C-41",
       packaging: "repack",
       stockOrigin: "USA",
