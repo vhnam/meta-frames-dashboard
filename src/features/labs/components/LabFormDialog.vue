@@ -20,20 +20,27 @@ const save = useSaveLab();
 const remove = useDeleteLab();
 const form = useForm({ schema: LabSchema });
 const editing = computed(() => !!props.labId);
-/** The lab's scanners, the default first. */
+/** The lab's scanners, in order. */
 const scannerIds = ref<string[]>([]);
+const defaultScannerId = ref<string>();
 watch(open, (isOpen) => {
   if (!isOpen) return;
   const lab = labs.data.value?.find((entry) => entry.id === props.labId);
   reset(form, { initialInput: { name: lab?.name ?? "", address: lab?.address ?? "" } });
   scannerIds.value = [...(lab?.scannerIds ?? [])];
+  defaultScannerId.value = lab?.defaultScannerId;
 });
 
 async function submit(output: v.InferOutput<typeof LabSchema>) {
   let id = props.labId ?? "";
   const ok = await attempt(
     save
-      .mutateAsync({ id: props.labId, ...output, scannerIds: scannerIds.value })
+      .mutateAsync({
+        id: props.labId,
+        ...output,
+        scannerIds: scannerIds.value,
+        defaultScannerId: defaultScannerId.value,
+      })
       .then((saved) => (id = saved)),
   );
   if (ok) {
@@ -85,9 +92,9 @@ async function doDelete() {
     <FormSection
       no="02"
       title="Scanners"
-      note="Jobs sent to this lab offer these, the default first"
+      note="Jobs sent to this lab offer these. A default is optional"
     >
-      <LabScannerPicker v-model="scannerIds" />
+      <LabScannerPicker v-model="scannerIds" v-model:default-id="defaultScannerId" />
     </FormSection>
 
     <template v-if="editing" #footer-start>

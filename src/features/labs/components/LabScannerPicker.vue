@@ -2,12 +2,14 @@
 import { ScannerFormDialog, useScannerList } from "#/features/scanners";
 import { computed, ref, watch } from "vue";
 import { IconPlus } from "@tabler/icons-vue";
-import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { Checkbox } from "#/shared/ui/checkbox";
+import { Switch } from "#/shared/ui/switch";
 
-/** The lab's scanners in order: the first is the default for a job sent there. */
+/** The lab's scanners in order. */
 const selected = defineModel<string[]>({ required: true });
+/** The scanner a job sent there starts with, if any. */
+const defaultId = defineModel<string>("defaultId");
 
 const scanners = useScannerList();
 /** Ticked scanners first, in their order, then the rest as the API lists them. */
@@ -20,13 +22,20 @@ const rows = computed(() => {
 });
 
 function toggle(scannerId: string, on: boolean) {
+  if (!on && defaultId.value === scannerId) defaultId.value = undefined;
   selected.value = on
     ? [...selected.value, scannerId]
     : selected.value.filter((entry) => entry !== scannerId);
 }
 
-function makeDefault(scannerId: string) {
+/** The default moves to the top of the lab's scanners; switching it off leaves no default. */
+function setDefault(scannerId: string, on: boolean) {
+  if (!on) {
+    defaultId.value = undefined;
+    return;
+  }
   selected.value = [scannerId, ...selected.value.filter((entry) => entry !== scannerId)];
+  defaultId.value = scannerId;
 }
 
 const adding = ref(false);
@@ -59,17 +68,16 @@ watch(
         <span class="truncate">{{ scanner.name }}</span>
         <span v-if="!scanner.builtIn" class="text-muted-foreground text-xs">Yours</span>
       </label>
-      <Badge v-if="selected[0] === scanner.id" variant="secondary" class="shrink-0">Default</Badge>
-      <Button
-        v-else-if="selected.includes(scanner.id)"
-        type="button"
-        variant="ghost"
-        size="sm"
-        class="text-muted-foreground -mr-1.5 h-7 shrink-0 px-2 text-xs"
-        @click="makeDefault(scanner.id)"
+      <label
+        v-if="selected.includes(scanner.id)"
+        class="text-muted-foreground flex shrink-0 items-center gap-2 text-xs"
       >
-        Make default
-      </Button>
+        Default
+        <Switch
+          :model-value="defaultId === scanner.id"
+          @update:model-value="(on: boolean) => setDefault(scanner.id, on)"
+        />
+      </label>
     </div>
     <div>
       <Button type="button" variant="ghost" size="sm" @click="adding = true">
