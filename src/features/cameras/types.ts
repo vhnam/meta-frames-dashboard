@@ -28,7 +28,7 @@ export interface BuiltInLensInput {
 
 export interface CameraRow {
   camera: Camera;
-  loaded: { rollId: string; stockName: string; shotIso: number; daysLoaded: number } | null;
+  loaded: { rollId: string; stockName: string; shotIso?: number; daysLoaded: number } | null;
 }
 
 export interface CameraDetail {

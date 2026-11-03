@@ -26,7 +26,7 @@ export interface ApiCamera {
   loadedRoll?: {
     rollId: string;
     stockName: string;
-    shotIso: number;
+    shotIso?: number;
     daysLoaded: number;
   };
 }
