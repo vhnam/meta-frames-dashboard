@@ -12,7 +12,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="grid content-start gap-1.5">
+  <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-1.5">
     <div class="flex items-center justify-between gap-3">
       <Label>
         {{ label }}
