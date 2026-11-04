@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/vue-query";
 import { http } from "#/shared/api/http";
-import type { LabOrder, LabOrderInput, LabOrderJob } from "./types";
+import type { LabOrder, LabOrderInput, LabOrderJob, LinkableJob } from "./types";
 
 export const labOrderKeys = {
   all: ["lab-orders"] as const,
@@ -18,6 +18,7 @@ interface ApiLabOrderJob {
   stockName: string;
   format: number;
   exposures: number;
+  orderItemIds?: string[];
 }
 
 interface ApiLabOrder {
@@ -94,8 +95,11 @@ export const labOrderQueries = {
   linkableJobs: (id: string) =>
     queryOptions({
       queryKey: labOrderKeys.linkableJobs(id),
-      queryFn: async (): Promise<LabOrderJob[]> =>
-        (await http.get<ApiLabOrderJob[]>(`/lab-orders/${id}/linkable-jobs`)).data.map(toJob),
+      queryFn: async (): Promise<LinkableJob[]> =>
+        (await http.get<ApiLabOrderJob[]>(`/lab-orders/${id}/linkable-jobs`)).data.map((job) => ({
+          ...toJob(job),
+          lineIds: job.orderItemIds ?? [],
+        })),
     }),
 };
 
@@ -126,10 +130,9 @@ export const deleteLabOrder = async (id: string) => {
   await http.delete(`/lab-orders/${id}`);
 };
 
-export const addJobToLine = async (variables: { jobId: string; lineId: string }) => {
-  await http.put(`/processing/${variables.jobId}/order-item`, { orderItemId: variables.lineId });
-};
-
-export const removeJobFromOrder = async (jobId: string) => {
-  await http.delete(`/processing/${jobId}/order-item`);
+/** Replaces the lines a job is billed on; none takes it off its order. */
+export const setJobLines = async (variables: { jobId: string; lineIds: string[] }) => {
+  await http.put(`/processing/${variables.jobId}/order-items`, {
+    orderItemIds: variables.lineIds,
+  });
 };

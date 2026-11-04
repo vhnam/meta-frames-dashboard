@@ -14,3 +14,7 @@ export const LabOrderSchema = v.object({
   discount: amount,
   notes: v.optional(v.string()),
 });
+
+export const AddRollToOrderSchema = v.object({
+  jobId: required("Select a roll."),
+});

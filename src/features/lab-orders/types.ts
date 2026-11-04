@@ -60,11 +60,29 @@ export interface LabOrderInput {
   lines: LabOrderLineInput[];
 }
 
+/** A job that can go on an order, with the lines of that order it is already on. */
+export interface LinkableJob extends LabOrderJob {
+  lineIds: string[];
+}
+
 /** Rolls still to come on a line. */
 export const roomOnLine = (line: LabOrderLine) => line.quantity - line.jobs.length;
 
-/** Rolls on the order, against the rolls it bills. */
+/** Every job on the order once, with the lines that bill it: one roll can be on several. */
+export const jobsOnOrder = (order: LabOrder) => {
+  const byJob = new Map<string, { job: LabOrderJob; lines: LabOrderLine[] }>();
+  for (const line of order.lines)
+    for (const job of line.jobs) {
+      const entry = byJob.get(job.id) ?? { job, lines: [] };
+      entry.lines.push(line);
+      byJob.set(job.id, entry);
+    }
+  return [...byJob.values()];
+};
+
+/** Rolls on the order, and how many of the places its lines bill are taken. */
 export const rollsOnOrder = (order: LabOrder) => ({
+  rolls: new Set(jobsOnOrder(order).map(({ job }) => job.rollId)).size,
   taken: order.lines.reduce((sum, line) => sum + line.jobs.length, 0),
   billed: order.lines.reduce((sum, line) => sum + line.quantity, 0),
 });

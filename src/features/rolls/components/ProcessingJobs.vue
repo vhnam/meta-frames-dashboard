@@ -166,7 +166,8 @@ function jobSteps(job: RollJob): Step[] {
             :params="{ orderId: job.order.id }"
             class="text-primary mt-0.5 block text-sm underline-offset-2 hover:underline"
           >
-            Order #{{ job.order.code }} · {{ job.order.product }}
+            Order #{{ job.order.code }} ·
+            {{ job.order.items.map((item) => item.product).join(" + ") }}
           </Link>
         </div>
         <Badge :variant="job.open ? 'destructive' : 'secondary'" class="shrink-0">

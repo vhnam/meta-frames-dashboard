@@ -106,10 +106,10 @@ export interface RollJob {
   negativesExpectedDate: string | null;
   scansReceivedDate: string | null;
   negativesReturnedDate: string | null;
-  /** From the order line when the job is on an order, otherwise the job's own. */
+  /** From its order lines when the job is on an order, otherwise the job's own. */
   price: number | null;
-  /** The order line the job is billed on. */
-  order: { id: string; code: string; itemId: string; product: string } | null;
+  /** The order the job is billed on, and its lines there. */
+  order: { id: string; code: string; items: { id: string; product: string }[] } | null;
   notes: string;
   scanOrders: RollJobScanOrder[];
   open: boolean;
@@ -198,10 +198,10 @@ export interface SendToLabInput {
   labId?: string;
   type: ProcessingType;
   process: Process;
-  /** VND. Not sent for a job on an order: the order line sets it. */
+  /** VND. Not sent for a job on an order: its order lines set it. */
   price?: number;
-  /** The order line the job is billed on. */
-  orderItemId?: string;
+  /** The order lines the job is billed on; replaces its set. */
+  orderItemIds?: string[];
   /** Date sent (ISO date). */
   sentAt?: string;
   /** When the lab expects to return the scans (ISO date, not before sentAt). */

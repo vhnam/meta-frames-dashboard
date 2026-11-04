@@ -49,7 +49,7 @@ describe("Lab orders", () => {
     expect(order.subtotal).toBe(560000);
     expect(order.total).toBe(604800);
     expect(order.lines.map((line) => line.unitCost)).toEqual([135000, 156600]);
-    expect(rollsOnOrder(order)).toEqual({ taken: 0, billed: 4 });
+    expect(rollsOnOrder(order)).toEqual({ rolls: 0, taken: 0, billed: 4 });
     expect(roomOnLine(order.lines[1])).toBe(3);
   });
 

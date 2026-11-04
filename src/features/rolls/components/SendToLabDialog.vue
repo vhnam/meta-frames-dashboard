@@ -27,6 +27,7 @@ import {
 } from "../types";
 import type { ProcessingType, RollJob, RollRow, ScanOrder } from "../types";
 import { getInput, reset, setInput, useForm } from "@formisch/vue";
+import OrderLinesPicker from "#/features/lab-orders/components/OrderLinesPicker.vue";
 import type * as v from "valibot";
 import { computed, ref, watch } from "vue";
 import ScanOrderPicker from "./ScanOrderPicker.vue";
@@ -36,7 +37,7 @@ import FormSection from "#/shared/components/FormSection.vue";
 import FormSelect from "#/shared/components/FormSelect.vue";
 import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
 import { attempt } from "#/shared/lib/ui";
-import { formatDate, formatVnd } from "#/shared/lib/format";
+import { formatDate } from "#/shared/lib/format";
 
 const props = defineProps<{
   row?: RollRow;
@@ -65,13 +66,17 @@ const form = useForm({ schema: SendToLabSchema });
 
 const scanOrders = ref<ScanOrder[]>([]);
 const scanError = ref<string>();
+const orderLineIds = ref<string[]>([]);
+const orderError = ref<string>();
 
 const offered = computed(() => props.types ?? [...PROCESSING_TYPES]);
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
   scanError.value = undefined;
+  orderError.value = undefined;
   const job = props.job;
+  orderLineIds.value = job?.order?.items.map((item) => item.id) ?? [];
   if (job) {
     scanOrders.value = job.scanOrders.map(({ scannerId, settings }) => ({ scannerId, settings }));
     reset(form, {
@@ -79,9 +84,9 @@ watch(open, (isOpen) => {
         labId: job.labId ?? SELF,
         type: job.type,
         process: job.process,
-        // a job on an order takes its price from the line
+        // a job on an order takes its price from its lines
         price: job.order ? undefined : (job.price ?? undefined),
-        orderItemId: job.order?.itemId,
+        orderId: job.order?.id,
         sentAt: job.sentDate,
         scansExpectedAt: job.scansExpectedDate ?? undefined,
         negativesExpectedAt: job.negativesExpectedDate ?? undefined,
@@ -122,29 +127,30 @@ const orderedNames = computed(() =>
 const needsScanners = computed(() => !!type.value && producesScans(type.value));
 const labId = computed(() => getInput(form, { path: ["labId"] }));
 const atHome = computed(() => labId.value === SELF);
-const orderItemId = computed(() => getInput(form, { path: ["orderItemId"] }) || undefined);
-/** Lines of this lab's orders with room for the roll; the job's own line always counts. */
-const orderLines = computed(() =>
-  (orders.data.value ?? [])
-    .filter((order) => order.labId === labId.value)
-    .flatMap((order) =>
-      order.lines
-        .filter((line) => roomOnLine(line) > 0 || line.id === props.job?.order?.itemId)
-        .map((line) => ({ order, line })),
-    ),
+const orderId = computed(() => getInput(form, { path: ["orderId"] }) || undefined);
+const ownOrderLineIds = computed(() => props.job?.order?.items.map((item) => item.id) ?? []);
+/** This lab's orders with room for the roll; the job's own order always counts. */
+const labOrders = computed(() =>
+  (orders.data.value ?? []).filter(
+    (order) =>
+      order.labId === labId.value &&
+      (order.id === props.job?.order?.id || order.lines.some((line) => roomOnLine(line) > 0)),
+  ),
 );
 const orderOptions = computed(() =>
-  orderLines.value.map(({ order, line }) => ({
-    value: line.id,
-    label: `#${order.code} · ${line.product} (${line.jobs.length} of ${line.quantity})`,
-  })),
+  labOrders.value.map((order) => ({ value: order.id, label: `#${order.code}` })),
 );
-const orderLinePrice = computed(
-  () => orderLines.value.find(({ line }) => line.id === orderItemId.value)?.line.unitCost,
+const orderLines = computed(
+  () => labOrders.value.find((order) => order.id === orderId.value)?.lines ?? [],
 );
-// an order belongs to one lab, so another lab leaves its line behind
+// an order belongs to one lab, so another lab leaves it behind
 watch(labId, () => {
-  if (open.value && !props.job) setInput(form, { path: ["orderItemId"], input: undefined });
+  if (open.value && !props.job) setInput(form, { path: ["orderId"], input: undefined });
+});
+// another order starts with nothing ticked; back on its own order, a job finds its lines again
+watch(orderId, (order) => {
+  if (open.value)
+    orderLineIds.value = order && order === props.job?.order?.id ? ownOrderLineIds.value : [];
 });
 /** A lab that develops the film returns the negatives; home and scan-only or print jobs do not. */
 const expectsNegatives = computed(
@@ -272,15 +278,20 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
     scanError.value = "Pick at least one scanner.";
     return;
   }
-  const { scansReceivedAt, negativesReturnedAt, ...fields } = output;
+  if (!atHome.value && orderId.value && !orderLineIds.value.length) {
+    orderError.value = "Tick at least one line.";
+    return;
+  }
+  const { scansReceivedAt, negativesReturnedAt, orderId: pickedOrder, ...fields } = output;
+  const onOrder = !atHome.value && !!pickedOrder;
   const input = {
     ...fields,
     // scans are only expected from a scanning job; negatives from a lab that develops
     scansExpectedAt: needsScanners.value && !atHome.value ? fields.scansExpectedAt : undefined,
     negativesExpectedAt: expectsNegatives.value ? fields.negativesExpectedAt : undefined,
     labId: output.labId === SELF ? undefined : output.labId,
-    orderItemId: atHome.value ? undefined : fields.orderItemId || undefined,
-    price: !atHome.value && fields.orderItemId ? undefined : fields.price,
+    orderItemIds: onOrder ? orderLineIds.value : undefined,
+    price: onOrder ? undefined : fields.price,
     scanOrders: needsScanners.value ? scanOrders.value : [],
   };
   const rollId = props.row.roll.id;
@@ -368,21 +379,19 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
         <FormSelect
           v-if="!atHome"
           :of="form"
-          :path="['orderItemId']"
+          :path="['orderId']"
           label="Order"
           optional
           placeholder="Not on an order"
           :options="orderOptions"
           :hint="
-            orderItemId
-              ? `Price from the order: ${formatVnd(orderLinePrice)}`
-              : orderOptions.length
-                ? undefined
-                : 'This lab has no order with room. Add one under Orders'
+            orderOptions.length
+              ? undefined
+              : 'This lab has no order with room. Add one under Orders'
           "
         />
         <FormInput
-          v-if="atHome || !orderItemId"
+          v-if="atHome || !orderId"
           :of="form"
           :path="['price']"
           label="Price"
@@ -394,6 +403,14 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
           placeholder="e.g. 280000"
         />
       </div>
+      <OrderLinesPicker
+        v-if="!atHome && orderId"
+        v-model="orderLineIds"
+        class="mt-6"
+        :lines="orderLines"
+        :own-line-ids="ownOrderLineIds"
+        :error="orderError"
+      />
     </FormSection>
 
     <FormSection v-if="needsScanners" :no="no.scans" title="Scans" note="One order per scanner">

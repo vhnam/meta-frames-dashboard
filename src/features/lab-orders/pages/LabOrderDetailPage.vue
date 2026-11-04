@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDeleteLabOrder, useLabOrderDetail, useRemoveJobFromOrder } from "../queries";
+import { useDeleteLabOrder, useLabOrderDetail, useSetJobLines } from "../queries";
 import { roomOnLine } from "../types";
 import type { LabOrderJob, LabOrderLine } from "../types";
 import { PROCESSING_TYPE_LABELS } from "#/features/rolls/types";
@@ -19,7 +19,7 @@ const props = defineProps<{ orderId: string }>();
 const router = useRouter();
 const order = useLabOrderDetail(() => props.orderId);
 const deleteOrder = useDeleteLabOrder();
-const removeJob = useRemoveJobFromOrder();
+const setLines = useSetJobLines();
 const editOpen = ref(false);
 const addOpen = ref(false);
 const addTo = ref<string>();
@@ -31,7 +31,7 @@ function addRoll(line?: LabOrderLine) {
 
 async function remove(job: LabOrderJob) {
   if (await ask(`Take ${job.stockName} off this order? The job then has no price.`))
-    await attempt(removeJob.mutateAsync(job.id));
+    await attempt(setLines.mutateAsync({ jobId: job.id, lineIds: [] }));
 }
 
 async function doDelete() {

@@ -390,18 +390,23 @@ describe("SendToLabDialog printing at home", () => {
 });
 
 describe("SendToLabDialog order", () => {
-  it("bills a lab job on an order line instead of a price", async () => {
-    const lab = server.addLab({ name: "Lab A", scannerIds: [] });
+  const saveOrder = (labId: string) =>
     server.saveLabOrder("order", {
-      labId: lab.id,
+      labId,
       code: "0510006",
       orderedAt: "2026-10-05T03:03:00Z",
-      vat: 44800,
+      vat: 10000,
       items: [
-        { id: "bw", product: "35mm B&W", quantity: 1, unitPrice: 125000 },
-        { id: "colour", product: "35mm Colour", quantity: 3, unitPrice: 145000 },
+        { id: "develop", product: "Develop", quantity: 1, unitPrice: 60000 },
+        { id: "scan", product: "Scan", quantity: 1, unitPrice: 40000 },
       ],
     });
+  const tickBox = (product: string) =>
+    document.body.querySelector(`[aria-label="Bill this roll on ${product}"]`) as HTMLButtonElement;
+
+  it("bills a lab job on several lines of an order instead of a price", async () => {
+    const lab = server.addLab({ name: "Lab A", scannerIds: [] });
+    saveOrder(lab.id);
     const { wrapper } = await mountRescan();
     const select = (name: string) =>
       document.body.querySelector(`select[name='["${name}"]']`) as HTMLSelectElement;
@@ -412,30 +417,38 @@ describe("SendToLabDialog order", () => {
     };
     await vi.waitFor(() => expect(select("labId").textContent).toContain("Lab A"));
     // at home there is no order to pick
-    expect(select("orderItemId")).toBeNull();
+    expect(select("orderId")).toBeNull();
 
     await choose("labId", lab.id);
-    expect(select("orderItemId").textContent).toContain("#0510006 · 35mm Colour (0 of 3)");
-    await choose("orderItemId", "colour");
-    expect(document.body.textContent).toContain("Price from the order");
+    expect(select("orderId").textContent).toContain("#0510006");
+    await choose("orderId", "order");
     expect(document.body.querySelector(`[name='["price"]']`)).toBeNull();
+
+    // an order needs a line
+    submit();
+    await vi.waitFor(() => expect(document.body.textContent).toContain("Tick at least one line."));
+    expect(jobPut()).toBeUndefined();
+
+    tickBox("Develop").click();
+    await flushPromises();
+    tickBox("Scan").click();
+    await flushPromises();
+    expect(document.body.textContent).toContain("Roll price");
+    expect(document.body.textContent).toContain(
+      `${new Intl.NumberFormat("vi-VN").format(110000)} ₫`,
+    );
 
     submit();
     await vi.waitFor(() => expect(jobPut()).toBeDefined());
-    expect(jobPut()).toMatchObject({ labId: lab.id, orderItemId: "colour" });
+    expect(jobPut()).toMatchObject({ labId: lab.id, orderItemIds: ["develop", "scan"] });
     expect(jobPut()!.price).toBeUndefined();
     wrapper.unmount();
   });
 
-  it("keeps a job on its order line when it is edited, even a full one", async () => {
+  it("keeps a job on its full lines when it is edited", async () => {
     const lab = server.addLab({ name: "Lab A", scannerIds: [] });
-    server.saveLabOrder("order", {
-      labId: lab.id,
-      code: "0510006",
-      orderedAt: "2026-10-05T03:03:00Z",
-      items: [{ id: "bw", product: "35mm B&W", quantity: 1, unitPrice: 125000 }],
-    });
-    server.labOrders[0].items[0].jobs = [{ id: "job" }];
+    saveOrder(lab.id);
+    server.labOrders[0].items.forEach((item) => (item.jobs = [{ id: "job" }]));
     const stock = server.addStock({ name: "Tri-X", brand: "Kodak" });
     const rec = server.addRoll({ filmStockId: stock.id, status: "at_lab" });
     const row = (await queryClient.fetchQuery(rollQueries.list({}))).find(
@@ -457,8 +470,15 @@ describe("SendToLabDialog order", () => {
           negativesExpectedDate: null,
           scansReceivedDate: null,
           negativesReturnedDate: null,
-          price: 125000,
-          order: { id: "order", code: "0510006", itemId: "bw", product: "35mm B&W" },
+          price: 110000,
+          order: {
+            id: "order",
+            code: "0510006",
+            items: [
+              { id: "develop", product: "Develop" },
+              { id: "scan", product: "Scan" },
+            ],
+          },
           notes: "",
           scanOrders: [],
           open: true,
@@ -467,12 +487,14 @@ describe("SendToLabDialog order", () => {
       global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Select: SelectStub } },
     });
     await wrapper.setProps({ open: true } as never);
-    await vi.waitFor(() => expect(document.body.textContent).toContain("Price from the order"));
+    await vi.waitFor(() => expect(tickBox("Scan")).not.toBeNull());
+    expect(tickBox("Scan").getAttribute("aria-checked")).toBe("true");
+    expect(tickBox("Scan").disabled).toBe(false);
     expect(document.body.querySelector(`[name='["price"]']`)).toBeNull();
 
     submit();
     await vi.waitFor(() => expect(jobPut()).toBeDefined());
-    expect(jobPut()).toMatchObject({ orderItemId: "bw" });
+    expect(jobPut()).toMatchObject({ orderItemIds: ["develop", "scan"] });
     expect(jobPut()!.price).toBeUndefined();
     wrapper.unmount();
   });

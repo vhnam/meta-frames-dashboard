@@ -17,10 +17,7 @@ const router = useRouter();
 const orders = useLabOrderList();
 const open = ref(false);
 
-const rollCount = (order: LabOrder) => {
-  const { taken, billed } = rollsOnOrder(order);
-  return `${taken} of ${billed}`;
-};
+const rollCount = (order: LabOrder) => String(rollsOnOrder(order).rolls);
 
 const columns: DataTableColumn<LabOrder>[] = [
   {
