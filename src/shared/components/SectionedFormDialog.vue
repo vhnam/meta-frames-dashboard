@@ -78,7 +78,10 @@ const FIELDS = [
         class="flex min-h-0 flex-1 flex-col"
         @submit="(output) => emit('submit', output)"
       >
-        <div :class="FIELDS" class="grid min-h-0 flex-1 gap-9 overflow-y-auto px-6 py-7 sm:px-9">
+        <div
+          :class="FIELDS"
+          class="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] gap-9 overflow-y-auto px-6 py-7 sm:px-9"
+        >
           <slot />
         </div>
 

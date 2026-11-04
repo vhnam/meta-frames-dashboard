@@ -31,7 +31,7 @@ defineProps<{
       :error="field.errors?.[0]"
     >
       <template v-if="$slots.aside" #aside><slot name="aside" /></template>
-      <div class="flex gap-2">
+      <div class="flex min-w-0 gap-2 [&>[data-slot=select-trigger]]:min-w-0">
         <Select
           :model-value="field.input == null ? '' : String(field.input)"
           v-bind="field.props"
