@@ -8,6 +8,7 @@ import { authKeys } from "#/features/auth";
 import { authRoutes } from "#/features/auth/routes";
 import { camerasRoutes } from "#/features/cameras/routes";
 import { filmStocksRoutes } from "#/features/film-stocks/routes";
+import { labOrdersRoutes } from "#/features/lab-orders/routes";
 import { labsRoutes } from "#/features/labs/routes";
 import { lensesRoutes } from "#/features/lenses/routes";
 import { rollsRoutes } from "#/features/rolls/routes";
@@ -40,6 +41,7 @@ const routeTree = rootRoute.addChildren([
     ...lensesRoutes,
     ...filmStocksRoutes,
     ...labsRoutes,
+    ...labOrdersRoutes,
     ...scannersRoutes,
     ...auditRoutes,
   ]),

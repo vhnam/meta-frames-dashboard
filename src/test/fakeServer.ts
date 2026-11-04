@@ -7,6 +7,27 @@ import { http } from "#/shared/api/http";
  * instance so tests exercise the same request/response mapping as the app.
  */
 
+interface LabOrderBody {
+  labId: string;
+  code: string;
+  orderedAt: string;
+  dueDate?: string;
+  vat?: number;
+  discount?: number;
+  notes?: string;
+  items: { id: string; product: string; options?: string; quantity: number; unitPrice: number }[];
+}
+interface LabOrderRec extends Omit<LabOrderBody, "items"> {
+  id: string;
+  labName: string;
+  subtotal: number;
+  total: number;
+  items: (LabOrderBody["items"][number] & {
+    lineTotal: number;
+    unitCost: number;
+    jobs: unknown[];
+  })[];
+}
 interface StockRec {
   id: string;
   brand: string;
@@ -131,6 +152,8 @@ export const server = {
   stocks: [] as StockRec[],
   rolls: [] as RollRec[],
   labs: [] as LabRec[],
+  labOrders: [] as LabOrderRec[],
+  linkableJobs: [] as unknown[],
   scanners: builtInScanners(),
   requests: [] as { method: string; url: string; body: unknown }[],
 
@@ -140,8 +163,33 @@ export const server = {
     this.stocks = [];
     this.rolls = [];
     this.labs = [];
+    this.labOrders = [];
+    this.linkableJobs = [];
     this.scanners = builtInScanners();
     this.requests = [];
+  },
+  /** An order as the API returns it: amounts worked out, VAT and discount shared out by price. */
+  saveLabOrder(orderId: string, input: LabOrderBody): LabOrderRec {
+    const subtotal = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    const share = subtotal ? ((input.vat ?? 0) - (input.discount ?? 0)) / subtotal : 0;
+    const previous = this.labOrders.find((record) => record.id === orderId);
+    const order: LabOrderRec = {
+      ...input,
+      id: orderId,
+      labName: this.labs.find((lab) => lab.id === input.labId)?.name ?? "",
+      vat: input.vat ?? 0,
+      discount: input.discount ?? 0,
+      subtotal,
+      total: subtotal + (input.vat ?? 0) - (input.discount ?? 0),
+      items: input.items.map((item) => ({
+        ...item,
+        lineTotal: item.quantity * item.unitPrice,
+        unitCost: Math.round(item.unitPrice * (1 + share)),
+        jobs: previous?.items.find((line) => line.id === item.id)?.jobs ?? [],
+      })),
+    };
+    this.labOrders = [...this.labOrders.filter((record) => record.id !== orderId), order];
+    return order;
   },
   addStock(overrides: Partial<StockRec> = {}): StockRec {
     const stock: StockRec = {
@@ -345,6 +393,23 @@ export function installFakeServer() {
       return respond(200, items);
     }
     if (method === "get" && url === "/labs") return respond(200, server.labs);
+    if (method === "get" && url === "/lab-orders") return respond(200, server.labOrders);
+    route = match(/^\/lab-orders\/([^/]+)\/linkable-jobs$/);
+    if (route && method === "get") return respond(200, server.linkableJobs);
+    route = match(/^\/lab-orders\/([^/]+)$/);
+    if (route && method === "get") {
+      const order = server.labOrders.find((record) => record.id === route![1]);
+      return order ? respond(200, order) : notFound("lab order");
+    }
+    if (route && method === "put") {
+      const order = server.saveLabOrder(route[1], body);
+      return respond(201, order);
+    }
+    if (route && method === "delete") {
+      server.labOrders = server.labOrders.filter((record) => record.id !== route![1]);
+      return respond(204, undefined);
+    }
+    if (/^\/processing\/[^/]+\/order-items$/.test(url) && method === "put") return respond(200, {});
     if (method === "post" && url === "/labs")
       return respond(201, server.addLab({ ...body, scannerIds: body.scannerIds ?? [] }));
     if (method === "get" && url === "/scanners") return respond(200, server.scanners);
