@@ -3,14 +3,7 @@ import { toValue, type MaybeRefOrGetter } from "vue";
 import { computed } from "vue";
 import { useApiMutation } from "#/shared/api/mutation";
 import { rollKeys } from "#/features/rolls";
-import {
-  addJobToLine,
-  deleteLabOrder,
-  labOrderKeys,
-  labOrderQueries,
-  removeJobFromOrder,
-  saveLabOrder,
-} from "./api";
+import { deleteLabOrder, labOrderKeys, labOrderQueries, saveLabOrder, setJobLines } from "./api";
 
 export const useLabOrderList = () => useQuery(labOrderQueries.list());
 
@@ -37,16 +30,10 @@ export const useDeleteLabOrder = () =>
     success: "Order deleted",
   });
 
-export const useAddJobToLine = () =>
+export const useSetJobLines = () =>
   useApiMutation({
-    fn: addJobToLine,
+    fn: setJobLines,
     invalidates: () => [labOrderKeys.all, rollKeys.details()],
-    success: "Roll added to the order",
-  });
-
-export const useRemoveJobFromOrder = () =>
-  useApiMutation({
-    fn: removeJobFromOrder,
-    invalidates: () => [labOrderKeys.all, rollKeys.details()],
-    success: "Roll taken off the order",
+    success: ({ lineIds }) =>
+      lineIds.length ? "Roll's order lines saved" : "Roll taken off the order",
   });

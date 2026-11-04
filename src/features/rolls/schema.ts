@@ -83,7 +83,8 @@ export const SendToLabSchema = v.object({
   type: picklist(PROCESSING_TYPES),
   process: picklist(PROCESSES),
   price,
-  orderItemId: v.optional(v.string()),
+  /** Only picks whose lines to offer: the job stores its lines. */
+  orderId: v.optional(v.string()),
   sentAt: v.optional(v.string()),
   scansExpectedAt: v.optional(v.string()),
   negativesExpectedAt: v.optional(v.string()),

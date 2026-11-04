@@ -409,8 +409,7 @@ export function installFakeServer() {
       server.labOrders = server.labOrders.filter((record) => record.id !== route![1]);
       return respond(204, undefined);
     }
-    if (/^\/processing\/[^/]+\/order-item$/.test(url) && (method === "put" || method === "delete"))
-      return respond(200, {});
+    if (/^\/processing\/[^/]+\/order-items$/.test(url) && method === "put") return respond(200, {});
     if (method === "post" && url === "/labs")
       return respond(201, server.addLab({ ...body, scannerIds: body.scannerIds ?? [] }));
     if (method === "get" && url === "/scanners") return respond(200, server.scanners);
