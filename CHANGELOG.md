@@ -7,16 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release needs a Meta-Frame API with lab orders (`/lab-orders`).
+This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`.
 
 ### Added
 
-- An Orders page under Film & Lab records what a lab billed: code, dates, lines with product, options, quantity and unit price, then VAT, discount and total. An order's page shows the rolls on each line, and adds or removes them. Only rolls already sent to that lab, and on no order yet, can be added.
-- The Send to Lab and Edit Processing Job dialogs pick an order line for a lab job. A job on an order links to it from the roll's Processing history.
+- An Orders page under Film & Lab records what a lab billed: code, dates, lines with product, a rich text description, quantity and unit price, then VAT, discount and total. In the Add / Edit Order dialog each line is a card, and its description shows as a preview that opens in the editor, one line at a time.
+- An order's page has the look of the camera and film stock pages: a header card with the lab, dates, rolls and total; numbered sections for the lines and notes; and a side column with the amounts and the rolls. Each roll lists the lines that bill it, and can be added or removed. One roll can go on several lines, such as developing and scanning. Only rolls already sent to that lab, on no order or only on this one, can be added. The Add Roll to Order dialog has the same look as Load Into Camera.
+- The Send to Lab and Edit Processing Job dialogs pick an order and its lines for a lab job. A job on an order links to it from the roll's Processing history.
 
 ### Changed
 
-- A job on an order takes its price from the line, with the order's VAT and discount shared out by price, and the Price field is hidden. Work at home and jobs on no order keep the Price field.
+- A job on an order takes its price from its lines added up, with the order's VAT and discount shared out by price, and the Price field is hidden. Work at home and jobs on no order keep the Price field.
+
+### Fixed
+
+- A long option in a form dialog's select no longer pushes the field past the dialog's edge on a phone. The text is cut off inside the field.
 
 ## [2.1.0] - 2026-11-03
 
