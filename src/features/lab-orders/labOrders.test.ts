@@ -86,4 +86,38 @@ describe("Lab orders", () => {
     expect(removeButton(2).disabled).toBe(true);
     wrapper.unmount();
   });
+
+  it("opens one line's description editor at a time", async () => {
+    const lab = server.addLab({ name: "Lab A", scannerIds: [] });
+    const id = await saveLabOrder({
+      input: { labId: lab.id, code: "1", orderedAt: "2026-10-05T03:03:00.000Z", lines },
+    });
+    const order = await queryClient.fetchQuery(labOrderQueries.detail(id));
+    const wrapper = mount(LabOrderFormDialog, {
+      attachTo: document.body,
+      props: { open: false, order },
+      global: { plugins },
+    });
+    await wrapper.setProps({ open: true } as never);
+    await flushPromises();
+    const button = (label: string) =>
+      document.body.querySelector(`[aria-label="${label}"]`) as HTMLButtonElement;
+    const editors = () => document.body.querySelectorAll('ol [data-slot="rich-text-input"]');
+    expect(editors()).toHaveLength(0);
+
+    button("Edit description of line 2").click();
+    await vi.waitFor(() => {
+      const group = document.body.querySelector('[aria-label="Description of line 2"]');
+      expect(group?.textContent).toContain("Description");
+      expect(group?.querySelector('[data-slot="rich-text-input"]')?.textContent).toBe("Dev + Scan");
+    });
+
+    button("Add description to line 1").click();
+    await vi.waitFor(() => {
+      expect(document.body.querySelector('[aria-label="Description of line 1"]')).not.toBeNull();
+      expect(editors()).toHaveLength(1);
+    });
+    expect(document.body.querySelector('[aria-label="Description of line 2"]')).toBeNull();
+    wrapper.unmount();
+  });
 });

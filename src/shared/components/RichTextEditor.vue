@@ -20,13 +20,20 @@ import { type Component, watch } from "vue";
 import { cn } from "#/shared/lib/utils";
 
 /** A WYSIWYG editor that reads and writes Markdown, so plain-text notes stay valid. */
-const props = defineProps<{ placeholder?: string; disabled?: boolean; id?: string }>();
+const props = defineProps<{
+  placeholder?: string;
+  disabled?: boolean;
+  id?: string;
+  /** Put the cursor at the end as soon as the editor mounts. */
+  autofocus?: boolean;
+}>();
 const model = defineModel<string>({ default: "" });
 
 const editor = useEditor({
   content: model.value,
   contentType: "markdown",
   editable: !props.disabled,
+  autofocus: props.autofocus ? "end" : false,
   extensions: [
     // Underline has no Markdown syntax; links are kept but open only from the detail page.
     StarterKit.configure({ underline: false, link: { openOnClick: false } }),

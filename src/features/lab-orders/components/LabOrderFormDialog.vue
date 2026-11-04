@@ -3,19 +3,24 @@ import { useLabList } from "#/features/labs";
 import { useSaveLabOrder } from "../queries";
 import { LabOrderSchema } from "../schema";
 import type { LabOrder, LabOrderLineInput } from "../types";
-import { IconPlus, IconTrash } from "@tabler/icons-vue";
+import { IconCheck, IconPencil, IconPlus, IconTrash } from "@tabler/icons-vue";
 import { getInput, reset, useForm } from "@formisch/vue";
 import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
+import FormField from "#/shared/components/FormField.vue";
 import FormInput from "#/shared/components/FormInput.vue";
 import FormRichText from "#/shared/components/FormRichText.vue";
 import FormSection from "#/shared/components/FormSection.vue";
 import FormSelect from "#/shared/components/FormSelect.vue";
+import { RichText } from "#/shared/components/richText";
 import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
 import { Button } from "#/shared/ui/button";
 import { Input } from "#/shared/ui/input";
 import { formatVnd } from "#/shared/lib/format";
 import { attempt } from "#/shared/lib/ui";
+
+// TipTap is large: load it only when the form opens.
+const RichTextEditor = defineAsyncComponent(() => import("#/shared/components/RichTextEditor.vue"));
 
 const props = defineProps<{ order?: LabOrder }>();
 const open = defineModel<boolean>("open", { required: true });
@@ -26,6 +31,8 @@ const save = useSaveLabOrder();
 const form = useForm({ schema: LabOrderSchema });
 const lines = ref<LabOrderLineInput[]>([]);
 const linesError = ref<string>();
+/** The line whose description is open: one editor at a time keeps the list short. */
+const editingLine = ref<string>();
 
 const newLine = (): LabOrderLineInput => ({
   id: crypto.randomUUID(),
@@ -45,6 +52,7 @@ const toLocalInput = (iso: string) => {
 watch(open, (isOpen) => {
   if (!isOpen) return;
   linesError.value = undefined;
+  editingLine.value = undefined;
   const order = props.order;
   lines.value = order
     ? order.lines.map(({ id, product, options, quantity, unitPrice }) => ({
@@ -159,68 +167,124 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
 
     <FormSection no="02" title="Lines" note="One line per product, as on the order">
       <div class="grid gap-3">
-        <div class="overflow-x-auto rounded-md border">
-          <table class="w-full min-w-[40rem] text-sm">
-            <thead class="bg-muted/50">
-              <tr class="text-muted-foreground text-left text-xs">
-                <th scope="col" class="px-3 py-2 font-medium">Product</th>
-                <th scope="col" class="w-20 px-3 py-2 font-medium">Qty</th>
-                <th scope="col" class="w-36 px-3 py-2 font-medium">Unit price</th>
-                <th scope="col" class="w-32 px-3 py-2 text-right font-medium">Amount</th>
-                <th scope="col" class="w-10 px-1 py-2"><span class="sr-only">Remove</span></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y border-t">
-              <tr v-for="(line, index) in lines" :key="line.id" class="align-top">
-                <td class="grid gap-2 px-3 py-2">
-                  <Input
-                    v-model="line.product"
-                    :aria-label="`Product of line ${index + 1}`"
-                    placeholder="35mm Colour film"
-                  />
-                  <Input
-                    v-model="line.options"
-                    :aria-label="`Options of line ${index + 1}`"
-                    placeholder="Development + Scan, High-Resolution"
-                  />
-                </td>
-                <td class="px-3 py-2">
-                  <Input
-                    v-model.number="line.quantity"
-                    type="number"
-                    min="1"
-                    step="1"
-                    :aria-label="`Quantity of line ${index + 1}`"
-                  />
-                </td>
-                <td class="px-3 py-2">
+        <ol class="grid gap-3">
+          <li
+            v-for="(line, index) in lines"
+            :key="line.id"
+            class="bg-card grid gap-4 rounded-lg border p-4"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
+                Line {{ index + 1 }}
+              </span>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold tabular-nums">
+                  {{ formatVnd(line.quantity * line.unitPrice) }}
+                </span>
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  :disabled="jobsOnLine(line.id) > 0"
+                  :title="jobsOnLine(line.id) > 0 ? 'This line has rolls' : undefined"
+                  :aria-label="`Remove line ${index + 1}`"
+                  @click="lines.splice(index, 1)"
+                >
+                  <IconTrash aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+
+            <div
+              class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-4 sm:grid-cols-[minmax(0,1fr)_5rem_9rem]"
+            >
+              <FormField label="Product" required class="col-span-2 sm:col-span-1">
+                <Input
+                  v-model="line.product"
+                  :aria-label="`Product of line ${index + 1}`"
+                  placeholder="35mm Colour film"
+                />
+              </FormField>
+              <FormField label="Qty" required>
+                <Input
+                  v-model.number="line.quantity"
+                  type="number"
+                  min="1"
+                  step="1"
+                  :aria-label="`Quantity of line ${index + 1}`"
+                />
+              </FormField>
+              <FormField label="Unit price" required>
+                <div class="relative">
                   <Input
                     v-model.number="line.unitPrice"
                     type="number"
                     min="0"
                     step="1000"
+                    class="pr-7"
                     :aria-label="`Unit price of line ${index + 1}`"
                   />
-                </td>
-                <td class="px-3 py-4 text-right tabular-nums">
-                  {{ formatVnd(line.quantity * line.unitPrice) }}
-                </td>
-                <td class="px-1 py-2">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    :disabled="jobsOnLine(line.id) > 0"
-                    :aria-label="`Remove line ${index + 1}`"
-                    @click="lines.splice(index, 1)"
+                  <span
+                    class="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs"
+                    aria-hidden="true"
                   >
-                    <IconTrash class="size-4" />
-                  </Button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    ₫
+                  </span>
+                </div>
+              </FormField>
+            </div>
+
+            <FormField
+              v-if="editingLine === line.id"
+              label="Description"
+              optional
+              role="group"
+              :aria-label="`Description of line ${index + 1}`"
+            >
+              <template #aside>
+                <Button type="button" size="xs" variant="outline" @click="editingLine = undefined">
+                  <IconCheck aria-hidden="true" /> Done
+                </Button>
+              </template>
+              <RichTextEditor
+                v-model="line.options"
+                autofocus
+                placeholder="Development + Scan, High-Resolution"
+              />
+            </FormField>
+            <div
+              v-else-if="line.options"
+              class="bg-background/60 flex items-start justify-between gap-3 rounded-md border px-3 py-2"
+            >
+              <RichText
+                :markdown="line.options"
+                class="text-muted-foreground line-clamp-2 min-w-0 text-sm"
+              />
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                class="shrink-0"
+                :aria-label="`Edit description of line ${index + 1}`"
+                @click="editingLine = line.id"
+              >
+                <IconPencil aria-hidden="true" /> Edit
+              </Button>
+            </div>
+            <div v-else>
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                class="text-muted-foreground -ml-2"
+                :aria-label="`Add description to line ${index + 1}`"
+                @click="editingLine = line.id"
+              >
+                <IconPlus aria-hidden="true" /> Add description
+              </Button>
+            </div>
+          </li>
+        </ol>
         <div>
           <Button type="button" size="sm" variant="outline" @click="lines.push(newLine())">
             <IconPlus class="size-4" /> Add line

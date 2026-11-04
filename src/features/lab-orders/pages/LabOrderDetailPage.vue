@@ -94,9 +94,11 @@ async function doDelete() {
                   <tr v-for="line in data.lines" :key="line.id" class="align-top">
                     <td class="py-3 pr-3">
                       <div class="font-semibold">{{ line.product }}</div>
-                      <div v-if="line.options" class="text-muted-foreground mt-0.5">
-                        {{ line.options }}
-                      </div>
+                      <RichText
+                        v-if="line.options"
+                        :markdown="line.options"
+                        class="text-muted-foreground mt-0.5"
+                      />
                       <ul v-if="line.jobs.length" class="mt-2 grid gap-1">
                         <li
                           v-for="job in line.jobs"
