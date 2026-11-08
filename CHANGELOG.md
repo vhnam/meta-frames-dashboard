@@ -11,12 +11,14 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Added
 
+- A processing job that produces scans has Import scans and Compare scans in the roll's Processing history. Import picks the scanner and the files, previews the frame number the server reads from each file name (or counts from a start frame, or shifts the numbers), lets each number be corrected, then imports with a skip or replace rule and lists what was skipped or rejected. Compare shows every scanner's scan of one frame side by side, with previous and next frame.
 - An Orders page under Film & Lab records what a lab billed: code, dates, lines with product, a rich text description, quantity and unit price, then VAT, discount and total. In the Add / Edit Order dialog each line is a card, and its description shows as a preview that opens in the editor, one line at a time.
 - An order's page has the look of the camera and film stock pages: a header card with the lab, dates, rolls and total; numbered sections for the lines and notes; and a side column with the amounts and the rolls. Each roll lists the lines that bill it, and can be added or removed. One roll can go on several lines, such as developing and scanning. Only rolls already sent to that lab, on no order or only on this one, can be added. The Add Roll to Order dialog has the same look as Load Into Camera.
 - The Send to Lab and Edit Processing Job dialogs pick an order and its lines for a lab job. A job on an order links to it from the roll's Processing history.
 
 ### Changed
 
+- Edit Roll saves only if the roll has not changed since the dialog opened, such as a note saved from the phone, a load or a finish. If it has, nothing is saved, your edits stay in the form, and the dialog lists what changed so you can keep your edits or take the current values. Needs a Meta-Frame API that reports `RollSummary.version`; with an older one the dialog saves as before.
 - A job on an order takes its price from its lines added up, with the order's VAT and discount shared out by price, and the Price field is hidden. Work at home and jobs on no order keep the Price field.
 
 ### Fixed
