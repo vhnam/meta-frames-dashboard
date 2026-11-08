@@ -12,6 +12,7 @@ import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { ask, attempt } from "#/shared/lib/ui";
 import SendToLabDialog from "./SendToLabDialog.vue";
+import { CompareScansDialog, ImportScansDialog } from "#/features/scans";
 import {
   optionsForKind,
   settingsParts,
@@ -52,6 +53,21 @@ const deleteJob = useDeleteJob();
 
 const editing = ref<RollJob>();
 const editOpen = ref(false);
+
+/** The job whose scans are being imported or compared. */
+const scanning = ref<RollJob>();
+const importOpen = ref(false);
+const compareOpen = ref(false);
+
+function importFor(job: RollJob) {
+  scanning.value = job;
+  importOpen.value = true;
+}
+
+function compareFor(job: RollJob) {
+  scanning.value = job;
+  compareOpen.value = true;
+}
 
 function edit(job: RollJob) {
   editing.value = job;
@@ -255,6 +271,14 @@ function jobSteps(job: RollJob): Step[] {
       </section>
 
       <footer class="flex justify-end gap-2 border-t pt-3">
+        <template v-if="producesScans(job.type)">
+          <Button type="button" size="sm" variant="outline" @click="importFor(job)">
+            Import scans
+          </Button>
+          <Button type="button" size="sm" variant="outline" @click="compareFor(job)">
+            Compare scans
+          </Button>
+        </template>
         <Button type="button" size="sm" variant="outline" @click="edit(job)">Edit</Button>
         <Button
           type="button"
@@ -268,6 +292,10 @@ function jobSteps(job: RollJob): Step[] {
       </footer>
     </li>
   </ul>
+  <template v-if="scanning">
+    <ImportScansDialog v-model:open="importOpen" :job="scanning" />
+    <CompareScansDialog v-model:open="compareOpen" :job="scanning" />
+  </template>
   <SendToLabDialog
     v-model:open="editOpen"
     :row="row"
