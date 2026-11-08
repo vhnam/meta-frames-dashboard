@@ -58,6 +58,7 @@ interface ApiRoll {
   startedAt?: string;
   finishedAt?: string;
   negativesAtLab: boolean;
+  version?: number;
 }
 
 interface ApiRollDetail {
@@ -115,6 +116,7 @@ function toApiRow(apiRoll: ApiRoll): RollRow {
       finishDate: apiRoll.finishedAt ?? null,
       description: apiRoll.description ?? "",
       createdAt: "",
+      version: apiRoll.version ?? null,
     },
     stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(" "),
     boxIso: "",
@@ -245,20 +247,35 @@ export const addRolls = async (input: AddRollsInput) => {
   return input.quantity;
 };
 
+/** `If-Match` for the version an edit was based on; none when the version is unknown. */
+const ifMatchVersion = (version: number | null): Record<string, string> =>
+  version !== null && Number.isInteger(version) && version >= 0
+    ? { "If-Match": `"${version}"` }
+    : {};
+
+/** The roll changed on the server since the copy the edit was based on (412 roll_changed). */
+export const isRollChanged = (error: unknown) =>
+  isAxiosError(error) && error.response?.status === 412;
+
 export const updateRoll = async (variables: { row: RollRow; input: UpdateRollInput }) => {
   const { row, input } = variables;
-  await http.put(`/rolls/${row.roll.id}`, {
-    filmStockId: input.stockId,
-    format: Number(input.format),
-    exposures: input.exposures,
-    price: input.price ?? undefined,
-    expiry: toApiExpiry(input),
-    // the PUT replaces the roll: resend what this form does not edit so it is not cleared
-    shotIso: row.roll.shotIso ?? undefined,
-    startedAt: row.roll.startDate ?? undefined,
-    finishedAt: row.roll.finishDate ?? undefined,
-    description: row.roll.description || undefined,
-  });
+  await http.put(
+    `/rolls/${row.roll.id}`,
+    {
+      filmStockId: input.stockId,
+      format: Number(input.format),
+      exposures: input.exposures,
+      price: input.price ?? undefined,
+      expiry: toApiExpiry(input),
+      // the PUT replaces the roll: resend what this form does not edit so it is not cleared;
+      // If-Match makes the server refuse it when those values are no longer current
+      shotIso: row.roll.shotIso ?? undefined,
+      startedAt: row.roll.startDate ?? undefined,
+      finishedAt: row.roll.finishDate ?? undefined,
+      description: row.roll.description || undefined,
+    },
+    { headers: ifMatchVersion(row.roll.version) },
+  );
 };
 
 export const loadRoll = async (variables: { id: string; input: LoadRollInput }) => {

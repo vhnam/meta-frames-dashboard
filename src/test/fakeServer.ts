@@ -71,6 +71,10 @@ interface RollRec {
   startedAt?: string;
   finishedAt?: string;
   lensIds?: string[];
+  description?: string;
+  shotIso?: number;
+  /** Like the API's: grows on every change. */
+  version: number;
 }
 interface LabRec {
   id: string;
@@ -155,7 +159,12 @@ export const server = {
   labOrders: [] as LabOrderRec[],
   linkableJobs: [] as unknown[],
   scanners: builtInScanners(),
-  requests: [] as { method: string; url: string; body: unknown }[],
+  requests: [] as {
+    method: string;
+    url: string;
+    body: unknown;
+    headers: Record<string, unknown>;
+  }[],
 
   reset() {
     this.cameras = [];
@@ -246,6 +255,7 @@ export const server = {
       format: 135,
       exposures: 36,
       status: "in_stock",
+      version: 0,
       ...overrides,
     };
     this.rolls.push(roll);
@@ -298,7 +308,8 @@ export function installFakeServer() {
     const method = (config.method ?? "get").toLowerCase();
     const body = typeof config.data === "string" ? JSON.parse(config.data) : config.data;
     const params = (config.params ?? {}) as Record<string, unknown>;
-    server.requests.push({ method, url, body });
+    const headers: Record<string, unknown> = config.headers?.toJSON() ?? {};
+    server.requests.push({ method, url, body, headers });
 
     const respond = (status: number, data: unknown) => {
       const response = { data, status, statusText: String(status), headers: {}, config };
@@ -463,6 +474,7 @@ export function installFakeServer() {
       if (!roll) return notFound("roll");
       roll.status = "done_shooting";
       roll.finishedAt = body?.date ?? roll.finishedAt ?? "2026-10-05";
+      roll.version++;
       return respond(200, {});
     }
     route = match(/^\/rolls\/([^/]+)\/load$/);
@@ -483,6 +495,7 @@ export function installFakeServer() {
         status: "in_camera",
         cameraId: body.cameraId,
         startedAt: body.startedAt ?? "2026-10-05",
+        version: roll.version + 1,
       });
       return respond(200, {});
     }
@@ -502,12 +515,24 @@ export function installFakeServer() {
         });
       }
       if (method === "put") {
+        const ifMatch = headers["If-Match"];
+        if (ifMatch !== undefined && ifMatch !== `"${roll.version}"`)
+          return respond(412, {
+            code: "roll_changed",
+            message:
+              "the roll was changed since it was loaded; reload it and apply your edit again",
+          });
         Object.assign(roll, {
           filmStockId: body.filmStockId,
           format: body.format,
           exposures: body.exposures,
           price: body.price,
           expiry: body.expiry,
+          shotIso: body.shotIso,
+          startedAt: body.startedAt,
+          finishedAt: body.finishedAt,
+          description: body.description,
+          version: roll.version + 1,
         });
         return respond(200, {});
       }
