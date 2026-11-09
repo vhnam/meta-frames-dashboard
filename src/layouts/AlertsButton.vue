@@ -49,7 +49,7 @@ function setMenuOpen(open: boolean) {
           <IconBell class="size-5" aria-hidden="true" />
           <span
             v-if="count"
-            class="bg-destructive ring-sidebar absolute -top-1 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[0.7rem] font-semibold text-white tabular-nums ring-2"
+            class="bg-destructive ring-sidebar absolute -top-1 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[0.7rem] font-semibold text-white tabular-nums dark:text-background ring-2"
             aria-hidden="true"
           >
             {{ badge }}
