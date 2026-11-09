@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meta Frames | Dashboard</title>
+    <script>
+      // Set the theme before first paint; mirrors src/shared/lib/theme.ts.
+      (function () {
+        var mode = "system";
+        try {
+          var saved = localStorage.getItem("theme");
+          if (saved === "light" || saved === "dark") mode = saved;
+        } catch (error) {}
+        var dark =
+          mode === "dark" ||
+          (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

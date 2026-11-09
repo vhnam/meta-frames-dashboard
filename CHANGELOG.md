@@ -11,6 +11,7 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Added
 
+- The header has a theme menu: System, Light or Dark, kept in this browser and applied before the first paint. Dark mode uses the same background, card and orange as the phone.
 - A processing job that produces scans has Import scans and Compare scans in the roll's Processing history. Import picks the scanner and the files, previews the frame number the server reads from each file name (or counts from a start frame, or shifts the numbers), lets each number be corrected, then imports with a skip or replace rule and lists what was skipped or rejected. Compare shows every scanner's scan of one frame side by side, with previous and next frame.
 - An Orders page under Film & Lab records what a lab billed: code, dates, lines with product, a rich text description, quantity and unit price, then VAT, discount and total. In the Add / Edit Order dialog each line is a card, and its description shows as a preview that opens in the editor, one line at a time.
 - An order's page has the look of the camera and film stock pages: a header card with the lab, dates, rolls and total; numbered sections for the lines and notes; and a side column with the amounts and the rolls. Each roll lists the lines that bill it, and can be added or removed. One roll can go on several lines, such as developing and scanning. Only rolls already sent to that lab, on no order or only on this one, can be added. The Add Roll to Order dialog has the same look as Load Into Camera.

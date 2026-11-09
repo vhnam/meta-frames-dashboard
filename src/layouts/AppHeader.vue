@@ -14,6 +14,7 @@ import { backToListing } from "./listBack";
 import { Separator } from "#/shared/ui/separator";
 import { SidebarTrigger } from "#/shared/ui/sidebar";
 import AlertsButton from "./AlertsButton.vue";
+import ThemeMenu from "./ThemeMenu.vue";
 
 const location = useRouterState({ select: (state) => state.location });
 const title = computed(() => titleForPath(location.value.pathname));
@@ -45,6 +46,6 @@ const back = computed(() => backToListing(location.value.pathname, location.valu
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
-    <div class="ml-auto"><AlertsButton /></div>
+    <div class="ml-auto flex items-center gap-2"><ThemeMenu /><AlertsButton /></div>
   </header>
 </template>
