@@ -5,6 +5,7 @@ import {
   type QueryFilters,
   type QueryKey,
 } from "@tanstack/vue-query";
+import { auditKeys } from "#/features/audit/api";
 import { notify } from "#/shared/lib/toast";
 
 /** Optimistically patches every cached query under `filters`; returns a rollback. */
@@ -58,9 +59,10 @@ export function useApiMutation<TVars, TData = void>(spec: MutationSpec<TVars, TD
       if (message) notify.success(message);
     },
     onSettled: async (data, _error, vars) => {
-      await Promise.all(
-        spec.invalidates(vars, data as TData).map((queryKey) => qc.invalidateQueries({ queryKey })),
-      );
+      const keys = spec.invalidates(vars, data as TData);
+      // every domain table has a server audit trigger; an empty list means the call wrote nothing
+      const withAudit = keys.length ? [...keys, auditKeys.list()] : keys;
+      await Promise.all(withAudit.map((queryKey) => qc.invalidateQueries({ queryKey })));
     },
   });
 }

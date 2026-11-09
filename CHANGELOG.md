@@ -25,6 +25,7 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Fixed
 
+- Saving a camera, lens, film stock, lab, scanner or roll refreshes the other pages that show that name: roll lists and details, loaded cameras, lab orders, scan comparison, and the labs list after a scanner is deleted. The audit log refreshes after a write that changes data, and stays as it was after a write that changes nothing.
 - A long option in a form dialog's select no longer pushes the field past the dialog's edge on a phone. The text is cut off inside the field.
 
 ## [2.1.0] - 2026-11-03
