@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import type { RollDetail } from "../../types";
-import EmptyState from "#/shared/components/EmptyState.vue";
+import FormSection from "#/shared/components/FormSection.vue";
 import { Badge } from "#/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
 
 defineProps<{ frames: RollDetail["frames"] }>();
 </script>
 
 <template>
-  <Card>
-    <CardHeader class="flex flex-row items-center justify-between">
-      <CardTitle>Frames</CardTitle>
-      <Badge v-if="frames.length" variant="secondary">{{ frames.length }}</Badge>
-    </CardHeader>
-    <CardContent class="text-sm">
-      <EmptyState v-if="!frames.length" text="No frames yet." />
-      <ul v-else class="grid gap-2">
+  <div class="bg-card rounded-xl border p-6 shadow-sm">
+    <FormSection no="04" :title="frames.length ? `Frames (${frames.length})` : 'Frames'">
+      <p
+        v-if="!frames.length"
+        class="text-muted-foreground rounded-lg border border-dashed p-4 text-sm"
+      >
+        No frames yet.
+      </p>
+      <ul v-else class="grid gap-2 text-sm">
         <li
           v-for="frame in frames"
           :key="frame.frame.id"
-          class="flex items-start gap-3 rounded-md border px-3 py-2"
+          class="flex items-start gap-3 rounded-lg border px-3 py-2.5"
         >
           <span class="w-10 shrink-0 font-medium tabular-nums">#{{ frame.frame.number }}</span>
           <span
@@ -33,6 +33,6 @@ defineProps<{ frames: RollDetail["frames"] }>();
           </Badge>
         </li>
       </ul>
-    </CardContent>
-  </Card>
+    </FormSection>
+  </div>
 </template>
