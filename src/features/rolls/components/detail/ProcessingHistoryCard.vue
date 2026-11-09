@@ -3,10 +3,9 @@ import type { Process } from "#/features/film-stocks/types";
 import { sendableTypes } from "../../types";
 import type { RollJob, RollRow } from "../../types";
 import { computed, ref } from "vue";
-import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { formatDate } from "#/shared/lib/format";
-import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
+import FormSection from "#/shared/components/FormSection.vue";
 import FinishRollDialog from "../FinishRollDialog.vue";
 import ProcessingJobs from "../ProcessingJobs.vue";
 import SendToLabDialog from "../SendToLabDialog.vue";
@@ -29,13 +28,12 @@ const canSend = computed(() => !props.jobs.length && types.value.length > 0);
 </script>
 
 <template>
-  <Card>
-    <CardHeader class="flex flex-row items-center justify-between">
-      <CardTitle class="flex items-center gap-2">
-        Processing history
-        <Badge v-if="jobs.length" variant="secondary">{{ jobs.length }}</Badge>
-      </CardTitle>
-      <div class="flex gap-2">
+  <div class="bg-card rounded-xl border p-6 shadow-sm">
+    <FormSection
+      no="03"
+      :title="jobs.length ? `Processing history (${jobs.length})` : 'Processing history'"
+    >
+      <template v-if="row.roll.status === 'in_camera' || canRescan || canSend" #actions>
         <Button
           v-if="row.roll.status === 'in_camera'"
           type="button"
@@ -50,15 +48,15 @@ const canSend = computed(() => !props.jobs.length && types.value.length > 0);
         <Button v-if="canSend" type="button" size="sm" @click="sendOpen = true">
           Send to lab
         </Button>
+      </template>
+      <div class="grid gap-3 text-sm">
+        <dl v-if="finishedOn" class="grid grid-cols-[auto_1fr] gap-x-3">
+          <dt class="text-muted-foreground">Finished</dt>
+          <dd class="tabular-nums">{{ formatDate(finishedOn) }}</dd>
+        </dl>
+        <ProcessingJobs :row="row" :jobs="jobs" :process="process" :finished-on="finishedOn" />
       </div>
-    </CardHeader>
-    <CardContent class="grid gap-3 text-sm">
-      <dl v-if="finishedOn" class="grid grid-cols-[auto_1fr] gap-x-3">
-        <dt class="text-muted-foreground">Finished</dt>
-        <dd class="tabular-nums">{{ formatDate(finishedOn) }}</dd>
-      </dl>
-      <ProcessingJobs :row="row" :jobs="jobs" :process="process" :finished-on="finishedOn" />
-    </CardContent>
+    </FormSection>
     <FinishRollDialog v-model:open="finishOpen" :row="row" />
     <SendToLabDialog
       v-model:open="sendOpen"
@@ -75,5 +73,5 @@ const canSend = computed(() => !props.jobs.length && types.value.length > 0);
       :types="['scan']"
       rescan
     />
-  </Card>
+  </div>
 </template>

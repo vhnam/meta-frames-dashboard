@@ -5,6 +5,7 @@ import { useDeleteLens, useLensDetail, useSetLensActive } from "../queries";
 import { IconChevronRight, IconPencil, IconPower, IconTrash } from "@tabler/icons-vue";
 import { Link, useRouter } from "@tanstack/vue-router";
 import { computed, ref } from "vue";
+import DetailHero from "#/shared/components/DetailHero.vue";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import { RichText } from "#/shared/components/richText";
 import LensFormDialog from "../components/LensFormDialog.vue";
@@ -53,100 +54,72 @@ const shot = computed(
   <QueryBoundary :query="lens" empty-text="Lens not found.">
     <template #default="{ data: detail }">
       <div class="grid gap-6">
-        <!-- header -->
-        <section class="bg-card overflow-hidden rounded-xl border shadow-sm">
-          <div class="from-primary/70 to-primary h-1 bg-linear-to-r via-amber-400" />
-          <div class="grid gap-6 p-6 md:p-8">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div class="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
-                <span
-                  class="border-primary/30 bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 font-semibold tracking-[0.12em] uppercase"
-                >
-                  <i class="bg-primary size-1.5 rounded-full" aria-hidden="true" />
-                  Lens
-                </span>
-                <span class="tracking-[0.08em] uppercase"
-                  >ID: {{ detail.lens.id.slice(0, 8) }}</span
-                >
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <Button
-                  v-if="!detail.lens.builtInCameraId"
-                  variant="outline"
-                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  @click="doDelete"
-                >
-                  <IconTrash aria-hidden="true" /> Delete
-                </Button>
-                <Button
-                  v-if="!detail.lens.builtInCameraId"
-                  variant="outline"
-                  :class="detail.lens.active ? DEACTIVATE_TONE : ACTIVATE_TONE"
-                  :disabled="setActive.isPending.value"
-                  @click="setActive.mutate({ id: detail.lens.id, active: !detail.lens.active })"
-                >
-                  <IconPower aria-hidden="true" />
-                  {{ detail.lens.active ? "Deactivate" : "Activate" }}
-                </Button>
-                <Button variant="outline" class="bg-card" @click="editOpen = true">
-                  <IconPencil aria-hidden="true" /> Edit lens
-                </Button>
-              </div>
+        <DetailHero kind="Lens" :id="detail.lens.id" :title="lensName(detail.lens)">
+          <template #actions>
+            <Button
+              v-if="!detail.lens.builtInCameraId"
+              variant="outline"
+              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              @click="doDelete"
+            >
+              <IconTrash aria-hidden="true" /> Delete
+            </Button>
+            <Button
+              v-if="!detail.lens.builtInCameraId"
+              variant="outline"
+              :class="detail.lens.active ? DEACTIVATE_TONE : ACTIVATE_TONE"
+              :disabled="setActive.isPending.value"
+              @click="setActive.mutate({ id: detail.lens.id, active: !detail.lens.active })"
+            >
+              <IconPower aria-hidden="true" />
+              {{ detail.lens.active ? "Deactivate" : "Activate" }}
+            </Button>
+            <Button variant="outline" class="bg-card" @click="editOpen = true">
+              <IconPencil aria-hidden="true" /> Edit lens
+            </Button>
+          </template>
+          <template #chips>
+            <span
+              :class="
+                cn(
+                  CHIP,
+                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
+                )
+              "
+            >
+              {{ detail.lens.focalLength }}mm f/{{ detail.lens.maxAperture.toFixed(1) }}
+            </span>
+            <span :class="cn(CHIP, 'bg-card text-muted-foreground')">
+              {{ detail.lens.builtInCameraId ? "Built-in" : `Mount: ${detail.lens.mount}` }}
+            </span>
+            <span :class="cn(CHIP, detail.lens.active ? ACTIVE_TONE : INACTIVE_TONE)">
+              <i class="size-1.5 rounded-full bg-current" aria-hidden="true" />
+              {{ detail.lens.active ? "Active" : "Inactive" }}
+            </span>
+          </template>
+          <template #stats>
+            <div>
+              <dt>Loaded</dt>
+              <dd
+                :class="
+                  cn('text-lg font-semibold', loaded ? 'text-primary' : 'text-muted-foreground')
+                "
+              >
+                {{ loaded ? loaded.stockName : "—" }}
+              </dd>
+              <dd v-if="loaded?.cameraName" class="text-muted-foreground text-xs">
+                in {{ loaded.cameraName }}
+              </dd>
             </div>
-
-            <div class="grid gap-4">
-              <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">
-                {{ lensName(detail.lens) }}
-              </h1>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  :class="
-                    cn(
-                      CHIP,
-                      'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                    )
-                  "
-                >
-                  {{ detail.lens.focalLength }}mm f/{{ detail.lens.maxAperture.toFixed(1) }}
-                </span>
-                <span :class="cn(CHIP, 'bg-card text-muted-foreground')">
-                  {{ detail.lens.builtInCameraId ? "Built-in" : `Mount: ${detail.lens.mount}` }}
-                </span>
-                <span :class="cn(CHIP, detail.lens.active ? ACTIVE_TONE : INACTIVE_TONE)">
-                  <i class="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                  {{ detail.lens.active ? "Active" : "Inactive" }}
-                </span>
-              </div>
+            <div>
+              <dt>Shot</dt>
+              <dd class="text-lg font-semibold tabular-nums">{{ shot }}</dd>
+              <dd class="text-muted-foreground text-xs">
+                of {{ rows.length }} {{ rows.length === 1 ? "roll" : "rolls" }}
+              </dd>
             </div>
-
-            <dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-6 sm:grid-cols-3">
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Loaded
-                </dt>
-                <dd
-                  :class="
-                    cn('text-lg font-semibold', loaded ? 'text-primary' : 'text-muted-foreground')
-                  "
-                >
-                  {{ loaded ? loaded.stockName : "—" }}
-                </dd>
-                <dd v-if="loaded?.cameraName" class="text-muted-foreground text-xs">
-                  in {{ loaded.cameraName }}
-                </dd>
-              </div>
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Shot
-                </dt>
-                <dd class="text-lg font-semibold tabular-nums">{{ shot }}</dd>
-                <dd class="text-muted-foreground text-xs">
-                  of {{ rows.length }} {{ rows.length === 1 ? "roll" : "rolls" }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </section>
+          </template>
+        </DetailHero>
 
         <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <!-- attributes -->
@@ -223,7 +196,7 @@ const shot = computed(
 
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="LOG" :title="`Rolls (${rows.length})`">
-                <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto">
+                <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto scroll-fade">
                   <Link
                     v-for="row in rows"
                     :key="row.roll.id"

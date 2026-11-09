@@ -4,11 +4,10 @@ import { formatDate, formatVnd } from "#/shared/lib/format";
 import { formatExpiry } from "../../format";
 import type { RollDetail } from "../../types";
 import { computed } from "vue";
-import { Button } from "#/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "#/shared/ui/card";
+import FormSection from "#/shared/components/FormSection.vue";
+import SpecTile from "#/shared/components/SpecTile.vue";
 
 const props = defineProps<{ detail: RollDetail }>();
-defineEmits<{ edit: []; delete: [] }>();
 
 const facts = computed(() => {
   const { roll, stock } = props.detail;
@@ -25,45 +24,27 @@ const processingCost = computed(() =>
 </script>
 
 <template>
-  <Card>
-    <CardHeader class="flex flex-row items-center justify-between">
-      <CardTitle>Summary</CardTitle>
-      <div class="flex gap-2">
-        <Button type="button" variant="outline" size="sm" @click="$emit('edit')">Edit</Button>
-        <Button
-          v-if="detail.roll.status === 'in_stock'"
-          type="button"
-          variant="ghost"
-          size="sm"
-          @click="$emit('delete')"
-        >
-          Delete
-        </Button>
+  <div class="bg-card rounded-xl border p-6 shadow-sm">
+    <FormSection no="01" title="Summary">
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SpecTile v-for="fact in facts" :key="fact.label" :label="fact.label">
+          <span class="tabular-nums">{{ fact.value }}</span>
+        </SpecTile>
       </div>
-    </CardHeader>
-    <CardContent class="grid gap-4 text-sm">
-      <dl class="grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-4">
-        <div v-for="fact in facts" :key="fact.label">
-          <dt class="text-muted-foreground text-xs">{{ fact.label }}</dt>
-          <dd class="font-medium tabular-nums">{{ fact.value }}</dd>
-        </div>
-      </dl>
-      <div v-if="detail.roll.description">
-        <div class="text-muted-foreground text-xs">Description</div>
-        <RichText :markdown="detail.roll.description" />
-      </div>
-      <div class="bg-muted/50 grid gap-1 rounded-lg px-4 py-3">
-        <div class="text-muted-foreground text-xs">Total cost</div>
-        <div class="text-lg font-semibold tabular-nums">
-          {{ formatVnd(detail.cost.total) }}
-          <span v-if="detail.cost.incomplete" class="text-muted-foreground text-xs font-normal">
-            (incomplete)
-          </span>
-        </div>
-        <div class="text-muted-foreground text-xs tabular-nums">
-          Film {{ formatVnd(detail.roll.price) }} + processing {{ formatVnd(processingCost) }}
-        </div>
-      </div>
-    </CardContent>
-  </Card>
+      <RichText
+        v-if="detail.roll.description"
+        :markdown="detail.roll.description"
+        class="bg-background/60 rounded-lg border p-4 text-sm"
+      />
+      <SpecTile
+        label="Total cost"
+        :sub="`Film ${formatVnd(detail.roll.price)} + processing ${formatVnd(processingCost)}`"
+      >
+        <span class="text-lg tabular-nums">{{ formatVnd(detail.cost.total) }}</span>
+        <span v-if="detail.cost.incomplete" class="text-muted-foreground text-xs font-normal">
+          (incomplete)
+        </span>
+      </SpecTile>
+    </FormSection>
+  </div>
 </template>

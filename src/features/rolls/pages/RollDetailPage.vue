@@ -4,9 +4,10 @@ import { stockName } from "#/features/film-stocks";
 import { useDeleteRoll, useRollDetail } from "../queries";
 import { isRollComplete, negativesStillAtLab } from "../types";
 import type { RollDetail, RollRow } from "../types";
+import { IconPencil, IconTrash } from "@tabler/icons-vue";
 import { useRouter } from "@tanstack/vue-router";
 import { ref } from "vue";
-import PageHeader from "#/shared/components/PageHeader.vue";
+import DetailHero from "#/shared/components/DetailHero.vue";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import RollStatusBadge from "../components/RollStatusBadge.vue";
 import RollEditDialog from "../components/RollEditDialog.vue";
@@ -17,6 +18,8 @@ import ProcessingHistoryCard from "../components/detail/ProcessingHistoryCard.vu
 import FramesCard from "../components/detail/FramesCard.vue";
 import LoadRollDialog from "../components/LoadRollDialog.vue";
 import { Badge } from "#/shared/ui/badge";
+import { Button } from "#/shared/ui/button";
+import { formatDate } from "#/shared/lib/format";
 import { ask, attempt } from "#/shared/lib/ui";
 
 const props = defineProps<{ rollId: string }>();
@@ -45,29 +48,75 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
 <template>
   <QueryBoundary :query="detail" empty-text="Roll not found.">
     <template #default="{ data: loaded }">
-      <PageHeader
-        :title="stockName(loaded.stock)"
-        :description="loaded.base ? `Base stock: ${stockName(loaded.base)}` : undefined"
-      >
-        <template #actions>
-          <RollStatusBadge :status="loaded.roll.status" />
-          <Badge
-            v-if="negativesStillAtLab(loaded.roll.status, loaded.negativesAtLab)"
-            variant="outline"
-          >
-            Negatives at lab
-          </Badge>
-          <Badge
-            v-if="isRollComplete(loaded.roll.status, loaded.negativesAtLab)"
-            variant="secondary"
-          >
-            Complete
-          </Badge>
-        </template>
-      </PageHeader>
+      <div class="grid gap-6">
+        <DetailHero
+          kind="Roll"
+          :id="loaded.roll.id"
+          :title="stockName(loaded.stock)"
+          :description="loaded.base ? `Base stock: ${stockName(loaded.base)}` : undefined"
+        >
+          <template #actions>
+            <Button
+              v-if="loaded.roll.status === 'in_stock'"
+              variant="outline"
+              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              @click="doDelete"
+            >
+              <IconTrash aria-hidden="true" /> Delete
+            </Button>
+            <Button variant="outline" class="bg-card" @click="editOpen = true">
+              <IconPencil aria-hidden="true" /> Edit roll
+            </Button>
+          </template>
+          <template #chips>
+            <span
+              class="inline-flex h-8 items-center rounded-md border border-amber-300 bg-amber-50 px-3 text-sm font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+            >
+              {{ loaded.roll.format }} · {{ loaded.roll.exposures }} exp
+            </span>
+            <RollStatusBadge :status="loaded.roll.status" />
+            <Badge
+              v-if="negativesStillAtLab(loaded.roll.status, loaded.negativesAtLab)"
+              variant="outline"
+            >
+              Negatives at lab
+            </Badge>
+            <Badge
+              v-if="isRollComplete(loaded.roll.status, loaded.negativesAtLab)"
+              variant="secondary"
+            >
+              Complete
+            </Badge>
+          </template>
+          <template #stats>
+            <div>
+              <dt>Camera</dt>
+              <dd
+                class="text-lg font-semibold"
+                :class="loaded.camera ? 'text-primary' : 'text-muted-foreground'"
+              >
+                {{ loaded.camera ? cameraName(loaded.camera) : "—" }}
+              </dd>
+              <dd v-if="loaded.roll.startDate" class="text-muted-foreground text-xs">
+                since {{ formatDate(loaded.roll.startDate) }}
+              </dd>
+            </div>
+            <div>
+              <dt>Frames</dt>
+              <dd class="text-lg font-semibold tabular-nums">{{ loaded.frames.length }}</dd>
+              <dd class="text-muted-foreground text-xs">of {{ loaded.roll.exposures }} exp</dd>
+            </div>
+            <div>
+              <dt>Processing</dt>
+              <dd class="text-lg font-semibold tabular-nums">{{ loaded.jobs.length }}</dd>
+              <dd class="text-muted-foreground text-xs">
+                {{ loaded.jobs.length === 1 ? "job" : "jobs" }}
+              </dd>
+            </div>
+          </template>
+        </DetailHero>
 
-      <div class="mt-4 grid gap-4">
-        <RollSummaryCard :detail="loaded" @edit="editOpen = true" @delete="doDelete" />
+        <RollSummaryCard :detail="loaded" />
         <RollGearCard :detail="loaded" @manage-lenses="lensesOpen = true" @load="loadOpen = true" />
         <ProcessingHistoryCard
           :row="rowOf(loaded)"
