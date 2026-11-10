@@ -1,16 +1,8 @@
 import { queryOptions } from "@tanstack/vue-query";
 import { isAxiosError } from "axios";
 import { http } from "#/shared/api/http";
-import { formatExpiry } from "#/features/rolls/format";
 import { stockName } from "./format";
-import type {
-  FilmStock,
-  InventoryFilters,
-  InventoryRow,
-  StockDetail,
-  StockInput,
-  StockRow,
-} from "./types";
+import type { FilmStock, StockDetail, StockInput, StockRow } from "./types";
 
 export const stockKeys = {
   all: ["stocks"] as const,
@@ -18,7 +10,6 @@ export const stockKeys = {
   list: () => [...stockKeys.lists()] as const,
   details: () => [...stockKeys.all, "detail"] as const,
   detail: (id: string) => [...stockKeys.details(), id] as const,
-  inventory: (filters: InventoryFilters) => [...stockKeys.all, "inventory", filters] as const,
 };
 
 // ---- wire format (Meta-Frame API) ----
@@ -42,12 +33,6 @@ export interface ApiStockDetail {
   baseStock?: ApiStock;
   siblings: ApiStock[];
   derived: ApiStock[];
-}
-
-interface ApiInventoryItem {
-  stock: ApiStock;
-  formats: { format: number | string; count: number }[];
-  soonestExpiry?: { year: number; month?: number };
 }
 
 export const toStock = (apiStock: ApiStock): FilmStock => ({
@@ -109,27 +94,6 @@ export const stockQueries = {
           if (isAxiosError(error) && error.response?.status === 404) return null;
           throw error;
         }
-      },
-    }),
-  inventory: (filters: InventoryFilters) =>
-    queryOptions({
-      queryKey: stockKeys.inventory(filters),
-      queryFn: async (): Promise<InventoryRow[]> => {
-        const { data } = await http.get<ApiInventoryItem[]>("/inventory", { params: filters });
-        return data
-          .map((item) => ({
-            stock: toStock(item.stock),
-            byFormat: Object.fromEntries(
-              item.formats.map((entry) => [String(entry.format), entry.count]),
-            ),
-            expiryLabel: item.soonestExpiry
-              ? formatExpiry({
-                  expiryYear: item.soonestExpiry.year,
-                  expiryMonth: item.soonestExpiry.month ?? null,
-                })
-              : "—",
-          }))
-          .sort((left, right) => stockName(left.stock).localeCompare(stockName(right.stock)));
       },
     }),
 };

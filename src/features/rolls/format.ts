@@ -14,6 +14,25 @@ export const isExpired = (roll: Expiry, now = new Date()) => {
   return !!date && date < now;
 };
 
+/** Months ahead that count as "expiring soon". */
+export const EXPIRY_SOON_MONTHS = 6;
+
+export type ExpiryState = "expired" | "soon" | "later" | "undated";
+
+/** Where a roll's expiry falls: past, within `EXPIRY_SOON_MONTHS`, later, or unknown. */
+export function expiryState(roll: Expiry, now = new Date()): ExpiryState {
+  const date = expiryDate(roll);
+  if (!date) return "undated";
+  if (date < now) return "expired";
+  const horizon = new Date(now);
+  horizon.setMonth(horizon.getMonth() + EXPIRY_SOON_MONTHS);
+  return date <= horizon ? "soon" : "later";
+}
+
+/** Sorts by expiry, soonest first; rolls without a date go last. */
+export const byExpiry = (left: Expiry, right: Expiry) =>
+  (expiryDate(left)?.getTime() ?? Infinity) - (expiryDate(right)?.getTime() ?? Infinity);
+
 export const formatExpiry = (roll: Expiry) =>
   roll.expiryYear
     ? roll.expiryMonth

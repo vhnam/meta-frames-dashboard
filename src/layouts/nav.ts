@@ -1,8 +1,6 @@
 import type { Component } from "vue";
 import {
   IconAperture,
-  IconArchive,
-  IconCalendarTime,
   IconCamera,
   IconFlask,
   IconHistory,
@@ -43,8 +41,6 @@ export const navSections: NavSection[] = [
     label: "Film & Lab",
     items: [
       { title: "Film Stocks", to: "/app/stocks", icon: IconStack2 },
-      { title: "Inventory", to: "/app/inventory", icon: IconArchive },
-      { title: "Expiry", to: "/app/expiry", icon: IconCalendarTime },
       { title: "Labs", to: "/app/labs", icon: IconFlask },
       { title: "Orders", to: "/app/orders", icon: IconReceipt },
       { title: "Scanners", to: "/app/scanners", icon: IconScan },
@@ -61,7 +57,7 @@ const flat = navSections.flatMap((section) =>
 );
 const listPaths = new Set(flat.map((item) => item.to));
 
-/** A nav destination that renders a list, such as `/app/rolls` or `/expiry`. */
+/** A nav destination that renders a list, such as `/app/rolls` or `/app/labs`. */
 export function isListingPath(path: string) {
   return listPaths.has(path);
 }

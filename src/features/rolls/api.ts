@@ -9,7 +9,7 @@ import type { Process } from "#/features/film-stocks/types";
 import { toLens } from "#/features/lenses/api";
 import type { ApiLens } from "#/features/lenses/api";
 import type { ScanSettings } from "#/features/scanners/types";
-import { expiryDate, isExpired } from "./format";
+import { byExpiry, expiryState, isExpired } from "./format";
 import type {
   AddRollsInput,
   ExpiryReport,
@@ -205,21 +205,17 @@ export const rollQueries = {
       },
     }),
   /** In-stock rolls expired or expiring within `months`, plus those with no expiry date. */
-  expiry: (months = 6) =>
+  expiry: () =>
     queryOptions({
       queryKey: rollKeys.expiry(),
       queryFn: async (): Promise<ExpiryReport> => {
         const { data } = await http.get<ApiRoll[]>("/rolls", { params: { status: "in_stock" } });
         const rows = data.map(toApiRow);
-        const horizon = new Date();
-        horizon.setMonth(horizon.getMonth() + months);
+        const now = new Date();
         const dated = rows
-          .flatMap((row) => {
-            const date = expiryDate(row.roll);
-            return date && date <= horizon ? [{ row: row, d: date }] : [];
-          })
-          .sort((left, right) => left.d.getTime() - right.d.getTime())
-          .map(({ row }) => ({ ...row, expired: isExpired(row.roll) }));
+          .filter((row) => ["expired", "soon"].includes(expiryState(row.roll, now)))
+          .sort((left, right) => byExpiry(left.roll, right.roll))
+          .map((row) => ({ ...row, expired: isExpired(row.roll, now) }));
         const undated = rows.filter((row) => !row.roll.expiryYear);
         return { dated, undated };
       },
