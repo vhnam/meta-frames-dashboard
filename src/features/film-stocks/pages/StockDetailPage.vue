@@ -8,7 +8,7 @@ import {
 } from "#/features/rolls";
 import { PACKAGING_TONE, TYPE_TONE, stockName, stockWarnings } from "../format";
 import { useDeleteStock, useStockDetail } from "../queries";
-import { FILM_TYPE_LABELS, PACKAGING_LABELS } from "../types";
+import { FILM_TYPE_LABELS, PACKAGING_LABELS, type StockDetail } from "../types";
 import { IconChevronRight, IconPencil, IconPlus, IconTrash } from "@tabler/icons-vue";
 import { Link, useRouter } from "@tanstack/vue-router";
 import { computed, ref } from "vue";
@@ -59,6 +59,15 @@ const byFormat = computed(() => {
 
 /** Rolls no longer in stock: loaded, shot, at the lab or developed. */
 const shot = computed(() => rows.value.length - unexposed.value.length);
+
+/** Related stocks for the "Same emulsion" list; empty groups are left out. */
+function relatedGroups(detail: StockDetail) {
+  return [
+    { label: "Base", stocks: detail.base ? [detail.base] : [] },
+    { label: "Also based on it", stocks: detail.siblings },
+    { label: "Repacked as", stocks: detail.children },
+  ].filter((group) => group.stocks.length);
+}
 </script>
 
 <template>
@@ -142,7 +151,7 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
         </DetailHero>
 
         <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <!-- attributes -->
+          <!-- attributes and related stocks -->
           <div class="grid gap-6">
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="01" title="Primary specifications">
@@ -208,63 +217,57 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
                 </div>
               </FormSection>
             </div>
-          </div>
 
-          <!-- rolls and related stocks -->
-          <aside class="grid gap-6">
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="REL" title="Same emulsion">
-                <p
-                  v-if="!loaded.base && !loaded.siblings.length && !loaded.children.length"
-                  class="text-muted-foreground text-sm"
-                >
-                  No base stock and no stocks based on this one.
-                </p>
-                <dl v-else class="grid gap-3 text-sm">
-                  <div v-if="loaded.base" class="grid gap-1">
-                    <dt class="text-muted-foreground text-xs">Base</dt>
-                    <dd>
+                <dl v-if="relatedGroups(loaded).length" class="grid gap-4">
+                  <div v-for="group in relatedGroups(loaded)" :key="group.label" class="grid gap-2">
+                    <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
+                      {{ group.label }}
+                    </dt>
+                    <dd class="grid gap-2 sm:grid-cols-2">
                       <Link
-                        to="/app/stocks/$stockId"
-                        :params="{ stockId: loaded.base.id }"
-                        class="font-medium hover:underline"
-                      >
-                        {{ stockName(loaded.base) }}
-                      </Link>
-                    </dd>
-                  </div>
-                  <div v-if="loaded.siblings.length" class="grid gap-1">
-                    <dt class="text-muted-foreground text-xs">Also based on it</dt>
-                    <dd class="flex flex-wrap gap-x-3 gap-y-1">
-                      <Link
-                        v-for="stock in loaded.siblings"
+                        v-for="stock in group.stocks"
                         :key="stock.id"
                         to="/app/stocks/$stockId"
                         :params="{ stockId: stock.id }"
-                        class="font-medium hover:underline"
+                        class="hover:bg-accent/40 group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm"
                       >
-                        {{ stockName(stock) }}
-                      </Link>
-                    </dd>
-                  </div>
-                  <div v-if="loaded.children.length" class="grid gap-1">
-                    <dt class="text-muted-foreground text-xs">Repacked as</dt>
-                    <dd class="flex flex-wrap gap-x-3 gap-y-1">
-                      <Link
-                        v-for="stock in loaded.children"
-                        :key="stock.id"
-                        to="/app/stocks/$stockId"
-                        :params="{ stockId: stock.id }"
-                        class="font-medium hover:underline"
-                      >
-                        {{ stockName(stock) }}
+                        <span class="grid gap-0.5">
+                          <span class="font-medium">{{ stockName(stock) }}</span>
+                          <span class="text-muted-foreground text-xs">
+                            ISO {{ stock.boxIso }} · {{ stock.process }}
+                          </span>
+                        </span>
+                        <span class="flex items-center gap-2">
+                          <span
+                            :class="
+                              cn(
+                                'inline-flex rounded-sm border px-2 py-0.5 text-xs',
+                                PACKAGING_TONE[stock.packaging],
+                              )
+                            "
+                          >
+                            {{ PACKAGING_LABELS[stock.packaging] }}
+                          </span>
+                          <IconChevronRight
+                            class="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
+                        </span>
                       </Link>
                     </dd>
                   </div>
                 </dl>
+                <p v-else class="text-muted-foreground text-sm">
+                  No base stock and no stocks based on this one.
+                </p>
               </FormSection>
             </div>
+          </div>
 
+          <!-- rolls -->
+          <aside class="grid gap-6">
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="LOG" :title="`Rolls (${rows.length})`">
                 <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto scroll-fade">
