@@ -1,7 +1,6 @@
 import { createRoute } from "@tanstack/vue-router";
 import { h, type VNode } from "vue";
 import { appRoute } from "#/layouts/appRoute";
-import InventoryPage from "./pages/InventoryPage.vue";
 import StockDetailPage from "./pages/StockDetailPage.vue";
 import StockListPage from "./pages/StockListPage.vue";
 
@@ -21,10 +20,4 @@ const stockDetailRoute = createRoute({
   component: StockDetailRoute,
 });
 
-const inventoryRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: "inventory",
-  component: InventoryPage,
-});
-
-export const filmStocksRoutes = [stockListRoute, stockDetailRoute, inventoryRoute];
+export const filmStocksRoutes = [stockListRoute, stockDetailRoute];

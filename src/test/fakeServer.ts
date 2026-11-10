@@ -391,18 +391,6 @@ export function installFakeServer() {
         warnings: [],
       });
     }
-    if (method === "get" && url === "/inventory") {
-      const items = server.stocks.flatMap((stock) => {
-        const rolls = server.rolls.filter(
-          (roll) => roll.filmStockId === stock.id && roll.status === "in_stock",
-        );
-        if (!rolls.length) return [];
-        const counts = new Map<number, number>();
-        for (const roll of rolls) counts.set(roll.format, (counts.get(roll.format) ?? 0) + 1);
-        return [{ stock, formats: [...counts].map(([format, count]) => ({ format, count })) }];
-      });
-      return respond(200, items);
-    }
     if (method === "get" && url === "/labs") return respond(200, server.labs);
     if (method === "get" && url === "/lab-orders") return respond(200, server.labOrders);
     route = match(/^\/lab-orders\/([^/]+)\/linkable-jobs$/);

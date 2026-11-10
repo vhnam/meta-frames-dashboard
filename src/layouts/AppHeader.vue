@@ -8,8 +8,9 @@ import {
   BreadcrumbPage,
 } from "#/shared/ui/breadcrumb";
 import { Link, useRouterState } from "@tanstack/vue-router";
-import { computed } from "vue";
-import { titleForPath } from "./nav";
+import { computed, watch } from "vue";
+import { rememberList } from "#/shared/lib/listSearch";
+import { isListingPath, titleForPath } from "./nav";
 import { backToListing } from "./listBack";
 import { Separator } from "#/shared/ui/separator";
 import { SidebarTrigger } from "#/shared/ui/sidebar";
@@ -19,6 +20,14 @@ import ThemeMenu from "./ThemeMenu.vue";
 const location = useRouterState({ select: (state) => state.location });
 const title = computed(() => titleForPath(location.value.pathname));
 const back = computed(() => backToListing(location.value.pathname, location.value.search));
+// every listing URL, filters included, so Back from a detail returns to it
+watch(
+  location,
+  ({ pathname, search }) => {
+    if (isListingPath(pathname)) rememberList(pathname, search);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

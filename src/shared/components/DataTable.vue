@@ -15,7 +15,7 @@ import {
 import { dataTableFeatures, PAGE_SIZES, type DataTableColumn } from "./dataTable";
 import { useRouter } from "@tanstack/vue-router";
 import { computed, onMounted, ref, toRef, watch } from "vue";
-import { parseListSearch, rememberList, toListSearch } from "#/shared/lib/listSearch";
+import { parseListSearch, toListSearch } from "#/shared/lib/listSearch";
 import { cn } from "#/shared/lib/utils";
 import { Button } from "#/shared/ui/button";
 import { Card, CardContent } from "#/shared/ui/card";
@@ -73,6 +73,9 @@ const props = defineProps<{
   rowLabel?: (row: TData) => string;
 }>();
 
+/** Column filter values by column id; bind it to keep them outside the table (e.g. in the URL). */
+const columnFilters = defineModel<Record<string, string>>("columnFilters", { default: () => ({}) });
+
 /** Search applied to the table; `draft` is what is typed, applied on Apply or Enter. */
 const filter = ref("");
 const draft = ref("");
@@ -87,16 +90,28 @@ function syncListSearch() {
   if (!router) return;
   const page = pagination.value.pageIndex + 1;
   const pageSize = pagination.value.pageSize;
-  const path = router.state.location.pathname;
-  rememberList(path, page, pageSize);
   const next = toListSearch(page, pageSize);
   const current = parseListSearch(router.state.location.search);
   if (current.page === next.page && current.pageSize === next.pageSize) return;
-  void router.navigate({ to: ".", search: next, replace: true });
+  // keep the page's own search keys; undefined drops page/pageSize at their defaults
+  void router.navigate({
+    to: ".",
+    search: (prev: Record<string, unknown>) => ({
+      ...prev,
+      page: next.page,
+      pageSize: next.pageSize,
+    }),
+    replace: true,
+  });
 }
 
 watch(pagination, syncListSearch, { deep: true });
 onMounted(syncListSearch);
+
+// cached: a new array on every read would count as a filter change and reset the page
+const columnFilterState = computed(() =>
+  Object.entries(columnFilters.value).map(([id, value]) => ({ id, value })),
+);
 
 const table = useTable({
   features: dataTableFeatures,
@@ -104,7 +119,20 @@ const table = useTable({
   data: toRef(props, "data"),
   getRowId: props.getRowId,
   globalFilterFn: "includesString",
-  state: computed(() => ({ globalFilter: filter.value, pagination: pagination.value })),
+  state: computed(() => ({
+    globalFilter: filter.value,
+    pagination: pagination.value,
+    columnFilters: columnFilterState.value,
+  })),
+  onColumnFiltersChange: (next: unknown) => {
+    const list = (typeof next === "function" ? next(columnFilterState.value) : next) as {
+      id: string;
+      value: unknown;
+    }[];
+    columnFilters.value = Object.fromEntries(
+      list.filter((entry) => entry.value != null).map((entry) => [entry.id, String(entry.value)]),
+    );
+  },
   onPaginationChange: (next: unknown) => {
     pagination.value = typeof next === "function" ? next(pagination.value) : next;
   },

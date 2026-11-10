@@ -1,19 +1,14 @@
 import { isListingPath, listingPath } from "./nav";
-import {
-  parseListSearch,
-  rememberedPage,
-  toListSearch,
-  type ListSearch,
-} from "#/shared/lib/listSearch";
+import { parseListSearch, rememberedSearch } from "#/shared/lib/listSearch";
 
 export interface ListBack {
   to: string;
-  search: ListSearch;
+  search: Record<string, unknown>;
 }
 
 /**
- * Where Back goes from a detail route: the parent listing, plus that listing's
- * page and page size when they are not the defaults.
+ * Where Back goes from a detail route: the parent listing with the search it had when it was
+ * left (tab, filters, page), or the page and page size the detail URL carries.
  */
 export function backToListing(
   pathname: string,
@@ -23,7 +18,6 @@ export function backToListing(
   const to = listingPath(pathname);
   if (!to) return null;
   const current = parseListSearch(search);
-  if (current.page != null || current.pageSize != null) return { to, search: current };
-  const saved = rememberedPage(to);
-  return { to, search: saved ? toListSearch(saved.page, saved.pageSize) : {} };
+  if (current.page != null || current.pageSize != null) return { to, search: { ...current } };
+  return { to, search: rememberedSearch(to) ?? {} };
 }

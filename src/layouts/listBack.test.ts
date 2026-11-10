@@ -11,7 +11,7 @@ describe("backToListing", () => {
 
   it("stays hidden on a listing page", () => {
     expect(backToListing("/app/rolls", {})).toBeNull();
-    expect(backToListing("/app/expiry", {})).toBeNull();
+    expect(backToListing("/app/labs", {})).toBeNull();
   });
 
   it("returns to the parent listing without pager params at the defaults", () => {
@@ -26,16 +26,17 @@ describe("backToListing", () => {
   });
 
   it("uses the listing's remembered pager when the URL has none", () => {
-    rememberList("/app/stocks", 2, 50);
+    rememberList("/app/stocks", { page: 2, pageSize: 50 });
     expect(backToListing("/app/stocks/stock-1", {})).toEqual({
       to: "/app/stocks",
       search: { page: 2, pageSize: 50 },
     });
   });
 
-  it("leaves the default page and page size off the link", () => {
-    rememberList("/app/rolls", 1, 10);
-    expect(backToListing("/app/rolls/roll-1", {})).toEqual({ to: "/app/rolls", search: {} });
+  it("returns to the listing's remembered tab and filters", () => {
+    const search = { tab: "in_stock", group: "stock", expiry: "undated", stock: "s1", page: 2 };
+    rememberList("/app/rolls", search);
+    expect(backToListing("/app/rolls/roll-1", {})).toEqual({ to: "/app/rolls", search });
   });
 });
 

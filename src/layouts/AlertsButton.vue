@@ -11,7 +11,7 @@ import {
 } from "#/shared/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "#/shared/ui/tooltip";
 
-/** Rows shown in the panel; the rest are on the Expiry page. */
+/** Rows shown in the panel; See all opens the rest on Rolls → In stock. */
 const SHOWN = 6;
 
 // in-stock rolls that are expired or expire within 6 months, most overdue first
@@ -129,7 +129,7 @@ function setMenuOpen(open: boolean) {
           class="text-primary justify-center rounded-lg py-2 text-sm font-semibold"
           as-child
         >
-          <Link to="/app/expiry">See all on the Expiry page</Link>
+          <Link to="/app/rolls" :search="{ tab: 'in_stock', expiry: 'alert' }">See all</Link>
         </DropdownMenuItem>
       </div>
     </DropdownMenuContent>

@@ -8,11 +8,6 @@ export interface ListSearch {
   pageSize?: number;
 }
 
-interface StoredPage {
-  page: number;
-  pageSize: number;
-}
-
 export function parseListSearch(search: { page?: unknown; pageSize?: unknown }): ListSearch {
   const page = Number(search.page);
   const pageSize = Number(search.pageSize);
@@ -31,29 +26,32 @@ export function toListSearch(page: number, pageSize: number): ListSearch {
   return out;
 }
 
-function readAll(): Record<string, StoredPage> {
+type StoredSearch = Record<string, unknown>;
+
+function readAll(): Record<string, StoredSearch> {
   if (typeof sessionStorage === "undefined") return {};
   try {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, StoredPage>;
+    const parsed = JSON.parse(raw) as Record<string, StoredSearch>;
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
     return {};
   }
 }
 
-/** Remember a listing's pager so a later Back link can restore it. */
-export function rememberList(path: string, page: number, pageSize: number) {
+/**
+ * Remember a listing's whole search (pager, tab, filters) so a later Back link can restore it.
+ * The listing's route still validates it when Back navigates there.
+ */
+export function rememberList(path: string, search: StoredSearch) {
   if (typeof sessionStorage === "undefined") return;
   const all = readAll();
-  all[path] = { page, pageSize };
+  all[path] = search;
   sessionStorage.setItem(KEY, JSON.stringify(all));
 }
 
-export function rememberedPage(path: string): StoredPage | null {
+export function rememberedSearch(path: string): StoredSearch | null {
   const saved = readAll()[path];
-  if (!saved || !Number.isInteger(saved.page) || saved.page < 1) return null;
-  if (!(PAGE_SIZES as readonly number[]).includes(saved.pageSize)) return null;
-  return saved;
+  return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : null;
 }
