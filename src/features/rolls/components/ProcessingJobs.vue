@@ -12,6 +12,7 @@ import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
 import { ask, attempt } from "#/shared/lib/ui";
 import SendToLabDialog from "./SendToLabDialog.vue";
+import { CompareScansDialog, ImportScansDialog } from "#/features/scans";
 import {
   optionsForKind,
   settingsParts,
@@ -52,6 +53,21 @@ const deleteJob = useDeleteJob();
 
 const editing = ref<RollJob>();
 const editOpen = ref(false);
+
+/** The job whose scans are being imported or compared. */
+const scanning = ref<RollJob>();
+const importOpen = ref(false);
+const compareOpen = ref(false);
+
+function importFor(job: RollJob) {
+  scanning.value = job;
+  importOpen.value = true;
+}
+
+function compareFor(job: RollJob) {
+  scanning.value = job;
+  compareOpen.value = true;
+}
 
 function edit(job: RollJob) {
   editing.value = job;
@@ -115,8 +131,8 @@ const TONE_CLASSES: Record<Tone, string> = {
 
 /**
  * The job's steps in order: the roll goes out, then the negatives (or prints) and the scans come
- * back. Negatives come back from developing, printing or a lab scan. A lab step always has an
- * expected cell, so a date not set yet still shows; work at home has none.
+ * back. Negatives come back from developing, printing or a lab scan. A step shows its
+ * expected date when one is stored. Sending the roll has none.
  */
 function jobSteps(job: RollJob): Step[] {
   const atLab = !!job.labId;
@@ -130,7 +146,7 @@ function jobSteps(job: RollJob): Step[] {
   if (recordsNegativesReturned(job.type, atLab) || job.negativesExpectedDate)
     steps.push({
       label: !atLab && job.type === "print" ? "Prints" : atLab ? "Negatives back" : "Negatives",
-      expected: atLab ? job.negativesExpectedDate : undefined,
+      expected: job.negativesExpectedDate,
       actual: job.negativesReturnedDate,
       // negatives can come back with the scans, so a later return is not counted as late
       status: job.negativesReturnedDate
@@ -140,7 +156,7 @@ function jobSteps(job: RollJob): Step[] {
   if (producesScans(job.type))
     steps.push({
       label: atLab ? "Scans back" : "Scans",
-      expected: atLab ? job.scansExpectedDate : undefined,
+      expected: job.scansExpectedDate,
       actual: job.scansReceivedDate,
       status: statusOf(job.scansExpectedDate, job.scansReceivedDate),
     });
@@ -255,6 +271,14 @@ function jobSteps(job: RollJob): Step[] {
       </section>
 
       <footer class="flex justify-end gap-2 border-t pt-3">
+        <template v-if="producesScans(job.type)">
+          <Button type="button" size="sm" variant="outline" @click="importFor(job)">
+            Import scans
+          </Button>
+          <Button type="button" size="sm" variant="outline" @click="compareFor(job)">
+            Compare scans
+          </Button>
+        </template>
         <Button type="button" size="sm" variant="outline" @click="edit(job)">Edit</Button>
         <Button
           type="button"
@@ -268,6 +292,10 @@ function jobSteps(job: RollJob): Step[] {
       </footer>
     </li>
   </ul>
+  <template v-if="scanning">
+    <ImportScansDialog v-model:open="importOpen" :job="scanning" />
+    <CompareScansDialog v-model:open="compareOpen" :job="scanning" />
+  </template>
   <SendToLabDialog
     v-model:open="editOpen"
     :row="row"

@@ -7,6 +7,7 @@ import { IconChevronRight, IconPencil, IconPlus, IconTrash, IconX } from "@table
 import { Link, useRouter } from "@tanstack/vue-router";
 import { computed, ref } from "vue";
 import FormSection from "#/shared/components/FormSection.vue";
+import DetailHero from "#/shared/components/DetailHero.vue";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import { RichText } from "#/shared/components/richText";
 import { Button } from "#/shared/ui/button";
@@ -50,100 +51,72 @@ const rolls = computed(() => (order.data.value ? jobsOnOrder(order.data.value) :
   <QueryBoundary :query="order" empty-text="Order not found.">
     <template #default="{ data }">
       <div class="grid gap-6">
-        <!-- header -->
-        <section class="bg-card overflow-hidden rounded-xl border shadow-sm">
-          <div class="from-primary/70 to-primary h-1 bg-linear-to-r via-amber-400" />
-          <div class="grid gap-6 p-6 md:p-8">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div class="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
-                <span
-                  class="border-primary/30 bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 font-semibold tracking-[0.12em] uppercase"
-                >
-                  <i class="bg-primary size-1.5 rounded-full" aria-hidden="true" />
-                  Lab order
-                </span>
-                <span class="tracking-[0.08em] uppercase">ID: {{ data.id.slice(0, 8) }}</span>
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  @click="doDelete"
-                >
-                  <IconTrash aria-hidden="true" /> Delete
-                </Button>
-                <Button variant="outline" class="bg-card" @click="editOpen = true">
-                  <IconPencil aria-hidden="true" /> Edit order
-                </Button>
-                <Button
-                  :disabled="!data.lines.some((line) => roomOnLine(line) > 0)"
-                  @click="addRoll()"
-                >
-                  <IconPlus aria-hidden="true" /> Add roll
-                </Button>
-              </div>
+        <DetailHero
+          kind="Lab order"
+          :id="data.id"
+          :title="`#${data.code}`"
+          numeric-title
+          wide-stats
+        >
+          <template #actions>
+            <Button
+              variant="outline"
+              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              @click="doDelete"
+            >
+              <IconTrash aria-hidden="true" /> Delete
+            </Button>
+            <Button variant="outline" class="bg-card" @click="editOpen = true">
+              <IconPencil aria-hidden="true" /> Edit order
+            </Button>
+            <Button :disabled="!data.lines.some((line) => roomOnLine(line) > 0)" @click="addRoll()">
+              <IconPlus aria-hidden="true" /> Add roll
+            </Button>
+          </template>
+          <template #chips>
+            <span
+              :class="
+                cn(
+                  CHIP,
+                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
+                )
+              "
+            >
+              Lab: {{ data.labName }}
+            </span>
+          </template>
+          <template #stats>
+            <div>
+              <dt>Created</dt>
+              <dd class="text-lg font-semibold tabular-nums">
+                {{ formatDateTime(data.orderedAt) }}
+              </dd>
             </div>
-
-            <div class="grid gap-4">
-              <h1 class="text-3xl font-semibold tracking-tight tabular-nums md:text-4xl">
-                #{{ data.code }}
-              </h1>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  :class="
-                    cn(
-                      CHIP,
-                      'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                    )
-                  "
-                >
-                  Lab: {{ data.labName }}
-                </span>
-              </div>
+            <div>
+              <dt>Due</dt>
+              <dd
+                :class="
+                  cn('text-lg font-semibold tabular-nums', !data.dueDate && 'text-muted-foreground')
+                "
+              >
+                {{ formatDate(data.dueDate) }}
+              </dd>
             </div>
-
-            <dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-6 sm:grid-cols-4">
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Created
-                </dt>
-                <dd class="text-lg font-semibold tabular-nums">
-                  {{ formatDateTime(data.orderedAt) }}
-                </dd>
-              </div>
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">Due</dt>
-                <dd
-                  :class="
-                    cn(
-                      'text-lg font-semibold tabular-nums',
-                      !data.dueDate && 'text-muted-foreground',
-                    )
-                  "
-                >
-                  {{ formatDate(data.dueDate) }}
-                </dd>
-              </div>
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Rolls
-                </dt>
-                <dd class="text-lg font-semibold tabular-nums">{{ rollsOnOrder(data).rolls }}</dd>
-                <dd class="text-muted-foreground text-xs">
-                  {{ rollsOnOrder(data).taken }} of {{ rollsOnOrder(data).billed }} places taken
-                </dd>
-              </div>
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Total
-                </dt>
-                <dd class="text-primary text-lg font-semibold tabular-nums">
-                  {{ formatVnd(data.total) }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </section>
+            <div>
+              <dt>Rolls</dt>
+              <dd class="text-lg font-semibold tabular-nums">{{ rollsOnOrder(data).rolls }}</dd>
+              <dd class="text-muted-foreground text-xs">
+                {{ rollsOnOrder(data).taken }} of {{ rollsOnOrder(data).billed }} places taken
+              </dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd class="text-primary text-lg font-semibold tabular-nums">
+                {{ formatVnd(data.total) }}
+              </dd>
+            </div>
+          </template>
+        </DetailHero>
 
         <div
           class="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]"

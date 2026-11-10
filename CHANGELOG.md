@@ -11,16 +11,25 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Added
 
+- The header has a theme menu: System, Light or Dark, kept in this browser and applied before the first paint. Dark mode uses the same background, card and orange as the phone.
+- A processing job that produces scans has Import scans and Compare scans in the roll's Processing history. Import picks the scanner and the files, previews the frame number the server reads from each file name (or counts from a start frame, or shifts the numbers), lets each number be corrected, then imports with a skip or replace rule and lists what was skipped or rejected. Compare shows every scanner's scan of one frame side by side, with previous and next frame.
 - An Orders page under Film & Lab records what a lab billed: code, dates, lines with product, a rich text description, quantity and unit price, then VAT, discount and total. In the Add / Edit Order dialog each line is a card, and its description shows as a preview that opens in the editor, one line at a time.
 - An order's page has the look of the camera and film stock pages: a header card with the lab, dates, rolls and total; numbered sections for the lines and notes; and a side column with the amounts and the rolls. Each roll lists the lines that bill it, and can be added or removed. One roll can go on several lines, such as developing and scanning. Only rolls already sent to that lab, on no order or only on this one, can be added. The Add Roll to Order dialog has the same look as Load Into Camera.
 - The Send to Lab and Edit Processing Job dialogs pick an order and its lines for a lab job. A job on an order links to it from the roll's Processing history.
 
 ### Changed
 
+- A film stock's Same emulsion section sits with the specifications. Each related stock is a row with its ISO, process and packaging: the base stock, stocks based on the same emulsion, and stocks repacked from this one.
+- New app logo: a film canister. It is the favicon, and it replaces the aperture icon in the sidebar and on the sign-in and not-found pages.
+- Inventory and Expiry are now part of Rolls, and their sidebar items are gone. A roll in stock past its expiry shows an Expired badge, and the All tab has a Complete quick filter. The In stock tab lists rolls by expiry (expired first, unknown last) with an Expiry column, an Expiry filter (All, Expired, Expiring soon, Expired or expiring soon, No expiry date) and a Group by stock switch that counts rolls per format and shows the soonest expiry; a group opens its rolls. The tab, filters and open group are kept in the URL. `/app/inventory` and `/app/expiry` open Rolls → In stock grouped by stock and filtered to expired or expiring soon. The alerts bell's See all opens the same filtered list.
+- Camera, film stock, lens, lab order and roll pages share one header: kind, a short id, the actions, the title, chips and a row of stats. On a roll, the summary, gear, processing history and frames are numbered sections, and the gear section links to the camera and to each lens. Manage lenses uses the same sectioned dialog as the other forms.
+- Edit Roll saves only if the roll has not changed since the dialog opened, such as a note saved from the phone, a load or a finish. If it has, nothing is saved, your edits stay in the form, and the dialog lists what changed so you can keep your edits or take the current values. Needs a Meta-Frame API that reports `RollSummary.version`; with an older one the dialog saves as before.
+- A processing step shows a stored expected date for work done at home. Sending the roll still has none.
 - A job on an order takes its price from its lines added up, with the order's VAT and discount shared out by price, and the Price field is hidden. Work at home and jobs on no order keep the Price field.
 
 ### Fixed
 
+- Saving a camera, lens, film stock, lab, scanner or roll refreshes the other pages that show that name: roll lists and details, loaded cameras, lab orders, scan comparison, and the labs list after a scanner is deleted. The audit log refreshes after a write that changes data, and stays as it was after a write that changes nothing.
 - A long option in a form dialog's select no longer pushes the field past the dialog's edge on a phone. The text is cut off inside the field.
 
 ## [2.1.0] - 2026-11-03

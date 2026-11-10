@@ -52,13 +52,3 @@ export interface StockDetail {
   siblings: FilmStock[];
   children: FilmStock[];
 }
-export interface InventoryRow {
-  stock: FilmStock;
-  byFormat: Record<string, number>;
-  expiryLabel: string;
-}
-export interface InventoryFilters {
-  type?: string;
-  process?: string;
-  iso?: number;
-}

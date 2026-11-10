@@ -34,6 +34,11 @@ export interface Roll {
   description: string;
   /** Purchase date (ISO). */
   createdAt: string;
+  /**
+   * Grows with every change to the roll on the server; sent back as If-Match so an edit made
+   * from this copy cannot overwrite a newer change. Null when the server did not report one.
+   */
+  version: number | null;
 }
 
 export interface Frame {

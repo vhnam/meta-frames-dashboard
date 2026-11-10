@@ -45,6 +45,8 @@ export const useUpdateRoll = () =>
       rollKeys.expiry(),
       stockKeys.all,
       cameraKeys.lists(),
+      // lab order lines show the roll's format and exposures
+      labOrderKeys.all,
     ],
     success: "Roll updated",
   });
@@ -114,7 +116,8 @@ export const useFinishRoll = () =>
 export const useSetRollLenses = () =>
   useApiMutation({
     fn: setRollLenses,
-    invalidates: (variables) => [rollKeys.detail(variables.id)],
+    // lens pages list rolls filtered by lensId
+    invalidates: (variables) => [rollKeys.detail(variables.id), rollKeys.lists()],
     success: "Lenses updated",
   });
 
