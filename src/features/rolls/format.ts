@@ -1,3 +1,4 @@
+import { formatDate, formatVnd, plainText } from "#/shared/lib/format";
 import type { Roll } from "./types";
 
 type Expiry = Pick<Roll, "expiryYear" | "expiryMonth">;
@@ -12,6 +13,25 @@ export const isExpired = (roll: Expiry, now = new Date()) => {
   const date = expiryDate(roll);
   return !!date && date < now;
 };
+
+/** Months ahead that count as "expiring soon". */
+export const EXPIRY_SOON_MONTHS = 6;
+
+export type ExpiryState = "expired" | "soon" | "later" | "undated";
+
+/** Where a roll's expiry falls: past, within `EXPIRY_SOON_MONTHS`, later, or unknown. */
+export function expiryState(roll: Expiry, now = new Date()): ExpiryState {
+  const date = expiryDate(roll);
+  if (!date) return "undated";
+  if (date < now) return "expired";
+  const horizon = new Date(now);
+  horizon.setMonth(horizon.getMonth() + EXPIRY_SOON_MONTHS);
+  return date <= horizon ? "soon" : "later";
+}
+
+/** Sorts by expiry, soonest first; rolls without a date go last. */
+export const byExpiry = (left: Expiry, right: Expiry) =>
+  (expiryDate(left)?.getTime() ?? Infinity) - (expiryDate(right)?.getTime() ?? Infinity);
 
 export const formatExpiry = (roll: Expiry) =>
   roll.expiryYear
@@ -28,4 +48,39 @@ export function expiryFromNow(roll: Expiry, now = new Date()): string | null {
   const diff =
     (roll.expiryYear - now.getFullYear()) * 12 + (roll.expiryMonth ?? 12) - (now.getMonth() + 1);
   return `${isExpired(roll, now) ? "Expired" : "Expires"} ${months.format(diff, "month")}`;
+}
+
+export interface RollChange {
+  label: string;
+  /** As the edit was based on. */
+  before: string;
+  /** As the server has it now. */
+  now: string;
+}
+
+/**
+ * What changed between the copy of a roll an edit was based on and the server's current one,
+ * field by field, for showing the user before they decide what to keep. `stockLabel` names a
+ * film stock id.
+ */
+export function rollChanges(
+  before: Roll,
+  now: Roll,
+  stockLabel: (stockId: string) => string,
+): RollChange[] {
+  const fields: [string, (roll: Roll) => string][] = [
+    ["Film stock", (roll) => stockLabel(roll.stockId)],
+    ["Format", (roll) => roll.format],
+    ["Exposures", (roll) => String(roll.exposures)],
+    ["Unit price", (roll) => formatVnd(roll.price)],
+    ["Expiry", (roll) => formatExpiry(roll)],
+    ["Status", (roll) => roll.status],
+    ["Shot ISO", (roll) => (roll.shotIso === null ? "Box speed" : String(roll.shotIso))],
+    ["Started", (roll) => formatDate(roll.startDate)],
+    ["Finished", (roll) => formatDate(roll.finishDate)],
+    ["Notes", (roll) => plainText(roll.description) || "—"],
+  ];
+  return fields.flatMap(([label, show]) =>
+    show(before) === show(now) ? [] : [{ label, before: show(before), now: show(now) }],
+  );
 }

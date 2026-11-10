@@ -8,10 +8,11 @@ import {
 } from "#/features/rolls";
 import { PACKAGING_TONE, TYPE_TONE, stockName, stockWarnings } from "../format";
 import { useDeleteStock, useStockDetail } from "../queries";
-import { FILM_TYPE_LABELS, PACKAGING_LABELS } from "../types";
+import { FILM_TYPE_LABELS, PACKAGING_LABELS, type StockDetail } from "../types";
 import { IconChevronRight, IconPencil, IconPlus, IconTrash } from "@tabler/icons-vue";
 import { Link, useRouter } from "@tanstack/vue-router";
 import { computed, ref } from "vue";
+import DetailHero from "#/shared/components/DetailHero.vue";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
 import { RichText } from "#/shared/components/richText";
 import StockFormDialog from "../components/StockFormDialog.vue";
@@ -58,120 +59,99 @@ const byFormat = computed(() => {
 
 /** Rolls no longer in stock: loaded, shot, at the lab or developed. */
 const shot = computed(() => rows.value.length - unexposed.value.length);
+
+/** Related stocks for the "Same emulsion" list; empty groups are left out. */
+function relatedGroups(detail: StockDetail) {
+  return [
+    { label: "Base", stocks: detail.base ? [detail.base] : [] },
+    { label: "Also based on it", stocks: detail.siblings },
+    { label: "Repacked as", stocks: detail.children },
+  ].filter((group) => group.stocks.length);
+}
 </script>
 
 <template>
   <QueryBoundary :query="detail" empty-text="Stock not found.">
     <template #default="{ data: loaded }">
       <div class="grid gap-6">
-        <!-- header -->
-        <section class="bg-card overflow-hidden rounded-xl border shadow-sm">
-          <div class="from-primary/70 to-primary h-1 bg-linear-to-r via-amber-400" />
-          <div class="grid gap-6 p-6 md:p-8">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div class="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
-                <span
-                  class="border-primary/30 bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 font-semibold tracking-[0.12em] uppercase"
-                >
-                  <i class="bg-primary size-1.5 rounded-full" aria-hidden="true" />
-                  Film stock
-                </span>
-                <span class="tracking-[0.08em] uppercase"
-                  >ID: {{ loaded.stock.id.slice(0, 8) }}</span
-                >
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  @click="doDelete"
-                >
-                  <IconTrash aria-hidden="true" /> Delete
-                </Button>
-                <Button variant="outline" class="bg-card" @click="editOpen = true">
-                  <IconPencil aria-hidden="true" /> Edit stock
-                </Button>
-                <Button @click="addOpen = true"><IconPlus aria-hidden="true" /> Add rolls</Button>
-              </div>
+        <DetailHero kind="Film stock" :id="loaded.stock.id" :title="stockName(loaded.stock)">
+          <template #actions>
+            <Button
+              variant="outline"
+              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              @click="doDelete"
+            >
+              <IconTrash aria-hidden="true" /> Delete
+            </Button>
+            <Button variant="outline" class="bg-card" @click="editOpen = true">
+              <IconPencil aria-hidden="true" /> Edit stock
+            </Button>
+            <Button @click="addOpen = true"><IconPlus aria-hidden="true" /> Add rolls</Button>
+          </template>
+          <template #chips>
+            <span :class="cn(CHIP, TYPE_TONE[loaded.stock.type])">
+              {{ FILM_TYPE_LABELS[loaded.stock.type] }} ({{ loaded.stock.process }})
+            </span>
+            <span
+              :class="
+                cn(
+                  CHIP,
+                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
+                )
+              "
+            >
+              Box ISO {{ loaded.stock.boxIso }}
+            </span>
+            <span :class="cn(CHIP, PACKAGING_TONE[loaded.stock.packaging])">
+              <i class="size-1.5 rounded-full bg-current" aria-hidden="true" />
+              Packaging: {{ PACKAGING_LABELS[loaded.stock.packaging] }}
+            </span>
+            <span
+              v-if="loaded.stock.stockOrigin"
+              :class="cn(CHIP, 'bg-card text-muted-foreground')"
+            >
+              Origin: {{ loaded.stock.stockOrigin }}
+            </span>
+          </template>
+          <p
+            v-for="warning in stockWarnings(loaded.stock)"
+            :key="warning"
+            class="text-sm text-amber-600"
+          >
+            {{ warning }}
+          </p>
+          <template #stats>
+            <div>
+              <dt>Unexposed</dt>
+              <dd class="text-lg font-semibold tabular-nums">{{ unexposed.length }}</dd>
+              <dd v-if="byFormat" class="text-muted-foreground text-xs">{{ byFormat }}</dd>
             </div>
-
-            <div class="grid gap-4">
-              <h1 class="text-3xl font-semibold tracking-tight md:text-4xl">
-                {{ stockName(loaded.stock) }}
-              </h1>
-              <div class="flex flex-wrap gap-2">
-                <span :class="cn(CHIP, TYPE_TONE[loaded.stock.type])">
-                  {{ FILM_TYPE_LABELS[loaded.stock.type] }} ({{ loaded.stock.process }})
-                </span>
-                <span
-                  :class="
-                    cn(
-                      CHIP,
-                      'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                    )
-                  "
-                >
-                  Box ISO {{ loaded.stock.boxIso }}
-                </span>
-                <span :class="cn(CHIP, PACKAGING_TONE[loaded.stock.packaging])">
-                  <i class="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                  Packaging: {{ PACKAGING_LABELS[loaded.stock.packaging] }}
-                </span>
-                <span
-                  v-if="loaded.stock.stockOrigin"
-                  :class="cn(CHIP, 'bg-card text-muted-foreground')"
-                >
-                  Origin: {{ loaded.stock.stockOrigin }}
-                </span>
-              </div>
-              <p
-                v-for="warning in stockWarnings(loaded.stock)"
-                :key="warning"
-                class="text-sm text-amber-600"
+            <div>
+              <dt>Next expiry</dt>
+              <dd
+                :class="
+                  cn(
+                    'text-lg font-semibold tabular-nums',
+                    nextExpiry && isExpired(nextExpiry) ? 'text-destructive' : 'text-primary',
+                    !nextExpiry && 'text-muted-foreground',
+                  )
+                "
               >
-                {{ warning }}
-              </p>
+                {{ nextExpiry ? formatExpiry(nextExpiry) : "—" }}
+              </dd>
             </div>
-
-            <dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-6 sm:grid-cols-3">
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Unexposed
-                </dt>
-                <dd class="text-lg font-semibold tabular-nums">{{ unexposed.length }}</dd>
-                <dd v-if="byFormat" class="text-muted-foreground text-xs">{{ byFormat }}</dd>
-              </div>
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Next expiry
-                </dt>
-                <dd
-                  :class="
-                    cn(
-                      'text-lg font-semibold tabular-nums',
-                      nextExpiry && isExpired(nextExpiry) ? 'text-destructive' : 'text-primary',
-                      !nextExpiry && 'text-muted-foreground',
-                    )
-                  "
-                >
-                  {{ nextExpiry ? formatExpiry(nextExpiry) : "—" }}
-                </dd>
-              </div>
-              <div class="grid content-start gap-1">
-                <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
-                  Shot
-                </dt>
-                <dd class="text-lg font-semibold tabular-nums">{{ shot }}</dd>
-                <dd class="text-muted-foreground text-xs">
-                  of {{ rows.length }} {{ rows.length === 1 ? "roll" : "rolls" }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </section>
+            <div>
+              <dt>Shot</dt>
+              <dd class="text-lg font-semibold tabular-nums">{{ shot }}</dd>
+              <dd class="text-muted-foreground text-xs">
+                of {{ rows.length }} {{ rows.length === 1 ? "roll" : "rolls" }}
+              </dd>
+            </div>
+          </template>
+        </DetailHero>
 
         <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <!-- attributes -->
+          <!-- attributes and related stocks -->
           <div class="grid gap-6">
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="01" title="Primary specifications">
@@ -237,66 +217,60 @@ const shot = computed(() => rows.value.length - unexposed.value.length);
                 </div>
               </FormSection>
             </div>
-          </div>
 
-          <!-- rolls and related stocks -->
-          <aside class="grid gap-6">
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="REL" title="Same emulsion">
-                <p
-                  v-if="!loaded.base && !loaded.siblings.length && !loaded.children.length"
-                  class="text-muted-foreground text-sm"
-                >
-                  No base stock and no stocks based on this one.
-                </p>
-                <dl v-else class="grid gap-3 text-sm">
-                  <div v-if="loaded.base" class="grid gap-1">
-                    <dt class="text-muted-foreground text-xs">Base</dt>
-                    <dd>
+                <dl v-if="relatedGroups(loaded).length" class="grid gap-4">
+                  <div v-for="group in relatedGroups(loaded)" :key="group.label" class="grid gap-2">
+                    <dt class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
+                      {{ group.label }}
+                    </dt>
+                    <dd class="grid gap-2 sm:grid-cols-2">
                       <Link
-                        to="/app/stocks/$stockId"
-                        :params="{ stockId: loaded.base.id }"
-                        class="font-medium hover:underline"
-                      >
-                        {{ stockName(loaded.base) }}
-                      </Link>
-                    </dd>
-                  </div>
-                  <div v-if="loaded.siblings.length" class="grid gap-1">
-                    <dt class="text-muted-foreground text-xs">Also based on it</dt>
-                    <dd class="flex flex-wrap gap-x-3 gap-y-1">
-                      <Link
-                        v-for="stock in loaded.siblings"
+                        v-for="stock in group.stocks"
                         :key="stock.id"
                         to="/app/stocks/$stockId"
                         :params="{ stockId: stock.id }"
-                        class="font-medium hover:underline"
+                        class="hover:bg-accent/40 group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm"
                       >
-                        {{ stockName(stock) }}
-                      </Link>
-                    </dd>
-                  </div>
-                  <div v-if="loaded.children.length" class="grid gap-1">
-                    <dt class="text-muted-foreground text-xs">Repacked as</dt>
-                    <dd class="flex flex-wrap gap-x-3 gap-y-1">
-                      <Link
-                        v-for="stock in loaded.children"
-                        :key="stock.id"
-                        to="/app/stocks/$stockId"
-                        :params="{ stockId: stock.id }"
-                        class="font-medium hover:underline"
-                      >
-                        {{ stockName(stock) }}
+                        <span class="grid gap-0.5">
+                          <span class="font-medium">{{ stockName(stock) }}</span>
+                          <span class="text-muted-foreground text-xs">
+                            ISO {{ stock.boxIso }} · {{ stock.process }}
+                          </span>
+                        </span>
+                        <span class="flex items-center gap-2">
+                          <span
+                            :class="
+                              cn(
+                                'inline-flex rounded-sm border px-2 py-0.5 text-xs',
+                                PACKAGING_TONE[stock.packaging],
+                              )
+                            "
+                          >
+                            {{ PACKAGING_LABELS[stock.packaging] }}
+                          </span>
+                          <IconChevronRight
+                            class="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
+                        </span>
                       </Link>
                     </dd>
                   </div>
                 </dl>
+                <p v-else class="text-muted-foreground text-sm">
+                  No base stock and no stocks based on this one.
+                </p>
               </FormSection>
             </div>
+          </div>
 
+          <!-- rolls -->
+          <aside class="grid gap-6">
             <div class="bg-card rounded-xl border p-6 shadow-sm">
               <FormSection no="LOG" :title="`Rolls (${rows.length})`">
-                <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto">
+                <div v-if="rows.length" class="grid max-h-96 gap-2 overflow-y-auto scroll-fade">
                   <Link
                     v-for="row in rows"
                     :key="row.roll.id"

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/vue-query";
 import { toValue, type MaybeRefOrGetter } from "vue";
 import { patchQueries, useApiMutation } from "#/shared/api/mutation";
 import { cameraKeys } from "#/features/cameras";
+import { rollKeys } from "#/features/rolls";
 import { deleteLens, lensKeys, lensQueries, saveLens, setLensActive } from "./api";
 import type { LensRow } from "./types";
 
@@ -17,8 +18,8 @@ export const useLensDetail = (id: MaybeRefOrGetter<string>) =>
 export const useSaveLens = () =>
   useApiMutation({
     fn: saveLens,
-    // linked-lens lists on camera pages show lens names
-    invalidates: () => [lensKeys.all, cameraKeys.details()],
+    // camera and roll detail pages show linked lens names
+    invalidates: () => [lensKeys.all, cameraKeys.details(), rollKeys.details()],
     success: (variables) => (variables.id ? "Lens updated" : "Lens added"),
   });
 
@@ -36,12 +37,13 @@ export const useSetLensActive = () =>
           ),
         ),
     },
-    invalidates: () => [lensKeys.lists()],
+    // camera and roll detail pages show the lens's active state
+    invalidates: () => [lensKeys.lists(), cameraKeys.details(), rollKeys.details()],
   });
 
 export const useDeleteLens = () =>
   useApiMutation({
     fn: deleteLens,
-    invalidates: () => [lensKeys.all, cameraKeys.details()],
+    invalidates: () => [lensKeys.all, cameraKeys.details(), rollKeys.details()],
     success: "Lens deleted",
   });

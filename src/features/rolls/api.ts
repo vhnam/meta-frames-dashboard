@@ -9,7 +9,7 @@ import type { Process } from "#/features/film-stocks/types";
 import { toLens } from "#/features/lenses/api";
 import type { ApiLens } from "#/features/lenses/api";
 import type { ScanSettings } from "#/features/scanners/types";
-import { expiryDate, isExpired } from "./format";
+import { byExpiry, expiryState, isExpired } from "./format";
 import type {
   AddRollsInput,
   ExpiryReport,
@@ -58,6 +58,7 @@ interface ApiRoll {
   startedAt?: string;
   finishedAt?: string;
   negativesAtLab: boolean;
+  version?: number;
 }
 
 interface ApiRollDetail {
@@ -115,6 +116,7 @@ function toApiRow(apiRoll: ApiRoll): RollRow {
       finishDate: apiRoll.finishedAt ?? null,
       description: apiRoll.description ?? "",
       createdAt: "",
+      version: apiRoll.version ?? null,
     },
     stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(" "),
     boxIso: "",
@@ -203,21 +205,17 @@ export const rollQueries = {
       },
     }),
   /** In-stock rolls expired or expiring within `months`, plus those with no expiry date. */
-  expiry: (months = 6) =>
+  expiry: () =>
     queryOptions({
       queryKey: rollKeys.expiry(),
       queryFn: async (): Promise<ExpiryReport> => {
         const { data } = await http.get<ApiRoll[]>("/rolls", { params: { status: "in_stock" } });
         const rows = data.map(toApiRow);
-        const horizon = new Date();
-        horizon.setMonth(horizon.getMonth() + months);
+        const now = new Date();
         const dated = rows
-          .flatMap((row) => {
-            const date = expiryDate(row.roll);
-            return date && date <= horizon ? [{ row: row, d: date }] : [];
-          })
-          .sort((left, right) => left.d.getTime() - right.d.getTime())
-          .map(({ row }) => ({ ...row, expired: isExpired(row.roll) }));
+          .filter((row) => ["expired", "soon"].includes(expiryState(row.roll, now)))
+          .sort((left, right) => byExpiry(left.roll, right.roll))
+          .map((row) => ({ ...row, expired: isExpired(row.roll, now) }));
         const undated = rows.filter((row) => !row.roll.expiryYear);
         return { dated, undated };
       },
@@ -245,20 +243,35 @@ export const addRolls = async (input: AddRollsInput) => {
   return input.quantity;
 };
 
+/** `If-Match` for the version an edit was based on; none when the version is unknown. */
+const ifMatchVersion = (version: number | null): Record<string, string> =>
+  version !== null && Number.isInteger(version) && version >= 0
+    ? { "If-Match": `"${version}"` }
+    : {};
+
+/** The roll changed on the server since the copy the edit was based on (412 roll_changed). */
+export const isRollChanged = (error: unknown) =>
+  isAxiosError(error) && error.response?.status === 412;
+
 export const updateRoll = async (variables: { row: RollRow; input: UpdateRollInput }) => {
   const { row, input } = variables;
-  await http.put(`/rolls/${row.roll.id}`, {
-    filmStockId: input.stockId,
-    format: Number(input.format),
-    exposures: input.exposures,
-    price: input.price ?? undefined,
-    expiry: toApiExpiry(input),
-    // the PUT replaces the roll: resend what this form does not edit so it is not cleared
-    shotIso: row.roll.shotIso ?? undefined,
-    startedAt: row.roll.startDate ?? undefined,
-    finishedAt: row.roll.finishDate ?? undefined,
-    description: row.roll.description || undefined,
-  });
+  await http.put(
+    `/rolls/${row.roll.id}`,
+    {
+      filmStockId: input.stockId,
+      format: Number(input.format),
+      exposures: input.exposures,
+      price: input.price ?? undefined,
+      expiry: toApiExpiry(input),
+      // the PUT replaces the roll: resend what this form does not edit so it is not cleared;
+      // If-Match makes the server refuse it when those values are no longer current
+      shotIso: row.roll.shotIso ?? undefined,
+      startedAt: row.roll.startDate ?? undefined,
+      finishedAt: row.roll.finishDate ?? undefined,
+      description: row.roll.description || undefined,
+    },
+    { headers: ifMatchVersion(row.roll.version) },
+  );
 };
 
 export const loadRoll = async (variables: { id: string; input: LoadRollInput }) => {

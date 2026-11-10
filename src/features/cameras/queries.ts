@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/vue-query";
 import { toValue, type MaybeRefOrGetter } from "vue";
 import { patchQueries, useApiMutation } from "#/shared/api/mutation";
 import { lensKeys } from "#/features/lenses";
+import { rollKeys } from "#/features/rolls";
 import {
   cameraKeys,
   cameraQueries,
@@ -27,8 +28,8 @@ export const useCameraDetail = (id: MaybeRefOrGetter<string | undefined>) =>
 export const useSaveCamera = () =>
   useApiMutation({
     fn: saveCamera,
-    // a fixed-lens camera also creates / renames its built-in lens
-    invalidates: () => [cameraKeys.all, lensKeys.all],
+    // a fixed-lens camera also creates / renames its built-in lens; roll rows and details show both
+    invalidates: () => [cameraKeys.all, lensKeys.all, rollKeys.lists(), rollKeys.details()],
     success: (variables) => (variables.id ? "Camera updated" : "Camera added"),
   });
 
@@ -70,6 +71,7 @@ export const useDeleteCamera = () =>
 export const useSetCameraLenses = () =>
   useApiMutation({
     fn: setCameraLenses,
-    invalidates: (variables) => [cameraKeys.detail(variables.cameraId)],
+    // roll details cache the camera's lenses for "Manage lenses"
+    invalidates: (variables) => [cameraKeys.detail(variables.cameraId), rollKeys.details()],
     success: "Lenses updated",
   });
