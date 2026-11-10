@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { IconAperture } from "@tabler/icons-vue";
 import { Link, useRouterState } from "@tanstack/vue-router";
 import { computed } from "vue";
 import { useRollList } from "#/features/rolls";
@@ -64,12 +63,8 @@ const itemClass =
             class="hover:bg-transparent group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
             as-child
           >
-            <Link to="/app">
-              <div
-                class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md shadow-sm"
-              >
-                <IconAperture class="size-4.5" aria-hidden="true" />
-              </div>
+            <Link to="/app" aria-label="Meta Frames dashboard">
+              <img src="/logo.png" alt="" class="size-8 shrink-0 rounded-md shadow-sm" />
               <div class="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
                 <span class="font-heading truncate text-[0.95rem] font-bold">Meta Frames</span>
                 <span class="text-primary text-xs font-semibold tracking-[0.12em] uppercase">
