@@ -2,7 +2,7 @@
 import { IconLogout, IconSelector } from "@tabler/icons-vue";
 import { computed } from "vue";
 import { useCurrentUser, useLogout } from "#/features/auth";
-import { Avatar, AvatarFallback } from "#/shared/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "#/shared/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +38,14 @@ const initials = computed(() =>
             class="bg-card h-14 border shadow-xs data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
           >
             <Avatar class="size-9 rounded-md group-data-[collapsible=icon]:size-8">
+              <!-- the initials show while the picture loads, and stay if it fails -->
+              <AvatarImage
+                v-if="me.data.value.avatarUrl"
+                :src="me.data.value.avatarUrl"
+                alt=""
+                referrer-policy="no-referrer"
+                class="rounded-md object-cover"
+              />
               <AvatarFallback class="bg-secondary rounded-md text-xs font-semibold">
                 {{ initials }}
               </AvatarFallback>

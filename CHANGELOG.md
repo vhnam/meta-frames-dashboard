@@ -25,6 +25,7 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 ### Changed
 
 - On Rolls, Filters sits beside the stage tabs. Hand to lab, and Group by stock on In stock, sit beside the table search. A long note in a table cell stays on one line; the full text shows on hover.
+- The signed-in account shows the Google profile picture when the account is linked to Google. Needs a Meta-Frame API that sends `avatarUrl` on the user.
 
 - A film stock's Same emulsion section sits with the specifications. Each related stock is a row with its ISO, process and packaging: the base stock, stocks based on the same emulsion, and stocks repacked from this one.
 - New app logo: a film canister. It is the favicon, and it replaces the aperture icon in the sidebar and on the sign-in and not-found pages.

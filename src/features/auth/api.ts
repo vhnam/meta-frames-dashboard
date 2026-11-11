@@ -12,6 +12,7 @@ export interface ApiUser {
   id: string;
   email: string;
   name?: string;
+  avatarUrl?: string;
   createdAt: string;
 }
 
@@ -24,6 +25,7 @@ const toUser = (apiUser: ApiUser): User => ({
   id: apiUser.id,
   email: apiUser.email,
   name: apiUser.name ?? "",
+  avatarUrl: apiUser.avatarUrl,
   createdAt: apiUser.createdAt,
 });
 
