@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { formatDate, formatVnd } from "#/shared/lib/format";
 import { useDeleteJob } from "../queries";
-import { PROCESSING_TYPE_LABELS, producesScans, recordsNegativesReturned } from "../types";
+import {
+  PROCESSING_TYPE_LABELS,
+  developsFilm,
+  producesScans,
+  recordsNegativesReturned,
+} from "../types";
 import type { RollJob, RollRow } from "../types";
 import type { Process } from "#/features/film-stocks/types";
 import { Link } from "@tanstack/vue-router";
@@ -130,8 +135,8 @@ const TONE_CLASSES: Record<Tone, string> = {
 };
 
 /**
- * The job's steps in order: the roll goes out, then the negatives (or prints) and the scans come
- * back. Negatives come back from developing, printing or a lab scan. A step shows its
+ * The job's steps in order: the roll goes out, a lab develops it, then the negatives (or prints)
+ * and the scans come back. Negatives come back from developing, printing or a lab scan. A step shows its
  * expected date when one is stored. Sending the roll has none.
  */
 function jobSteps(job: RollJob): Step[] {
@@ -143,6 +148,17 @@ function jobSteps(job: RollJob): Step[] {
       status: { text: "Done", tone: "done" },
     },
   ];
+  // a lab develops before the negatives come back; at home both happen the same day. Jobs from
+  // before the developed date existed count as developed once anything came back.
+  if (atLab && developsFilm(job.type))
+    steps.push({
+      label: "Developed",
+      actual: job.developedDate,
+      status:
+        job.developedDate || job.negativesReturnedDate || job.scansReceivedDate
+          ? { text: "Done", tone: "done" }
+          : { text: "Waiting", tone: "pending" },
+    });
   if (recordsNegativesReturned(job.type, atLab) || job.negativesExpectedDate)
     steps.push({
       label: !atLab && job.type === "print" ? "Prints" : atLab ? "Negatives back" : "Negatives",

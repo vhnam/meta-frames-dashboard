@@ -2,14 +2,13 @@
 import { cameraName } from "#/features/cameras";
 import { stockName } from "#/features/film-stocks";
 import { useDeleteRoll, useRollDetail } from "../queries";
-import { isRollComplete, negativesStillAtLab } from "../types";
 import type { RollDetail, RollRow } from "../types";
 import { IconPencil, IconTrash } from "@tabler/icons-vue";
 import { useRouter } from "@tanstack/vue-router";
 import { ref } from "vue";
 import DetailHero from "#/shared/components/DetailHero.vue";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import RollStatusBadge from "../components/RollStatusBadge.vue";
+import RollStageBadge from "../components/RollStageBadge.vue";
 import RollEditDialog from "../components/RollEditDialog.vue";
 import RollLensesDialog from "../components/RollLensesDialog.vue";
 import RollSummaryCard from "../components/detail/RollSummaryCard.vue";
@@ -74,19 +73,9 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
             >
               {{ loaded.roll.format }} · {{ loaded.roll.exposures }} exp
             </span>
-            <RollStatusBadge :status="loaded.roll.status" />
-            <Badge
-              v-if="negativesStillAtLab(loaded.roll.status, loaded.negativesAtLab)"
-              variant="outline"
-            >
-              Negatives at lab
-            </Badge>
-            <Badge
-              v-if="isRollComplete(loaded.roll.status, loaded.negativesAtLab)"
-              variant="secondary"
-            >
-              Complete
-            </Badge>
+            <RollStageBadge :stage="loaded.stage" :detail="loaded.stageDetail" />
+            <Badge v-if="loaded.negativesAtLab" variant="outline">Negatives at lab</Badge>
+            <Badge v-if="loaded.needsScan" variant="outline">Needs scan</Badge>
           </template>
           <template #stats>
             <div>
@@ -118,12 +107,7 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
 
         <RollSummaryCard :detail="loaded" />
         <RollGearCard :detail="loaded" @manage-lenses="lensesOpen = true" @load="loadOpen = true" />
-        <ProcessingHistoryCard
-          :row="rowOf(loaded)"
-          :jobs="loaded.jobs"
-          :process="loaded.stock.process"
-          :finished-on="loaded.roll.finishDate"
-        />
+        <ProcessingHistoryCard :row="rowOf(loaded)" :detail="loaded" />
         <FramesCard :frames="loaded.frames" />
       </div>
 

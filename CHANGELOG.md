@@ -7,13 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`, and with the roll workflow: `stage`, `stageDetail`, `needsScan` and `plan` on each roll of `GET /rolls`, and `POST /lab-handoffs`. With an older API the Rolls tabs stay empty.
+This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`, and with the roll workflow: `stage`, `stageDetail`, `needsScan` and `plan` on each roll of `GET /rolls`, `POST /lab-handoffs`, and on a roll `openHandoffId`, `developedAt` on its jobs, `PUT /rolls/{id}/plan`, `PUT /rolls/{id}/developed`, `PUT|DELETE /rolls/{id}/scan-request` and `PUT /lab-handoffs/{id}/returned`. With an older API the Rolls tabs stay empty.
 
 ### Added
 
 - Rolls has one tab per stage: In stock, In camera, Done shooting, Processing and Completed, after All. The server decides the stage from the roll's jobs and plan, so a roll developed by a lab but whose negatives are still there can already be Completed. Each row has one badge: its stage or, while processing, what is being done or awaited (Lab developing, Lab scanning, Developing at home, Scanning at home, Rescanning, Waiting for scan, Waiting to scan at home, Waiting for lab scan, Printing).
 - A Filters menu on Rolls: Negatives at lab, Needs scan, No plan, Developed by and Scanned by (Myself, A lab, Not decided). The filters stay when the tab changes, count in the tab numbers and are kept in the URL.
 - Hand to lab: tick rolls in Done shooting, rolls waiting for a scan in Processing, or rolls marked Needs scan in Completed, then hand them to one lab together with a date, notes and the scanners. Each roll gets its own job, starting from its plan. If one roll cannot go, none is handed over. A roll whose negatives a lab still holds says that only that lab can take it.
+- A roll's Processing history has its plan (Goal, Develop by, Scan by), saved on change; Develop only clears Scan by. New actions there: Start developing at home and Start scanning at home (a home job that starts today and stays open; the scan uses your own scanner), Mark as developed (the date, and whether the roll is scanned next), Needs scan or Remove needs scan, and Negatives returned, which brings home every job of the roll's lab stay. A lab develop job shows a Developed step with its date.
 
 - The header has a theme menu: System, Light or Dark, kept in this browser and applied before the first paint. Dark mode uses the same background, card and orange as the phone.
 - A processing job that produces scans has Import scans and Compare scans in the roll's Processing history. Import picks the scanner and the files, previews the frame number the server reads from each file name (or counts from a start frame, or shifts the numbers), lets each number be corrected, then imports with a skip or replace rule and lists what was skipped or rejected. Compare shows every scanner's scan of one frame side by side, with previous and next frame.
@@ -33,6 +34,7 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Removed
 
+- The status badge and the Complete badge on a roll's page: it shows the same stage badge as the Rolls list, with Negatives at lab whenever a lab holds the roll, and Needs scan.
 - The Rolls status tabs (At lab, Developed, Scanned) and the Negatives at lab and Complete badges on the Rolls list: the stage tabs, the one badge per row and the Negatives at lab filter replace them. A bookmark to an old status tab opens All.
 
 ### Fixed

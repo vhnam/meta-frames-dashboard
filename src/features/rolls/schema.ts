@@ -105,3 +105,25 @@ export const HandOverSchema = v.object({
   ),
   notes: v.optional(v.string()),
 });
+
+/** A required ISO date that is not after today. */
+const pastDate = (missing: string, future: string) =>
+  v.pipe(
+    required(missing),
+    v.check((date) => date <= new Date().toLocaleDateString("en-CA"), future),
+  );
+
+export const MarkDevelopedSchema = v.object({
+  developedAt: pastDate(
+    "Select the date the film was developed.",
+    "The developed date cannot be in the future.",
+  ),
+  target: picklist(["developed", "scanned"] as const),
+});
+
+export const ReturnNegativesSchema = v.object({
+  returnedAt: pastDate(
+    "Select the date the negatives came back.",
+    "The return date cannot be in the future.",
+  ),
+});

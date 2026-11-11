@@ -27,6 +27,7 @@ const job = (id: string, labName: string, sentDate: string): RollJob => ({
   negativesExpectedDate: null,
   scansReceivedDate: sentDate,
   negativesReturnedDate: null,
+  developedDate: null,
   price: null,
   order: null,
   notes: "",
@@ -75,6 +76,7 @@ describe("ProcessingJobs", () => {
       scansExpectedDate: "2026-09-05",
       negativesExpectedDate: "2026-09-04",
       negativesReturnedDate: "2026-09-06",
+      developedDate: "2026-09-03",
       scanOrders: [
         {
           scannerId: "d177cb3c-a850-4232-a4ca-75189b7b279b",
@@ -98,10 +100,11 @@ describe("ProcessingJobs", () => {
     expect(cells(head!)).toEqual(["Step", "Expected", "Actual", "Status"]);
     expect(rows.map(cells)).toEqual([
       ["Sent", "—", "01/09/2026", "Done"],
+      ["Developed", "—", "03/09/2026", "Done"],
       ["Negatives back", "04/09/2026", "06/09/2026", "Done"],
       ["Scans back", "05/09/2026", "—", expect.stringMatching(/^Overdue \d+ days$/)],
     ]);
-    expect(rows[2]!.findAll("td")[2]!.classes()).toContain("text-destructive");
+    expect(rows[3]!.findAll("td")[2]!.classes()).toContain("text-destructive");
     wrapper.unmount();
   });
 
@@ -115,6 +118,7 @@ describe("ProcessingJobs", () => {
       ...job("home-job", "Home", "2026-10-01"),
       type: "develop_scan",
       negativesReturnedDate: "2026-10-01",
+      developedDate: null,
     };
     const wrapper = mount(ProcessingJobs, {
       props: { row, jobs: [home] },
@@ -157,6 +161,7 @@ describe("ProcessingJobs", () => {
       .map((row) => row.findAll("th, td").map((cell) => cell.text()));
     expect(rows).toEqual([
       ["Sent", "—", "01/10/2026", "Done"],
+      ["Developed", "—", "—", "Waiting"],
       ["Negatives back", "—", "—", "Waiting"],
     ]);
     wrapper.unmount();

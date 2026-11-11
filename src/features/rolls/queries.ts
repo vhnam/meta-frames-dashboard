@@ -12,12 +12,16 @@ import {
   finishRoll,
   handOverRolls,
   loadRoll,
+  markRollDeveloped,
   recordNegativesReturned,
   recordScansReceived,
   rollKeys,
+  returnHandoff,
   rollQueries,
   sendToLab,
   setRollLenses,
+  setRollPlan,
+  setScanRequest,
   updateJob,
   updateRoll,
 } from "./api";
@@ -114,6 +118,36 @@ export const useRecordNegativesReturned = () =>
 
 export const useDeleteJob = () =>
   useApiMutation({ fn: deleteJob, invalidates: jobInvalidates, success: "Processing job deleted" });
+
+export const useMarkDeveloped = () =>
+  useApiMutation({
+    fn: markRollDeveloped,
+    invalidates: jobInvalidates,
+    success: "Marked as developed",
+  });
+
+export const useReturnHandoff = () =>
+  useApiMutation({
+    fn: returnHandoff,
+    invalidates: jobInvalidates,
+    success: "Negatives marked as returned",
+  });
+
+/** The plan and the scan mark change the roll's stage, filters and badge only. */
+const planInvalidates = (variables: { rollId: string }) => [
+  rollKeys.detail(variables.rollId),
+  rollKeys.lists(),
+];
+
+export const useSetRollPlan = () =>
+  useApiMutation({ fn: setRollPlan, invalidates: planInvalidates, success: "Plan saved" });
+
+export const useSetScanRequest = () =>
+  useApiMutation({
+    fn: setScanRequest,
+    invalidates: planInvalidates,
+    success: (_variables, needed) => (needed ? "Marked as needs scan" : "Needs scan mark removed"),
+  });
 
 export const useFinishRoll = () =>
   useApiMutation({
