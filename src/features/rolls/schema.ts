@@ -92,3 +92,16 @@ export const SendToLabSchema = v.object({
   scansReceivedAt: v.optional(v.string()),
   negativesReturnedAt: v.optional(v.string()),
 });
+
+/** "Hand to lab": a lab, and a handover day that is not in the future. */
+export const HandOverSchema = v.object({
+  labId: required("Select a lab."),
+  handedAt: v.pipe(
+    required("Select the date the rolls were handed over."),
+    v.check(
+      (date) => date <= new Date().toLocaleDateString("en-CA"),
+      "The handover date cannot be in the future.",
+    ),
+  ),
+  notes: v.optional(v.string()),
+});

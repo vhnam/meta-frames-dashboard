@@ -10,6 +10,7 @@ import {
   deleteJob,
   deleteRoll,
   finishRoll,
+  handOverRolls,
   loadRoll,
   recordNegativesReturned,
   recordScansReceived,
@@ -75,6 +76,14 @@ export const useSendToLab = () =>
       labOrderKeys.all,
     ],
     success: (variables) => (variables.input.labId ? "Roll sent to lab" : "Processing recorded"),
+  });
+
+export const useHandOverRolls = () =>
+  useApiMutation({
+    fn: handOverRolls,
+    // every handed roll changes: lists, each detail, and the labs' in-progress lists
+    invalidates: () => [rollKeys.all, labKeys.all, labOrderKeys.all],
+    success: (_variables, count) => `${count} roll${count === 1 ? "" : "s"} handed to the lab`,
   });
 
 /** A job change moves the roll status and the lab's in-progress list. */

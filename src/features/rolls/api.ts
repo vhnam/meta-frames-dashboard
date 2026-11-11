@@ -13,7 +13,12 @@ import { byExpiry, expiryState, isExpired } from "./format";
 import type {
   AddRollsInput,
   ExpiryReport,
+  HandOverInput,
   RollDetail,
+  RollListRow,
+  RollPlan,
+  RollStage,
+  StageDetail,
   RollFilters,
   LoadRollInput,
   RollRow,
@@ -58,6 +63,10 @@ interface ApiRoll {
   startedAt?: string;
   finishedAt?: string;
   negativesAtLab: boolean;
+  stage: RollStage;
+  stageDetail?: StageDetail;
+  needsScan: boolean;
+  plan?: Partial<RollPlan>;
   version?: number;
 }
 
@@ -97,7 +106,7 @@ interface ApiRollDetail {
   totals: { total: number; incomplete: boolean };
 }
 
-function toApiRow(apiRoll: ApiRoll): RollRow {
+function toApiRow(apiRoll: ApiRoll): RollListRow {
   return {
     roll: {
       id: apiRoll.id,
@@ -122,6 +131,14 @@ function toApiRow(apiRoll: ApiRoll): RollRow {
     boxIso: "",
     cameraName: apiRoll.cameraName ?? null,
     negativesAtLab: apiRoll.negativesAtLab,
+    stage: apiRoll.stage,
+    stageDetail: apiRoll.stageDetail ?? null,
+    needsScan: apiRoll.needsScan,
+    plan: {
+      target: apiRoll.plan?.target ?? null,
+      developBy: apiRoll.plan?.developBy ?? null,
+      scanBy: apiRoll.plan?.scanBy ?? null,
+    },
   };
 }
 
@@ -129,7 +146,7 @@ export const rollQueries = {
   list: (filters: RollFilters) =>
     queryOptions({
       queryKey: rollKeys.list(filters),
-      queryFn: async (): Promise<RollRow[]> => {
+      queryFn: async (): Promise<RollListRow[]> => {
         const { data } = await http.get<ApiRoll[]>("/rolls", {
           params: {
             status: filters.status,
@@ -324,6 +341,25 @@ export const sendToLab = async (variables: {
       jobId,
       date: variables.received.negativesAt,
     });
+};
+
+/** All or nothing: one roll that cannot go refuses the whole batch, and the error names it. */
+export const handOverRolls = async (input: HandOverInput) => {
+  await http.post(
+    "/lab-handoffs",
+    {
+      labId: input.labId,
+      handedAt: input.handedAt,
+      notes: input.notes || undefined,
+      scanOrders: input.scanOrders.map((order) => ({
+        scannerId: order.scannerId,
+        settings: order.settings,
+      })),
+      rolls: input.rolls,
+    },
+    { headers: { "Idempotency-Key": input.idempotencyKey } },
+  );
+  return input.rolls.length;
 };
 
 /** A job's roll cannot change; the dialog keeps its lab fixed too. */

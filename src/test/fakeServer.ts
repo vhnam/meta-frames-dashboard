@@ -159,6 +159,8 @@ export const server = {
   labOrders: [] as LabOrderRec[],
   linkableJobs: [] as unknown[],
   scanners: builtInScanners(),
+  /** Hand-over requests still to fail, as when the reply is lost. */
+  handOverFailures: 0,
   requests: [] as {
     method: string;
     url: string;
@@ -175,6 +177,7 @@ export const server = {
     this.labOrders = [];
     this.linkableJobs = [];
     this.scanners = builtInScanners();
+    this.handOverFailures = 0;
     this.requests = [];
   },
   /** An order as the API returns it: amounts worked out, VAT and discount shared out by price. */
@@ -299,6 +302,12 @@ const apiRoll = (roll: RollRec) => {
     stockBrand: st?.brand,
     cameraName: cam?.model,
     negativesAtLab: false,
+    // past done shooting the server derives the stage from the jobs; the fake has no jobs
+    stage: ["in_stock", "in_camera", "done_shooting"].includes(roll.status)
+      ? roll.status
+      : "completed",
+    needsScan: false,
+    plan: {},
   };
 };
 
@@ -425,6 +434,14 @@ export function installFakeServer() {
           .filter((roll) => !params.lensId || !!roll.lensIds?.includes(params.lensId as string))
           .map(apiRoll),
       );
+    }
+    // the fake keeps no handoffs: tests read the request
+    if (method === "post" && url === "/lab-handoffs") {
+      if (server.handOverFailures > 0) {
+        server.handOverFailures -= 1;
+        return respond(503, { code: "unavailable", message: "try again" });
+      }
+      return respond(201, []);
     }
     if (method === "post" && url === "/rolls/bulk") {
       if (!stockOf(body.filmStockId))
