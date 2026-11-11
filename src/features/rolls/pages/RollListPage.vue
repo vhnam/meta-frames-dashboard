@@ -1,55 +1,67 @@
 <script setup lang="ts">
 import { useStockList, type FilmStock, type FilmType } from "#/features/film-stocks";
 import { useRollList } from "../queries";
-import { ROLL_STATUSES, isRollComplete, negativesStillAtLab } from "../types";
-import type { RollRow, RollStatus } from "../types";
+import { ROLL_STAGES } from "../types";
+import type { RollListRow, RollRow, RollStage } from "../types";
 import { expiryFromNow, formatExpiry, isExpired } from "../format";
 import {
+  HAND_OVER_TABS,
+  LIST_FILTER_KEYS,
+  MAX_HAND_OVER,
+  togglePicked,
+  canHandOver,
+  withoutListFilters,
+  countByTab,
   groupByStock,
   groupSummary,
+  groupedSearch,
   matchesStockFilters,
   rollsInView,
+  type ActorFilter,
   type ExpiryFilter,
   type RollListSearch,
 } from "../rollList";
 import { Link, useRouter } from "@tanstack/vue-router";
-import { IconArrowLeft } from "@tabler/icons-vue";
-import { computed, h, ref, watch } from "vue";
+import { IconArrowLeft, IconFilter, IconTruckDelivery } from "@tabler/icons-vue";
+import { computed, h, ref, shallowRef, watch } from "vue";
 import DataTable from "#/shared/components/DataTable.vue";
 import type { DataTableColumn } from "#/shared/components/dataTable";
 import AddButton from "#/shared/components/AddButton.vue";
 import PageHeader from "#/shared/components/PageHeader.vue";
 import { PRIMARY_LINK, numberCell, stackCell, tagCell } from "#/shared/components/tableCells";
 import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import RollStatusBadge from "../components/RollStatusBadge.vue";
+import RollStageBadge, { STAGE_LABELS } from "../components/RollStageBadge.vue";
 import AddRollsDialog from "../components/AddRollsDialog.vue";
+import HandOverDialog from "../components/HandOverDialog.vue";
 import InStockGroups from "../components/InStockGroups.vue";
 import { cn } from "#/shared/lib/utils";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
+import { Checkbox } from "#/shared/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "#/shared/ui/dropdown-menu";
 import { Label } from "#/shared/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/shared/ui/select";
 import { Switch } from "#/shared/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/shared/ui/tabs";
 import { plainText, formatDate } from "#/shared/lib/format";
+import { notify } from "#/shared/lib/toast";
 
-const STATUS_LABELS: Record<RollStatus, string> = {
-  in_stock: "In stock",
-  in_camera: "In camera",
-  done_shooting: "Done shooting",
-  at_lab: "At lab",
-  developed: "Developed",
-  scanned: "Scanned",
-};
-
-type RollTab = "all" | RollStatus;
-/** "All" first, then every status in lifecycle order. */
+type RollTab = "all" | RollStage;
+/** "All" first, then every stage in lifecycle order. */
 const TABS: { value: RollTab; label: string }[] = [
   { value: "all", label: "All" },
-  ...ROLL_STATUSES.map((status) => ({ value: status, label: STATUS_LABELS[status] })),
+  ...ROLL_STAGES.map((stage) => ({ value: stage, label: STAGE_LABELS[stage] })),
 ];
-const inTab = (rows: RollRow[], tabValue: RollTab) =>
-  tabValue === "all" ? rows : rows.filter((row) => row.roll.status === tabValue);
 
 const props = withDefaults(defineProps<{ search?: RollListSearch }>(), { search: () => ({}) });
 
@@ -74,7 +86,38 @@ function go(next: RollListSearch, replace = false) {
 }
 
 const tab = computed<RollTab>(() => state.value.tab ?? "all");
-const setTab = (value: unknown) => go(value === "all" ? {} : { tab: value as RollStatus });
+/** The shared filters stay with the new tab; the in-stock ones do not. */
+const listFilters = computed(
+  () =>
+    Object.fromEntries(
+      LIST_FILTER_KEYS.filter((key) => state.value[key]).map((key) => [key, state.value[key]]),
+    ) as RollListSearch,
+);
+const setTab = (value: unknown) =>
+  go(value === "all" ? listFilters.value : { ...listFilters.value, tab: value as RollStage });
+
+const FLAG_FILTERS: { key: "atLab" | "needsScan" | "noPlan"; label: string }[] = [
+  { key: "atLab", label: "Negatives at lab" },
+  { key: "needsScan", label: "Needs scan" },
+  { key: "noPlan", label: "No plan" },
+];
+const ACTOR_FILTER_KEYS: { key: "developBy" | "scanBy"; label: string }[] = [
+  { key: "developBy", label: "Developed by" },
+  { key: "scanBy", label: "Scanned by" },
+];
+const ACTOR_OPTIONS: { value: ActorFilter | "any"; label: string }[] = [
+  { value: "any", label: "Anyone" },
+  { value: "self", label: "Myself" },
+  { value: "lab", label: "A lab" },
+  { value: "unset", label: "Not decided" },
+];
+const activeFilterCount = computed(() => Object.keys(listFilters.value).length);
+function setFilter(key: (typeof LIST_FILTER_KEYS)[number], value: unknown) {
+  const { [key]: _old, ...rest } = state.value;
+  const on = value !== undefined && value !== false && value !== "any";
+  go(on ? { ...rest, [key]: value === true ? true : value } : rest, true);
+}
+const clearFilters = () => go(withoutListFilters(state.value), true);
 
 const EXPIRY_OPTIONS: { value: ExpiryFilter | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -87,8 +130,7 @@ const setExpiry = (value: unknown) => {
   const { expiry: _old, ...rest } = state.value;
   go(value === "all" ? rest : { ...rest, expiry: value as ExpiryFilter }, true);
 };
-const setGrouped = (grouped: boolean) =>
-  go({ tab: "in_stock", expiry: state.value.expiry, group: grouped ? "stock" : undefined });
+const setGrouped = (grouped: boolean) => go(groupedSearch(state.value, grouped));
 const openGroup = (stockId: string) => go({ ...state.value, stock: stockId });
 const closeGroup = () => {
   const { stock: _open, ...rest } = state.value;
@@ -118,6 +160,49 @@ const stockById = computed(
 // changes identity, so the rows must change only when the rolls, stocks or filters do.
 /** Rows of the open tab with the page's own filters (only the open tab renders). */
 const activeRows = computed(() => rollsInView(rolls.data.value ?? [], state.value));
+const counts = computed(() => countByTab(rolls.data.value ?? [], state.value));
+
+// "Hand to lab": rows picked in the open tab; a new tab starts with none
+const picked = ref(new Set<string>());
+watch(tab, () => (picked.value = new Set()));
+const pickable = (row: RollListRow) => canHandOver(row, state.value.tab);
+function togglePick(row: RollListRow, on: boolean) {
+  // starts from the picks still shown, so rolls a filter hides leave the pick and free their place
+  const shown = new Set(pickedRows.value.map((picked) => picked.roll.id));
+  const next = togglePicked(shown, row.roll.id, on);
+  if (next) picked.value = next;
+  else notify.error(`One handover takes at most ${MAX_HAND_OVER} rolls.`);
+}
+interface TableHandle {
+  table: { getPrePaginatedRowModel: () => { rows: { original: RollListRow }[] } };
+}
+/** The open tab's table: its search and Format filter work inside it. */
+const shownTable = shallowRef<TableHandle | null>(null);
+const setShownTable = (tabValue: RollTab, table: unknown) => {
+  if (tabValue === tab.value) shownTable.value = table as TableHandle | null;
+};
+/** Rows the table shows on any page: the page's filters, then the table's search and Format. */
+const shownRows = computed(
+  () =>
+    shownTable.value?.table.getPrePaginatedRowModel().rows.map((row) => row.original) ??
+    activeRows.value,
+);
+/** Only rows still shown and still pickable go: a filter, a search or a refresh may hide them. */
+const pickedRows = computed(() =>
+  shownRows.value.filter((row) => picked.value.has(row.roll.id) && pickable(row)),
+);
+const handOverOpen = ref(false);
+const PICK_HINT: Partial<Record<RollStage, string>> = {
+  processing: "Only rolls waiting for a scan can be handed to a lab.",
+  completed: "Only rolls marked Needs scan can be handed to a lab.",
+};
+/** Why a row cannot be picked, or that only the lab holding its negatives can take it. */
+const pickHint = (row: RollListRow) =>
+  !pickable(row)
+    ? PICK_HINT[row.stage]
+    : row.negativesAtLab
+      ? "Negatives are at a lab: only that lab can take this roll."
+      : undefined;
 // the group table's Type, Process and ISO filters apply to an open group too, such as a bookmark
 // whose stock no longer matches them
 const openGroupRows = computed(() =>
@@ -153,17 +238,15 @@ const FORMAT_SIZE: Record<string, string> = {
 const formatLabel = (format: string) =>
   FORMAT_SIZE[format] ? `${format} / ${FORMAT_SIZE[format]}` : format;
 
-const tabCountClass = (tabValue: RollTab, count: number) =>
+const tabCountClass = (count: number) =>
   count === 0
     ? "text-muted-foreground/70 text-[0.7rem]"
-    : tabValue === "at_lab"
-      ? "bg-destructive/15 text-destructive rounded-full px-1.5 text-xs font-semibold"
-      : "bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold";
+    : "bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold";
 
 const openRoll = (row: RollRow) =>
   router?.navigate({ to: "/app/rolls/$rollId", params: { rollId: row.roll.id } });
 
-const expiryColumn: DataTableColumn<RollRow> = {
+const expiryColumn: DataTableColumn<RollListRow> = {
   id: "expiry",
   header: "Expiry",
   // rows come sorted by expiry (undated last); a text sort would put "—" and years in the wrong place
@@ -173,7 +256,25 @@ const expiryColumn: DataTableColumn<RollRow> = {
     stackCell(numberCell(formatExpiry(row.roll)), expiryFromNow(row.roll)),
 };
 
-const columns: DataTableColumn<RollRow>[] = [
+const pickColumn: DataTableColumn<RollListRow> = {
+  id: "pick",
+  header: "",
+  enableSorting: false,
+  enableGlobalFilter: false,
+  meta: { class: "w-px" },
+  cell: ({ row: { original: row } }) =>
+    h(Checkbox, {
+      modelValue: picked.value.has(row.roll.id),
+      disabled: !pickable(row),
+      title: pickHint(row),
+      "aria-label": [`Pick ${row.stockName} roll for Hand to lab`, pickHint(row)]
+        .filter(Boolean)
+        .join(". "),
+      "onUpdate:modelValue": (on: boolean | "indeterminate") => togglePick(row, on === true),
+    }),
+};
+
+const columns: DataTableColumn<RollListRow>[] = [
   {
     id: "stock",
     header: "Stock",
@@ -226,20 +327,14 @@ const columns: DataTableColumn<RollRow>[] = [
     id: "status",
     enableSorting: false,
     header: "Status",
-    accessorFn: (row) => STATUS_LABELS[row.roll.status],
-    filterFn: "equalsString",
+    accessorFn: (row) => STAGE_LABELS[row.stage],
     enableGlobalFilter: false,
+    // one badge for the roll's stage; Expired is about the stock, not the stage
     cell: ({ row: { original: row } }) =>
       h("div", { class: "flex flex-wrap items-center gap-2" }, [
-        h(RollStatusBadge, { status: row.roll.status }),
-        row.roll.status === "in_stock" && isExpired(row.roll)
+        h(RollStageBadge, { stage: row.stage, detail: row.stageDetail }),
+        row.stage === "in_stock" && isExpired(row.roll)
           ? h(Badge, { variant: "destructive" }, () => "Expired")
-          : null,
-        negativesStillAtLab(row.roll.status, row.negativesAtLab)
-          ? h(Badge, { variant: "outline" }, () => "Negatives at lab")
-          : null,
-        isRollComplete(row.roll.status, row.negativesAtLab)
-          ? h(Badge, { variant: "secondary" }, () => "Complete")
           : null,
       ]),
   },
@@ -249,16 +344,22 @@ const columns: DataTableColumn<RollRow>[] = [
 const inStockColumns = columns
   .filter((column) => column.id !== "camera" && column.id !== "started")
   .toSpliced(2, 0, expiryColumn);
-const columnsFor = (tabValue: RollTab) => (tabValue === "in_stock" ? inStockColumns : columns);
+const pickColumns = [pickColumn, ...columns];
+const columnsFor = (tabValue: RollTab) =>
+  tabValue === "in_stock"
+    ? inStockColumns
+    : HAND_OVER_TABS.includes(tabValue as RollStage)
+      ? pickColumns
+      : columns;
 
 const emptyText = (tabValue: RollTab) =>
-  tabValue === "all"
-    ? state.value.complete
-      ? "No complete rolls."
-      : "No rolls yet. Add rolls to get started."
-    : tabValue === "in_stock" && state.value.expiry
-      ? "No rolls in stock match this expiry filter."
-      : `No rolls ${STATUS_LABELS[tabValue].toLowerCase()}.`;
+  activeFilterCount.value
+    ? "No rolls match these filters."
+    : tabValue === "all"
+      ? "No rolls yet. Add rolls to get started."
+      : tabValue === "in_stock" && state.value.expiry
+        ? "No rolls in stock match this expiry filter."
+        : `No rolls ${STAGE_LABELS[tabValue].toLowerCase()}.`;
 </script>
 
 <template>
@@ -269,7 +370,7 @@ const emptyText = (tabValue: RollTab) =>
   </PageHeader>
 
   <QueryBoundary :query="rolls" :is-empty="() => false">
-    <template #default="{ data }">
+    <template #default>
       <Tabs :model-value="tab" class="gap-6" @update:model-value="setTab">
         <TabsList
           class="bg-muted h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border p-1.5"
@@ -281,30 +382,72 @@ const emptyText = (tabValue: RollTab) =>
             class="text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground h-10 flex-none gap-2.5 px-4 data-[state=active]:font-semibold"
           >
             {{ tabItem.label }}
-            <span
-              :class="
-                cn('tabular-nums', tabCountClass(tabItem.value, inTab(data, tabItem.value).length))
-              "
-            >
-              {{ inTab(data, tabItem.value).length }}
+            <span :class="cn('tabular-nums', tabCountClass(counts[tabItem.value]))">
+              {{ counts[tabItem.value] }}
             </span>
           </TabsTrigger>
         </TabsList>
+        <div class="flex flex-wrap items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button
+                variant="outline"
+                size="sm"
+                :class="activeFilterCount ? 'border-primary bg-primary/10 text-primary' : undefined"
+              >
+                <IconFilter aria-hidden="true" />
+                Filters
+                <span v-if="activeFilterCount" class="tabular-nums">({{ activeFilterCount }})</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" class="w-56">
+              <DropdownMenuCheckboxItem
+                v-for="filter in FLAG_FILTERS"
+                :key="filter.key"
+                :model-value="!!state[filter.key]"
+                @update:model-value="(on: boolean) => setFilter(filter.key, on)"
+                @select.prevent
+              >
+                {{ filter.label }}
+              </DropdownMenuCheckboxItem>
+              <template v-for="filter in ACTOR_FILTER_KEYS" :key="filter.key">
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>{{ filter.label }}</DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  :model-value="state[filter.key] ?? 'any'"
+                  @update:model-value="(value) => setFilter(filter.key, value)"
+                >
+                  <DropdownMenuRadioItem
+                    v-for="option in ACTOR_OPTIONS"
+                    :key="option.value"
+                    :value="option.value"
+                    @select.prevent
+                  >
+                    {{ option.label }}
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </template>
+              <template v-if="activeFilterCount">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem @select="clearFilters">Clear filters</DropdownMenuItem>
+              </template>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            v-if="HAND_OVER_TABS.includes(tab as RollStage)"
+            size="sm"
+            :disabled="!pickedRows.length"
+            @click="handOverOpen = true"
+          >
+            <IconTruckDelivery aria-hidden="true" />
+            Hand to lab
+            <span v-if="pickedRows.length" class="tabular-nums">({{ pickedRows.length }})</span>
+          </Button>
+        </div>
         <!-- one DataTable per tab: each keeps its own pager, reset when the tab changes -->
         <TabsContent v-for="tabItem in TABS" :key="tabItem.value" :value="tabItem.value">
-          <div v-if="tabItem.value === 'all'" class="mb-4 flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              :aria-pressed="!!state.complete"
-              :class="state.complete && 'border-primary bg-primary/10 text-primary'"
-              @click="go(state.complete ? {} : { complete: true })"
-            >
-              Complete
-            </Button>
-          </div>
           <div
-            v-else-if="tabItem.value === 'in_stock'"
+            v-if="tabItem.value === 'in_stock'"
             class="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3"
           >
             <div class="flex items-center gap-2">
@@ -375,7 +518,8 @@ const emptyText = (tabValue: RollTab) =>
           </QueryBoundary>
           <DataTable
             v-else
-            :key="`${state.expiry}-${state.complete}`"
+            :ref="(table) => setShownTable(tabItem.value, table)"
+            :key="`${state.expiry}-${activeFilterCount}`"
             filter-label="Roll"
             filter-placeholder="Search by stock or camera..."
             empty-title="No rolls"
@@ -391,4 +535,5 @@ const emptyText = (tabValue: RollTab) =>
     </template>
   </QueryBoundary>
   <AddRollsDialog v-model:open="addOpen" />
+  <HandOverDialog v-model:open="handOverOpen" :rows="pickedRows" @handed="picked = new Set()" />
 </template>

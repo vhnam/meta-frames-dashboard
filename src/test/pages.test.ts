@@ -60,6 +60,64 @@ describe("Film & Lab screens", () => {
     expect(wrapper.findAll("button").some((right) => right.text() === "Board view")).toBe(false);
   });
 
+  it("lets a finished roll be picked for Hand to lab", async () => {
+    const stock = server.addStock({ name: "UltraMax" });
+    server.addRoll({ filmStockId: stock.id, status: "done_shooting" });
+    const wrapper = render(RollsView, { search: { tab: "done_shooting" } });
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
+    const handOver = () =>
+      wrapper.findAll("button").find((button) => button.text().startsWith("Hand to lab"))!;
+    expect(handOver().attributes("disabled")).toBeDefined();
+    await wrapper.find('tbody [role="checkbox"]').trigger("click");
+    await vi.waitFor(() => expect(handOver().attributes("disabled")).toBeUndefined());
+    expect(handOver().text()).toContain("(1)");
+  });
+
+  it("hands over only the picked rolls the table still shows", async () => {
+    const ultramax = server.addStock({ name: "UltraMax" });
+    const gold = server.addStock({ name: "Gold" });
+    server.addRoll({ filmStockId: ultramax.id, status: "done_shooting" });
+    server.addRoll({ filmStockId: gold.id, status: "done_shooting" });
+    const wrapper = render(RollsView, { search: { tab: "done_shooting" } });
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
+    const handOver = () =>
+      wrapper.findAll("button").find((button) => button.text().startsWith("Hand to lab"))!;
+    const ultramaxRow = wrapper.findAll("tbody tr").find((tr) => tr.text().includes("UltraMax"))!;
+    await ultramaxRow.find('[role="checkbox"]').trigger("click");
+    await vi.waitFor(() => expect(handOver().text()).toContain("(1)"));
+    // search hides UltraMax, then Gold is picked too: only Gold is still shown
+    await wrapper.find('form[role="search"] input').setValue("Gold");
+    await wrapper.find('form[role="search"]').trigger("submit");
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
+    await wrapper.find('tbody [role="checkbox"]').trigger("click");
+    await vi.waitFor(() => expect(handOver().text()).toContain("(1)"));
+    expect(handOver().text()).not.toContain("(2)");
+  });
+
+  it("drops picks a filter hides, so they free their place in the batch", async () => {
+    const ultramax = server.addStock({ name: "UltraMax" });
+    const gold = server.addStock({ name: "Gold" });
+    server.addRoll({ filmStockId: ultramax.id, status: "done_shooting" });
+    server.addRoll({ filmStockId: gold.id, status: "done_shooting" });
+    const wrapper = render(RollsView, { search: { tab: "done_shooting" } });
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
+    const handOver = () =>
+      wrapper.findAll("button").find((button) => button.text().startsWith("Hand to lab"))!;
+    const ultramaxRow = wrapper.findAll("tbody tr").find((tr) => tr.text().includes("UltraMax"))!;
+    await ultramaxRow.find('[role="checkbox"]').trigger("click");
+    const search = async (text: string) => {
+      await wrapper.find('form[role="search"] input').setValue(text);
+      await wrapper.find('form[role="search"]').trigger("submit");
+    };
+    await search("Gold");
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
+    await wrapper.find('tbody [role="checkbox"]').trigger("click");
+    // back to every roll: the hidden UltraMax pick was dropped when Gold was picked
+    await search("");
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
+    expect(handOver().text()).toContain("(1)");
+  });
+
   it("in stock lists rolls by expiry and flags expired ones", async () => {
     const stock = server.addStock({ name: "UltraMax" });
     server.addRoll({ filmStockId: stock.id }); // no expiry date

@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`.
+This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`, and with the roll workflow: `stage`, `stageDetail`, `needsScan` and `plan` on each roll of `GET /rolls`, and `POST /lab-handoffs`. With an older API the Rolls tabs stay empty.
 
 ### Added
+
+- Rolls has one tab per stage: In stock, In camera, Done shooting, Processing and Completed, after All. The server decides the stage from the roll's jobs and plan, so a roll developed by a lab but whose negatives are still there can already be Completed. Each row has one badge: its stage or, while processing, what is being done or awaited (Lab developing, Lab scanning, Developing at home, Scanning at home, Rescanning, Waiting for scan, Waiting to scan at home, Waiting for lab scan, Printing).
+- A Filters menu on Rolls: Negatives at lab, Needs scan, No plan, Developed by and Scanned by (Myself, A lab, Not decided). The filters stay when the tab changes, count in the tab numbers and are kept in the URL.
+- Hand to lab: tick rolls in Done shooting, rolls waiting for a scan in Processing, or rolls marked Needs scan in Completed, then hand them to one lab together with a date, notes and the scanners. Each roll gets its own job, starting from its plan. If one roll cannot go, none is handed over. A roll whose negatives a lab still holds says that only that lab can take it.
 
 - The header has a theme menu: System, Light or Dark, kept in this browser and applied before the first paint. Dark mode uses the same background, card and orange as the phone.
 - A processing job that produces scans has Import scans and Compare scans in the roll's Processing history. Import picks the scanner and the files, previews the frame number the server reads from each file name (or counts from a start frame, or shifts the numbers), lets each number be corrected, then imports with a skip or replace rule and lists what was skipped or rejected. Compare shows every scanner's scan of one frame side by side, with previous and next frame.
@@ -21,11 +25,15 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 - A film stock's Same emulsion section sits with the specifications. Each related stock is a row with its ISO, process and packaging: the base stock, stocks based on the same emulsion, and stocks repacked from this one.
 - New app logo: a film canister. It is the favicon, and it replaces the aperture icon in the sidebar and on the sign-in and not-found pages.
-- Inventory and Expiry are now part of Rolls, and their sidebar items are gone. A roll in stock past its expiry shows an Expired badge, and the All tab has a Complete quick filter. The In stock tab lists rolls by expiry (expired first, unknown last) with an Expiry column, an Expiry filter (All, Expired, Expiring soon, Expired or expiring soon, No expiry date) and a Group by stock switch that counts rolls per format and shows the soonest expiry; a group opens its rolls. The tab, filters and open group are kept in the URL. `/app/inventory` and `/app/expiry` open Rolls → In stock grouped by stock and filtered to expired or expiring soon. The alerts bell's See all opens the same filtered list.
+- Inventory and Expiry are now part of Rolls, and their sidebar items are gone. A roll in stock past its expiry shows an Expired badge. The In stock tab lists rolls by expiry (expired first, unknown last) with an Expiry column, an Expiry filter (All, Expired, Expiring soon, Expired or expiring soon, No expiry date) and a Group by stock switch that counts rolls per format and shows the soonest expiry; a group opens its rolls. The tab, filters and open group are kept in the URL. `/app/inventory` and `/app/expiry` open Rolls → In stock grouped by stock and filtered to expired or expiring soon. The alerts bell's See all opens the same filtered list.
 - Camera, film stock, lens, lab order and roll pages share one header: kind, a short id, the actions, the title, chips and a row of stats. On a roll, the summary, gear, processing history and frames are numbered sections, and the gear section links to the camera and to each lens. Manage lenses uses the same sectioned dialog as the other forms.
 - Edit Roll saves only if the roll has not changed since the dialog opened, such as a note saved from the phone, a load or a finish. If it has, nothing is saved, your edits stay in the form, and the dialog lists what changed so you can keep your edits or take the current values. Needs a Meta-Frame API that reports `RollSummary.version`; with an older one the dialog saves as before.
 - A processing step shows a stored expected date for work done at home. Sending the roll still has none.
 - A job on an order takes its price from its lines added up, with the order's VAT and discount shared out by price, and the Price field is hidden. Work at home and jobs on no order keep the Price field.
+
+### Removed
+
+- The Rolls status tabs (At lab, Developed, Scanned) and the Negatives at lab and Complete badges on the Rolls list: the stage tabs, the one badge per row and the Negatives at lab filter replace them. A bookmark to an old status tab opens All.
 
 ### Fixed
 

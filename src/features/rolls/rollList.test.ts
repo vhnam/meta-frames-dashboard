@@ -1,15 +1,37 @@
 import { describe, expect, it } from "vite-plus/test";
 import { expiryState } from "./format";
-import { groupByStock, groupSummary, parseRollListSearch, rollsInView } from "./rollList";
-import type { RollRow, RollStatus } from "./types";
+import { ROLL_STAGES } from "./types";
+import {
+  canHandOver,
+  countByTab,
+  groupByStock,
+  groupSummary,
+  MAX_HAND_OVER,
+  groupedSearch,
+  handOverType,
+  togglePicked,
+  withoutListFilters,
+  parseRollListSearch,
+  rollsInView,
+} from "./rollList";
+import type { RollListRow, RollPlan, RollStage, RollStatus, StageDetail } from "./types";
 
 const now = new Date(2026, 10, 10); // 10 Nov 2026
 
 let next = 0;
 function row(
   expiry: [number, number?] | null,
-  overrides: { status?: RollStatus; stockId?: string; format?: string; atLab?: boolean } = {},
-): RollRow {
+  overrides: {
+    status?: RollStatus;
+    stockId?: string;
+    format?: string;
+    atLab?: boolean;
+    stage?: RollStage;
+    detail?: StageDetail;
+    needsScan?: boolean;
+    plan?: Partial<RollPlan>;
+  } = {},
+): RollListRow {
   next += 1;
   const stockId = overrides.stockId ?? "orwo";
   return {
@@ -35,6 +57,10 @@ function row(
     boxIso: "",
     cameraName: null,
     negativesAtLab: overrides.atLab ?? false,
+    stage: overrides.stage ?? (overrides.status === "in_camera" ? "in_camera" : "in_stock"),
+    stageDetail: overrides.detail ?? null,
+    needsScan: overrides.needsScan ?? false,
+    plan: { target: null, developBy: null, scanBy: null, ...overrides.plan },
   };
 }
 
@@ -66,7 +92,7 @@ describe("rollsInView", () => {
   const undated = row(null);
   const shooting = row([2020, 1], { status: "in_camera" });
   const rows = [undated, later, soon, shooting, yearOnly, thisMonth, expired];
-  const ids = (list: RollRow[]) => list.map((item) => item.roll.id);
+  const ids = (list: RollListRow[]) => list.map((item) => item.roll.id);
 
   it("sorts in stock rolls by expiry, expired first and undated last", () => {
     expect(ids(rollsInView(rows, { tab: "in_stock" }, now))).toEqual(
@@ -86,12 +112,102 @@ describe("rollsInView", () => {
   it("lists every roll once in All", () => {
     expect(ids(rollsInView(rows, {}, now))).toEqual(ids(rows));
   });
+});
 
-  it("keeps a scanned roll out of Complete until its negatives are home", () => {
-    const atLab = row([2026, 1], { status: "scanned", atLab: true });
-    expect(rollsInView([atLab, expired], { complete: true }, now)).toEqual([]);
-    const home = { ...atLab, negativesAtLab: false };
-    expect(ids(rollsInView([home, expired], { complete: true }, now))).toEqual(ids([home]));
+describe("stage tabs and shared filters", () => {
+  const ids = (list: RollListRow[]) => list.map((item) => item.roll.id);
+  const finished = row(null, { status: "done_shooting", stage: "done_shooting" });
+  const waiting = row(null, {
+    status: "developed",
+    stage: "processing",
+    detail: "waiting_lab_scan",
+    plan: { target: "scanned", developBy: "self", scanBy: "lab" },
+  });
+  const labDeveloping = row(null, {
+    status: "at_lab",
+    stage: "processing",
+    detail: "lab_developing",
+    atLab: true,
+    plan: { target: "scanned", developBy: "lab", scanBy: "lab" },
+  });
+  // completed with negatives still at the lab, marked for a rescan, no plan
+  const marked = row(null, { status: "scanned", stage: "completed", atLab: true, needsScan: true });
+  const done = row(null, {
+    status: "developed",
+    stage: "completed",
+    plan: { target: "developed" },
+  });
+  const rows = [
+    row(null),
+    row(null, { status: "in_camera" }),
+    finished,
+    waiting,
+    labDeveloping,
+    marked,
+    done,
+  ];
+
+  it("puts every roll in exactly one stage tab, so the tabs add up to All", () => {
+    const counts = countByTab(rows, {});
+    const perStage = ROLL_STAGES.map((stage) => rollsInView(rows, { tab: stage }, now));
+    expect(perStage.flat().length).toBe(rows.length);
+    expect(new Set(ids(perStage.flat())).size).toBe(rows.length);
+    expect(ROLL_STAGES.reduce((sum, stage) => sum + counts[stage], 0)).toBe(counts.all);
+    expect(counts).toEqual({
+      all: 7,
+      in_stock: 1,
+      in_camera: 1,
+      done_shooting: 1,
+      processing: 2,
+      completed: 2,
+    });
+    expect(ids(rollsInView(rows, { tab: "processing" }, now))).toEqual(
+      ids([waiting, labDeveloping]),
+    );
+  });
+
+  it("applies the shared filters to every tab and to the counts", () => {
+    expect(ids(rollsInView(rows, { atLab: true }, now))).toEqual(ids([labDeveloping, marked]));
+    expect(ids(rollsInView(rows, { tab: "completed", needsScan: true }, now))).toEqual(
+      ids([marked]),
+    );
+    expect(ids(rollsInView(rows, { tab: "completed", noPlan: true }, now))).toEqual(ids([marked]));
+    expect(ids(rollsInView(rows, { developBy: "self" }, now))).toEqual(ids([waiting]));
+    expect(ids(rollsInView(rows, { tab: "processing", scanBy: "unset" }, now))).toEqual([]);
+    const counts = countByTab(rows, { atLab: true });
+    expect(counts).toMatchObject({ all: 2, processing: 1, completed: 1, done_shooting: 0 });
+  });
+
+  it("lets only waiting rolls be picked in Processing and only marked rolls in Completed", () => {
+    expect(canHandOver(finished, "done_shooting")).toBe(true);
+    expect(canHandOver(waiting, "processing")).toBe(true);
+    expect(canHandOver(labDeveloping, "processing")).toBe(false);
+    expect(canHandOver(marked, "completed")).toBe(true);
+    expect(canHandOver(done, "completed")).toBe(false);
+    // the All tab and the stages before done shooting pick nothing
+    expect(canHandOver(finished, undefined)).toBe(false);
+    expect(canHandOver(rows[0]!, "in_stock")).toBe(false);
+  });
+
+  it("stops picking at the API's limit and keeps the rolls already picked", () => {
+    const full = new Set(Array.from({ length: MAX_HAND_OVER }, (_, index) => `roll-${index}`));
+    expect(togglePicked(full, "one-more", true)).toBeUndefined();
+    // a roll already picked, or an untick, still works at the limit
+    expect(togglePicked(full, "roll-0", true)?.size).toBe(MAX_HAND_OVER);
+    expect(togglePicked(full, "roll-0", false)?.size).toBe(MAX_HAND_OVER - 1);
+    expect(togglePicked(new Set(), "first", true)).toEqual(new Set(["first"]));
+  });
+
+  it("starts a picked roll on the job its plan asks for", () => {
+    expect(handOverType(finished)).toBe("develop_scan");
+    expect(handOverType({ ...finished, plan: { ...finished.plan, target: "developed" } })).toBe(
+      "develop",
+    );
+    expect(handOverType({ ...finished, plan: { ...finished.plan, scanBy: "self" } })).toBe(
+      "develop",
+    );
+    expect(handOverType(waiting)).toBe("scan");
+    expect(handOverType(marked)).toBe("scan");
   });
 });
 
@@ -128,11 +244,43 @@ describe("parseRollListSearch", () => {
     ).toEqual({ tab: "in_stock", expiry: "alert", group: "stock", iso: "400" });
     // a box ISO can be a range
     expect(parseRollListSearch({ tab: "in_stock", iso: "100-400" }).iso).toBe("100-400");
-    expect(parseRollListSearch({ tab: "at_lab", expiry: "alert", complete: true })).toEqual({
-      tab: "at_lab",
+    expect(parseRollListSearch({ tab: "processing", expiry: "alert" })).toEqual({
+      tab: "processing",
     });
-    expect(parseRollListSearch({ tab: "nope", complete: "true", expiry: "bad" })).toEqual({
-      complete: true,
-    });
+    // an old status tab such as at_lab is no tab any more
+    expect(parseRollListSearch({ tab: "at_lab", expiry: "bad" })).toEqual({});
+  });
+
+  it("clears only the shared filters, keeping the tab and the in-stock filters", () => {
+    expect(
+      withoutListFilters({
+        tab: "in_stock",
+        expiry: "expired",
+        group: "stock",
+        noPlan: true,
+        scanBy: "lab",
+      }),
+    ).toEqual({ tab: "in_stock", expiry: "expired", group: "stock" });
+  });
+
+  it("keeps the shared filters and the expiry when grouping by stock is turned on or off", () => {
+    const flat = { tab: "in_stock", expiry: "soon", developBy: "lab", needsScan: true } as const;
+    expect(groupedSearch(flat, true)).toEqual({ ...flat, group: "stock" });
+    // turning it off also closes an open group and drops the group table's own filters
+    const open = { ...flat, group: "stock", stock: "orwo", iso: "400" } as const;
+    expect(groupedSearch(open, false)).toEqual({ ...flat, group: undefined });
+  });
+
+  it("keeps the shared filters on every tab and drops unknown values", () => {
+    expect(
+      parseRollListSearch({
+        tab: "completed",
+        atLab: "true",
+        needsScan: true,
+        noPlan: "no",
+        developBy: "unset",
+        scanBy: "robot",
+      }),
+    ).toEqual({ tab: "completed", atLab: true, needsScan: true, developBy: "unset" });
   });
 });

@@ -85,6 +85,64 @@ export interface RollRow {
   cameraName: string | null;
   negativesAtLab: boolean;
 }
+
+/** The Rolls tabs past "All", in lifecycle order; the server derives a roll's stage. */
+export const ROLL_STAGES = [
+  "in_stock",
+  "in_camera",
+  "done_shooting",
+  "processing",
+  "completed",
+] as const;
+export type RollStage = (typeof ROLL_STAGES)[number];
+
+/** The badge of a processing roll: what is being done to it, or what it waits for. */
+export const STAGE_DETAILS = [
+  "lab_developing",
+  "lab_scanning",
+  "home_developing",
+  "home_scanning",
+  "rescanning",
+  "waiting_scan",
+  "waiting_home_scan",
+  "waiting_lab_scan",
+  "printing",
+] as const;
+export type StageDetail = (typeof STAGE_DETAILS)[number];
+
+/** Who does a step: the owner at home, or a lab. */
+export type StepActor = "self" | "lab";
+
+/** What the owner plans for a roll; a missing field is not decided yet. */
+export interface RollPlan {
+  target: "developed" | "scanned" | null;
+  developBy: StepActor | null;
+  scanBy: StepActor | null;
+}
+
+/** A row of the Rolls list: the roll with its stage and plan. */
+export interface RollListRow extends RollRow {
+  stage: RollStage;
+  /** Set only while the stage is processing. */
+  stageDetail: StageDetail | null;
+  /** Marked for a scan (first scan or rescan) that has not started. */
+  needsScan: boolean;
+  plan: RollPlan;
+}
+
+/** Rolls handed to one lab together ("Hand to lab"): one job per roll. */
+export interface HandOverInput {
+  labId: string;
+  /** ISO date; also the jobs' sent date. */
+  handedAt: string;
+  notes?: string;
+  /** Scanners for every job that produces scans; ignored when none does. */
+  scanOrders: ScanOrder[];
+  rolls: { rollId: string; type: ProcessingType }[];
+  /** The same for a resend of the same batch, so a batch saved before its reply was lost is not refused. */
+  idempotencyKey: string;
+}
+
 /** One scanner ordered on a job; scanners live in their own list (see `#/features/scanners`). */
 export interface ScanOrder {
   scannerId: string;
