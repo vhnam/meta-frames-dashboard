@@ -70,7 +70,26 @@ describe("Film & Lab screens", () => {
     expect(handOver().attributes("disabled")).toBeDefined();
     await wrapper.find('tbody [role="checkbox"]').trigger("click");
     await vi.waitFor(() => expect(handOver().attributes("disabled")).toBeUndefined());
-    expect(handOver().text()).toContain("(1)");
+    expect(handOver().attributes("aria-label")).toContain(": 1 roll picked");
+  });
+
+  it("shows picking on Completed only while a roll there is marked Needs scan", async () => {
+    const stock = server.addStock({ name: "UltraMax" });
+    server.addRoll({ filmStockId: stock.id, status: "scanned" });
+    const handOver = (wrapper: ReturnType<typeof render>) =>
+      wrapper.findAll("button").find((button) => button.text().startsWith("Hand to lab"));
+    const unmarked = render(RollsView, { search: { tab: "completed" } });
+    await vi.waitFor(() => expect(unmarked.findAll("tbody tr")).toHaveLength(1));
+    expect(unmarked.find('tbody [role="checkbox"]').exists()).toBe(false);
+    expect(handOver(unmarked)).toBeUndefined();
+    unmarked.unmount();
+    queryClient.clear();
+
+    server.addRoll({ filmStockId: stock.id, status: "scanned", needsScan: true });
+    const marked = render(RollsView, { search: { tab: "completed" } });
+    await vi.waitFor(() => expect(marked.findAll("tbody tr")).toHaveLength(2));
+    expect(marked.findAll('tbody [role="checkbox"]')).toHaveLength(2);
+    expect(handOver(marked)).toBeDefined();
   });
 
   it("hands over only the picked rolls the table still shows", async () => {
@@ -84,14 +103,18 @@ describe("Film & Lab screens", () => {
       wrapper.findAll("button").find((button) => button.text().startsWith("Hand to lab"))!;
     const ultramaxRow = wrapper.findAll("tbody tr").find((tr) => tr.text().includes("UltraMax"))!;
     await ultramaxRow.find('[role="checkbox"]').trigger("click");
-    await vi.waitFor(() => expect(handOver().text()).toContain("(1)"));
+    await vi.waitFor(() =>
+      expect(handOver().attributes("aria-label")).toContain(": 1 roll picked"),
+    );
     // search hides UltraMax, then Gold is picked too: only Gold is still shown
     await wrapper.find('form[role="search"] input').setValue("Gold");
     await wrapper.find('form[role="search"]').trigger("submit");
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
     await wrapper.find('tbody [role="checkbox"]').trigger("click");
-    await vi.waitFor(() => expect(handOver().text()).toContain("(1)"));
-    expect(handOver().text()).not.toContain("(2)");
+    await vi.waitFor(() =>
+      expect(handOver().attributes("aria-label")).toContain(": 1 roll picked"),
+    );
+    expect(handOver().attributes("aria-label")).not.toContain("2 rolls");
   });
 
   it("drops picks a filter hides, so they free their place in the batch", async () => {
@@ -115,7 +138,7 @@ describe("Film & Lab screens", () => {
     // back to every roll: the hidden UltraMax pick was dropped when Gold was picked
     await search("");
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
-    expect(handOver().text()).toContain("(1)");
+    expect(handOver().attributes("aria-label")).toContain(": 1 roll picked");
   });
 
   it("in stock lists rolls by expiry and flags expired ones", async () => {

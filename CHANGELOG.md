@@ -24,6 +24,8 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Changed
 
+- On Rolls, Filters sits beside the stage tabs. Hand to lab, and Group by stock on In stock, sit beside the table search. A long note in a table cell stays on one line; the full text shows on hover.
+
 - A film stock's Same emulsion section sits with the specifications. Each related stock is a row with its ISO, process and packaging: the base stock, stocks based on the same emulsion, and stocks repacked from this one.
 - New app logo: a film canister. It is the favicon, and it replaces the aperture icon in the sidebar and on the sign-in and not-found pages.
 - Inventory and Expiry are now part of Rolls, and their sidebar items are gone. A roll in stock past its expiry shows an Expired badge. The In stock tab lists rolls by expiry (expired first, unknown last) with an Expiry column, an Expiry filter (All, Expired, Expiring soon, Expired or expiring soon, No expiry date) and a Group by stock switch that counts rolls per format and shows the soonest expiry; a group opens its rolls. The tab, filters and open group are kept in the URL. `/app/inventory` and `/app/expiry` open Rolls → In stock grouped by stock and filtered to expired or expiring soon. The alerts bell's See all opens the same filtered list.

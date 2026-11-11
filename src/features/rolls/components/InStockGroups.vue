@@ -95,5 +95,7 @@ const columns: DataTableColumn<GroupRow>[] = [
     :get-row-id="(row) => row.stockId"
     :on-select="(row) => emit('open', row.stockId)"
     :row-label="(row) => `Show rolls: ${groupSummary(row)}`"
-  />
+  >
+    <template v-if="$slots.actions" #actions><slot name="actions" /></template>
+  </DataTable>
 </template>
