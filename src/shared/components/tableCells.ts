@@ -17,7 +17,14 @@ export const primaryText = (text: string) => h("span", { class: PRIMARY_TEXT }, 
 export const stackCell = (main: VNodeChild, detail?: string | null) =>
   h("div", { class: "grid gap-0.5" }, [
     main,
-    detail ? h("span", { class: "text-muted-foreground text-xs" }, detail) : null,
+    // cells never wrap, so a long detail (a roll's notes) is cut to one line; hover shows all of it
+    detail
+      ? h(
+          "span",
+          { class: "text-muted-foreground max-w-80 truncate text-xs", title: detail },
+          detail,
+        )
+      : null,
   ]);
 
 /** A short value in a bordered tag, such as a format or mount; `tone` swaps the colours. */

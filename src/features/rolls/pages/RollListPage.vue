@@ -34,6 +34,7 @@ import RollStageBadge, { STAGE_LABELS } from "../components/RollStageBadge.vue";
 import AddRollsDialog from "../components/AddRollsDialog.vue";
 import HandOverDialog from "../components/HandOverDialog.vue";
 import InStockGroups from "../components/InStockGroups.vue";
+import InStockToolbar from "../components/InStockToolbar.vue";
 import { cn } from "#/shared/lib/utils";
 import { Badge } from "#/shared/ui/badge";
 import { Button } from "#/shared/ui/button";
@@ -117,15 +118,22 @@ function setFilter(key: (typeof LIST_FILTER_KEYS)[number], value: unknown) {
   const on = value !== undefined && value !== false && value !== "any";
   go(on ? { ...rest, [key]: value === true ? true : value } : rest, true);
 }
-const clearFilters = () => go(withoutListFilters(state.value), true);
-
+/** The Filters button counts and clears Expiry too while In stock shows it. */
+const shownFilterCount = computed(
+  () => activeFilterCount.value + (tab.value === "in_stock" && state.value.expiry ? 1 : 0),
+);
+const clearFilters = () => {
+  const { expiry: _expiry, ...rest } = withoutListFilters(state.value);
+  go(rest, true);
+};
 const EXPIRY_OPTIONS: { value: ExpiryFilter | "all"; label: string }[] = [
-  { value: "all", label: "All" },
+  { value: "all", label: "Any" },
   { value: "expired", label: "Expired" },
   { value: "soon", label: "Expiring soon" },
   { value: "alert", label: "Expired or expiring soon" },
   { value: "undated", label: "No expiry date" },
 ];
+
 const setExpiry = (value: unknown) => {
   const { expiry: _old, ...rest } = state.value;
   go(value === "all" ? rest : { ...rest, expiry: value as ExpiryFilter }, true);
@@ -166,6 +174,10 @@ const counts = computed(() => countByTab(rolls.data.value ?? [], state.value));
 const picked = ref(new Set<string>());
 watch(tab, () => (picked.value = new Set()));
 const pickable = (row: RollListRow) => canHandOver(row, state.value.tab);
+/** Picking shows only where the open tab has a roll to pick: Completed with no Needs scan mark has none. */
+const canPickAny = computed(() => activeRows.value.some(pickable));
+const showsPicking = (tabValue: RollTab) =>
+  tabValue === tab.value && HAND_OVER_TABS.includes(tabValue as RollStage) && canPickAny.value;
 function togglePick(row: RollListRow, on: boolean) {
   // starts from the picks still shown, so rolls a filter hides leave the pick and free their place
   const shown = new Set(pickedRows.value.map((picked) => picked.roll.id));
@@ -261,18 +273,32 @@ const pickColumn: DataTableColumn<RollListRow> = {
   header: "",
   enableSorting: false,
   enableGlobalFilter: false,
-  meta: { class: "w-px" },
+  // the whole cell is the pick target: the label fills it and forwards a click to the checkbox,
+  // and DataTable ignores row clicks inside a label, so a near miss never opens the roll
+  meta: { class: "relative w-12 min-w-12 p-0 first:p-0" },
   cell: ({ row: { original: row } }) =>
-    h(Checkbox, {
-      modelValue: picked.value.has(row.roll.id),
-      disabled: !pickable(row),
-      title: pickHint(row),
-      "aria-label": [`Pick ${row.stockName} roll for Hand to lab`, pickHint(row)]
-        .filter(Boolean)
-        .join(". "),
-      "onUpdate:modelValue": (on: boolean | "indeterminate") => togglePick(row, on === true),
-    }),
+    h(
+      "label",
+      {
+        title: pickHint(row),
+        class: cn(
+          "absolute inset-0 flex items-center justify-center",
+          pickable(row) ? "cursor-pointer" : "cursor-not-allowed",
+        ),
+      },
+      h(Checkbox, {
+        modelValue: picked.value.has(row.roll.id) && pickable(row),
+        disabled: !pickable(row),
+        "aria-label": [`Pick ${row.stockName} roll for Hand to lab`, pickHint(row)]
+          .filter(Boolean)
+          .join(". "),
+        "onUpdate:modelValue": (on: boolean | "indeterminate") => togglePick(row, on === true),
+      }),
+    ),
 };
+/** Picked rows get the orange tint, so the batch is easy to check before Hand to lab. */
+const pickedRowClass = (row: RollListRow) =>
+  picked.value.has(row.roll.id) && pickable(row) ? "bg-primary/10 hover:bg-primary/15" : undefined;
 
 const columns: DataTableColumn<RollListRow>[] = [
   {
@@ -346,11 +372,7 @@ const inStockColumns = columns
   .toSpliced(2, 0, expiryColumn);
 const pickColumns = [pickColumn, ...columns];
 const columnsFor = (tabValue: RollTab) =>
-  tabValue === "in_stock"
-    ? inStockColumns
-    : HAND_OVER_TABS.includes(tabValue as RollStage)
-      ? pickColumns
-      : columns;
+  tabValue === "in_stock" ? inStockColumns : showsPicking(tabValue) ? pickColumns : columns;
 
 const emptyText = (tabValue: RollTab) =>
   activeFilterCount.value
@@ -371,36 +393,41 @@ const emptyText = (tabValue: RollTab) =>
 
   <QueryBoundary :query="rolls" :is-empty="() => false">
     <template #default>
-      <Tabs :model-value="tab" class="gap-6" @update:model-value="setTab">
-        <TabsList
-          class="bg-muted h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border p-1.5"
-        >
-          <TabsTrigger
-            v-for="tabItem in TABS"
-            :key="tabItem.value"
-            :value="tabItem.value"
-            class="text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground h-10 flex-none gap-2.5 px-4 data-[state=active]:font-semibold"
+      <Tabs :model-value="tab" class="gap-4" @update:model-value="setTab">
+        <div class="bg-muted flex min-w-0 items-center gap-2 rounded-lg border p-1.5">
+          <TabsList
+            class="h-auto min-w-0 flex-1 justify-start gap-1 overflow-x-auto bg-transparent p-0"
           >
-            {{ tabItem.label }}
-            <span :class="cn('tabular-nums', tabCountClass(counts[tabItem.value]))">
-              {{ counts[tabItem.value] }}
-            </span>
-          </TabsTrigger>
-        </TabsList>
-        <div class="flex flex-wrap items-center gap-2">
+            <TabsTrigger
+              v-for="tabItem in TABS"
+              :key="tabItem.value"
+              :value="tabItem.value"
+              class="text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground h-10 flex-none gap-2.5 px-4 data-[state=active]:font-semibold"
+            >
+              {{ tabItem.label }}
+              <span :class="cn('tabular-nums', tabCountClass(counts[tabItem.value]))">
+                {{ counts[tabItem.value] }}
+              </span>
+            </TabsTrigger>
+          </TabsList>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <Button
                 variant="outline"
                 size="sm"
-                :class="activeFilterCount ? 'border-primary bg-primary/10 text-primary' : undefined"
+                :class="
+                  cn(
+                    'h-10 shrink-0',
+                    shownFilterCount && 'border-primary bg-primary/10 text-primary',
+                  )
+                "
               >
                 <IconFilter aria-hidden="true" />
                 Filters
-                <span v-if="activeFilterCount" class="tabular-nums">({{ activeFilterCount }})</span>
+                <span v-if="shownFilterCount" class="tabular-nums">({{ shownFilterCount }})</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" class="w-56">
+            <DropdownMenuContent align="end" class="w-56">
               <DropdownMenuCheckboxItem
                 v-for="filter in FLAG_FILTERS"
                 :key="filter.key"
@@ -427,56 +454,32 @@ const emptyText = (tabValue: RollTab) =>
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </template>
-              <template v-if="activeFilterCount">
+              <template v-if="tab === 'in_stock'">
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Expiry</DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  :model-value="state.expiry ?? 'all'"
+                  @update:model-value="setExpiry"
+                >
+                  <DropdownMenuRadioItem
+                    v-for="option in EXPIRY_OPTIONS"
+                    :key="option.value"
+                    :value="option.value"
+                    @select.prevent
+                  >
+                    {{ option.label }}
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </template>
+              <template v-if="shownFilterCount">
                 <DropdownMenuSeparator />
                 <DropdownMenuItem @select="clearFilters">Clear filters</DropdownMenuItem>
               </template>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            v-if="HAND_OVER_TABS.includes(tab as RollStage)"
-            size="sm"
-            :disabled="!pickedRows.length"
-            @click="handOverOpen = true"
-          >
-            <IconTruckDelivery aria-hidden="true" />
-            Hand to lab
-            <span v-if="pickedRows.length" class="tabular-nums">({{ pickedRows.length }})</span>
-          </Button>
         </div>
         <!-- one DataTable per tab: each keeps its own pager, reset when the tab changes -->
         <TabsContent v-for="tabItem in TABS" :key="tabItem.value" :value="tabItem.value">
-          <div
-            v-if="tabItem.value === 'in_stock'"
-            class="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3"
-          >
-            <div class="flex items-center gap-2">
-              <Label for="roll-expiry-filter">Expiry</Label>
-              <Select :model-value="state.expiry ?? 'all'" @update:model-value="setExpiry">
-                <SelectTrigger id="roll-expiry-filter" size="sm" class="bg-card min-w-44">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="option in EXPIRY_OPTIONS"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div class="flex items-center gap-2">
-              <Switch
-                id="roll-group-by-stock"
-                :model-value="state.group === 'stock'"
-                @update:model-value="setGrouped"
-              />
-              <Label for="roll-group-by-stock">Group by stock</Label>
-            </div>
-          </div>
-
           <!-- the stock list gives Type, Process and ISO: show its loading and error state, not groups
                with empty filters. Mounted once it loads, so the rows arrive once and the restored
                page stays. -->
@@ -505,7 +508,11 @@ const emptyText = (tabValue: RollTab) =>
                 :get-row-id="(row) => row.roll.id"
                 :on-select="openRoll"
                 :row-label="(row) => `Open ${row.stockName} roll`"
-              />
+              >
+                <template #actions>
+                  <InStockToolbar :grouped="state.group === 'stock'" @update:grouped="setGrouped" />
+                </template>
+              </DataTable>
             </template>
             <!-- keyed on the filter: a new filter remounts the table on page 1 -->
             <InStockGroups
@@ -514,7 +521,11 @@ const emptyText = (tabValue: RollTab) =>
               v-model:filters="groupFilters"
               :groups="groups"
               @open="openGroup"
-            />
+            >
+              <template #actions>
+                <InStockToolbar :grouped="state.group === 'stock'" @update:grouped="setGrouped" />
+              </template>
+            </InStockGroups>
           </QueryBoundary>
           <DataTable
             v-else
@@ -527,9 +538,38 @@ const emptyText = (tabValue: RollTab) =>
             :columns="columnsFor(tabItem.value)"
             :data="activeRows"
             :get-row-id="(row) => row.roll.id"
+            :row-class="pickedRowClass"
             :on-select="openRoll"
             :row-label="(row) => `Open ${row.stockName} roll`"
-          />
+          >
+            <template v-if="showsPicking(tabItem.value)" #actions>
+              <Button
+                type="button"
+                class="relative h-11 shrink-0"
+                :disabled="!pickedRows.length"
+                :aria-label="
+                  pickedRows.length
+                    ? `Hand to lab: ${pickedRows.length} ${pickedRows.length === 1 ? 'roll' : 'rolls'} picked`
+                    : undefined
+                "
+                @click="handOverOpen = true"
+              >
+                <IconTruckDelivery aria-hidden="true" />
+                Hand to lab
+                <!-- the count floats on the corner (like the alerts bell), so picking never resizes the button or the search -->
+                <span
+                  v-if="pickedRows.length"
+                  class="bg-card text-primary ring-primary absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[0.7rem] font-semibold tabular-nums ring-2"
+                  aria-hidden="true"
+                >
+                  {{ pickedRows.length > 99 ? "99+" : pickedRows.length }}
+                </span>
+              </Button>
+            </template>
+            <template v-else-if="tabItem.value === 'in_stock'" #actions>
+              <InStockToolbar :grouped="state.group === 'stock'" @update:grouped="setGrouped" />
+            </template>
+          </DataTable>
         </TabsContent>
       </Tabs>
     </template>

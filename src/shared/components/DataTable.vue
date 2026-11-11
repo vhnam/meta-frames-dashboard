@@ -221,8 +221,13 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
 
 <template>
   <Card v-if="!hideFilters" class="mb-4 py-5">
-    <CardContent class="px-5">
-      <form class="flex flex-wrap items-center gap-3" role="search" @submit.prevent="apply">
+    <CardContent class="px-5" :class="{ 'flex flex-wrap items-center gap-3': $slots.actions }">
+      <form
+        class="flex flex-wrap items-center gap-3"
+        :class="{ 'min-w-0 flex-1 basis-80': $slots.actions }"
+        role="search"
+        @submit.prevent="apply"
+      >
         <div class="relative min-w-0 flex-1 basis-64">
           <IconSearch
             class="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2"
@@ -255,6 +260,7 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           {{ applied ? "Applied" : "Apply" }}
         </Button>
       </form>
+      <slot name="actions" />
     </CardContent>
   </Card>
   <Card class="gap-0 overflow-hidden py-0">

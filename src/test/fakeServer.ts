@@ -73,6 +73,8 @@ interface RollRec {
   lensIds?: string[];
   description?: string;
   shotIso?: number;
+  /** A completed roll marked Needs scan. */
+  needsScan?: boolean;
   /** Like the API's: grows on every change. */
   version: number;
 }
@@ -306,7 +308,7 @@ const apiRoll = (roll: RollRec) => {
     stage: ["in_stock", "in_camera", "done_shooting"].includes(roll.status)
       ? roll.status
       : "completed",
-    needsScan: false,
+    needsScan: roll.needsScan ?? false,
     plan: {},
   };
 };
