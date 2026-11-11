@@ -24,6 +24,7 @@ This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /pr
 
 ### Changed
 
+- A roll's Processing history puts its actions in one Actions menu: finish, develop or scan at home, mark as developed, negatives returned, re-scan, send to lab, and the scan mark. Start scanning at home stays disabled while a lab holds the negatives, and the menu says so.
 - On Rolls, Filters sits beside the stage tabs. Hand to lab, and Group by stock on In stock, sit beside the table search. A long note in a table cell stays on one line; the full text shows on hover.
 - The signed-in account shows the Google profile picture when the account is linked to Google. Needs a Meta-Frame API that sends `avatarUrl` on the user.
 

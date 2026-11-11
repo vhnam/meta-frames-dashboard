@@ -10,7 +10,15 @@ import {
 } from "../../types";
 import type { ProcessingType, RollDetail, RollRow } from "../../types";
 import { computed, ref } from "vue";
+import { IconChevronDown } from "@tabler/icons-vue";
 import { Button } from "#/shared/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "#/shared/ui/dropdown-menu";
 import { formatDate } from "#/shared/lib/format";
 import { notify } from "#/shared/lib/toast";
 import { attempt } from "#/shared/lib/ui";
@@ -98,66 +106,55 @@ const toggleScanMark = () =>
       :title="jobs.length ? `Processing history (${jobs.length})` : 'Processing history'"
     >
       <template #actions>
-        <div class="flex flex-wrap justify-end gap-2">
-          <Button
-            v-if="roll.status === 'in_camera'"
-            type="button"
-            size="sm"
-            @click="finishOpen = true"
-          >
-            Mark as finished
-          </Button>
-          <Button
-            v-if="canStartDeveloping"
-            type="button"
-            size="sm"
-            variant="outline"
-            :disabled="sendToLab.isPending.value"
-            @click="startAtHome('develop')"
-          >
-            Start developing at home
-          </Button>
-          <Button v-if="markable" type="button" size="sm" @click="developedOpen = true">
-            Mark as developed
-          </Button>
-          <Button
-            v-if="homeScannable"
-            type="button"
-            size="sm"
-            variant="outline"
-            :disabled="
-              sendToLab.isPending.value || scanners.isPending.value || detail.negativesAtLab
-            "
-            :title="detail.negativesAtLab ? 'A lab still holds the negatives.' : undefined"
-            @click="startAtHome('scan')"
-          >
-            Start scanning at home
-          </Button>
-          <Button
-            v-if="detail.openHandoffId"
-            type="button"
-            size="sm"
-            variant="outline"
-            @click="returnOpen = true"
-          >
-            Negatives returned
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            :disabled="setScanRequest.isPending.value"
-            @click="toggleScanMark"
-          >
-            {{ detail.needsScan ? "Remove needs scan" : "Needs scan" }}
-          </Button>
-          <Button v-if="canRescan" type="button" size="sm" @click="rescanOpen = true">
-            Re-scan
-          </Button>
-          <Button v-if="canSend" type="button" size="sm" @click="sendOpen = true">
-            Send to lab
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button type="button" size="sm">
+              Actions
+              <IconChevronDown aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="min-w-56">
+            <DropdownMenuItem v-if="roll.status === 'in_camera'" @select="finishOpen = true">
+              Mark as finished
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="canStartDeveloping"
+              :disabled="sendToLab.isPending.value"
+              @select="startAtHome('develop')"
+            >
+              Start developing at home
+            </DropdownMenuItem>
+            <DropdownMenuItem v-if="markable" @select="developedOpen = true">
+              Mark as developed
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="homeScannable"
+              :disabled="
+                sendToLab.isPending.value || scanners.isPending.value || detail.negativesAtLab
+              "
+              class="flex-col items-start gap-0.5"
+              @select="startAtHome('scan')"
+            >
+              Start scanning at home
+              <span v-if="detail.negativesAtLab" class="text-muted-foreground text-xs">
+                A lab still holds the negatives.
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem v-if="detail.openHandoffId" @select="returnOpen = true">
+              Negatives returned
+            </DropdownMenuItem>
+            <DropdownMenuItem v-if="canRescan" @select="rescanOpen = true"
+              >Re-scan</DropdownMenuItem
+            >
+            <DropdownMenuItem v-if="canSend" @select="sendOpen = true"
+              >Send to lab</DropdownMenuItem
+            >
+            <DropdownMenuSeparator />
+            <DropdownMenuItem :disabled="setScanRequest.isPending.value" @select="toggleScanMark">
+              {{ detail.needsScan ? "Remove needs scan" : "Needs scan" }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </template>
       <div class="grid gap-4 text-sm">
         <section class="grid gap-2" aria-label="Plan">
