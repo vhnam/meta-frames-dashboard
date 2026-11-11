@@ -473,6 +473,12 @@ export function installFakeServer() {
     }
     if (method === "put" && /^\/processing\/[^/]+\/(scans-received|negatives-returned)$/.test(url))
       return respond(200, {});
+    // the fake keeps no plan, mark or handoff: tests read the request
+    if (
+      /^\/rolls\/[^/]+\/(plan|developed|scan-request)$/.test(url) ||
+      /^\/lab-handoffs\/[^/]+\/returned$/.test(url)
+    )
+      return respond(200, {});
     route = match(/^\/rolls\/([^/]+)\/finish$/);
     if (route && method === "put") {
       const roll = server.rolls.find((record) => record.id === route![1]);

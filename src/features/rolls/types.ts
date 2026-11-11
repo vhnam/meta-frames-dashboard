@@ -169,6 +169,8 @@ export interface RollJob {
   negativesExpectedDate: string | null;
   scansReceivedDate: string | null;
   negativesReturnedDate: string | null;
+  /** Develop jobs only: the day the film was developed, apart from the negatives coming back. */
+  developedDate: string | null;
   /** From its order lines when the job is on an order, otherwise the job's own. */
   price: number | null;
   /** The order the job is billed on, and its lines there. */
@@ -177,7 +179,10 @@ export interface RollJob {
   scanOrders: RollJobScanOrder[];
   open: boolean;
 }
-export interface RollDetail {
+export interface RollDetail extends Pick<
+  RollListRow,
+  "stage" | "stageDetail" | "needsScan" | "plan"
+> {
   roll: Roll;
   stock: FilmStock;
   base: FilmStock | null;
@@ -189,6 +194,8 @@ export interface RollDetail {
   frames: { frame: Frame; scanCount: number }[];
   cost: { total: number; incomplete: boolean };
   negativesAtLab: boolean;
+  /** The lab stay that holds the roll; its return brings the negatives home. */
+  openHandoffId: string | null;
 }
 
 export interface ExpiryReport {
@@ -231,15 +238,42 @@ export const developsFilm = (type: ProcessingType) => type === "develop" || type
  */
 export const recordsNegativesReturned = (type: ProcessingType, atLab: boolean) =>
   developsFilm(type) || type === "print" || (type === "scan" && atLab);
-/** Processed rolls whose negatives a lab still holds. */
-export const negativesStillAtLab = (status: RollStatus, negativesAtLab: boolean) =>
-  (status === "scanned" || status === "developed") && negativesAtLab;
 /**
- * A roll with nothing left to wait for: processed, no job open and the negatives home. Derived,
- * not a status, so a later re-scan or print simply reopens it.
+ * The open develop job not developed yet ("Mark developed"). Negatives or scans back count as
+ * developed, as in the server's stage rule, for jobs from before the developed date existed.
  */
-export const isRollComplete = (status: RollStatus, negativesAtLab: boolean) =>
-  (status === "scanned" || status === "developed") && !negativesAtLab;
+export const developingJob = (jobs: RollJob[]) =>
+  jobs.find(
+    (job) =>
+      job.open &&
+      developsFilm(job.type) &&
+      !job.developedDate &&
+      !job.negativesReturnedDate &&
+      !job.scansReceivedDate,
+  );
+/**
+ * A roll done shooting with no job is developed at home in one step, so it can be marked too;
+ * not while a lab holds it (a lab job cancelled before the roll came back).
+ */
+export const canStartHomeDevelop = (status: RollStatus, jobs: RollJob[], negativesAtLab: boolean) =>
+  status === "done_shooting" && !jobs.length && !negativesAtLab;
+export const canMarkDeveloped = (status: RollStatus, jobs: RollJob[], negativesAtLab: boolean) =>
+  !!developingJob(jobs) || canStartHomeDevelop(status, jobs, negativesAtLab);
+/**
+ * Waiting for its scan, or marked for one where the API takes a scan job (`checkCanSend`: done
+ * shooting, developed or scanned). A roll still developing keeps its mark until it is done. A
+ * waiting roll whose negatives a lab holds (raw `at_lab`) still gets the action, which the page
+ * shows disabled with the reason.
+ */
+export const canStartHomeScan = (
+  status: RollStatus,
+  stageDetail: StageDetail | null,
+  needsScan: boolean,
+) =>
+  stageDetail === "waiting_scan" ||
+  stageDetail === "waiting_home_scan" ||
+  stageDetail === "waiting_lab_scan" ||
+  (needsScan && (status === "done_shooting" || status === "developed" || status === "scanned"));
 /**
  * Services a roll can be sent for now. Developing happens once: after the first job only scan and
  * print remain, and none while the roll is still at the lab or not yet finished.

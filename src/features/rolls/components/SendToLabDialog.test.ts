@@ -228,6 +228,7 @@ describe("SendToLabDialog editing a job", () => {
       negativesExpectedDate: null,
       scansReceivedDate: null,
       negativesReturnedDate: "2026-10-01",
+      developedDate: null,
       price: null,
       order: null,
       notes: "",
@@ -281,6 +282,7 @@ describe("SendToLabDialog editing a job", () => {
       negativesExpectedDate: null,
       scansReceivedDate: type === "scan" ? "2026-10-03" : null,
       negativesReturnedDate: null,
+      developedDate: null,
       price: null,
       order: null,
       notes: "",
@@ -470,6 +472,7 @@ describe("SendToLabDialog order", () => {
           negativesExpectedDate: null,
           scansReceivedDate: null,
           negativesReturnedDate: null,
+          developedDate: null,
           price: 110000,
           order: {
             id: "order",

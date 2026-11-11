@@ -67,6 +67,7 @@ interface ApiRoll {
   stageDetail?: StageDetail;
   needsScan: boolean;
   plan?: Partial<RollPlan>;
+  openHandoffId?: string;
   version?: number;
 }
 
@@ -92,6 +93,7 @@ interface ApiRollDetail {
     scansExpectedAt?: string;
     negativesExpectedAt?: string;
     negativesReturnedAt?: string;
+    developedAt?: string;
     price?: number;
     order?: { id: string; code: string; items: { id: string; product: string }[] };
     notes?: string;
@@ -201,6 +203,7 @@ export const rollQueries = {
             negativesExpectedDate: job.negativesExpectedAt ?? null,
             scansReceivedDate: job.scansReceivedAt ?? null,
             negativesReturnedDate: job.negativesReturnedAt ?? null,
+            developedDate: job.developedAt ?? null,
             price: job.price ?? null,
             order: job.order ?? null,
             notes: job.notes ?? "",
@@ -218,6 +221,11 @@ export const rollQueries = {
           })),
           cost: { total: data.totals.total, incomplete: data.totals.incomplete },
           negativesAtLab: data.roll.negativesAtLab,
+          stage: row.stage,
+          stageDetail: row.stageDetail,
+          needsScan: row.needsScan,
+          plan: row.plan,
+          openHandoffId: data.roll.openHandoffId ?? null,
         };
       },
     }),
@@ -389,6 +397,42 @@ export const recordNegativesReturned = async (variables: {
 
 export const deleteJob = async (variables: { rollId: string; jobId: string }) => {
   await http.delete(`/processing/${variables.jobId}`);
+};
+
+/** Replaces the whole plan: a field left out is cleared. */
+export const setRollPlan = async (variables: { rollId: string; plan: RollPlan }) => {
+  await http.put(`/rolls/${variables.rollId}/plan`, {
+    target: variables.plan.target ?? undefined,
+    developBy: variables.plan.developBy ?? undefined,
+    scanBy: variables.plan.scanBy ?? undefined,
+  });
+};
+
+/** "Mark developed": also sets the plan's target, which decides what the roll waits for next. */
+export const markRollDeveloped = async (variables: {
+  rollId: string;
+  date: string;
+  target: "developed" | "scanned";
+}) => {
+  await http.put(`/rolls/${variables.rollId}/developed`, {
+    date: variables.date,
+    target: variables.target,
+  });
+};
+
+export const setScanRequest = async (variables: { rollId: string; needed: boolean }) => {
+  const url = `/rolls/${variables.rollId}/scan-request`;
+  await (variables.needed ? http.put(url) : http.delete(url));
+  return variables.needed;
+};
+
+/** The roll comes back from the lab stay: every job of it gets the negatives date. */
+export const returnHandoff = async (variables: {
+  rollId: string;
+  handoffId: string;
+  date: string;
+}) => {
+  await http.put(`/lab-handoffs/${variables.handoffId}/returned`, { date: variables.date });
 };
 
 export const finishRoll = async (variables: { id: string; date: string }) => {
