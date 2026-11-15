@@ -15,7 +15,7 @@ import {
 import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 
-import StockFormDialog from '../components/StockFormDialog.vue';
+import StockFormDialog from '../components/stock-form-dialog/StockFormDialog.vue';
 import { PACKAGING_TONE, PROCESS_TONE, TYPE_TONE, stockName } from '../format';
 import { useStockList } from '../queries';
 import { FILM_TYPE_LABELS, PACKAGING_LABELS, PROCESS_LABELS } from '../types';
