@@ -3,6 +3,8 @@ import { getInput, reset, setInput, useForm } from '@formisch/vue';
 import type * as v from 'valibot';
 import { computed, ref, watch } from 'vue';
 
+import { countUnique } from '#/features/cameras/known';
+import FormCombobox from '#/shared/components/form-combobox/FormCombobox.vue';
 import FormInput from '#/shared/components/form-input/FormInput.vue';
 import FormRichText from '#/shared/components/form-rich-text/FormRichText.vue';
 import FormSection from '#/shared/components/form-section/FormSection.vue';
@@ -56,6 +58,7 @@ const warnings = computed(() => {
     ? stockWarnings({ type: input.type, process: input.process })
     : [];
 });
+const brands = computed(() => countUnique((stocks.data.value ?? []).map((row) => row.stock.brand)));
 const baseOptions = computed(() =>
   (stocks.data.value ?? [])
     .filter((row) => row.stock.id !== props.stockId)
@@ -117,17 +120,19 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
       note="* Required attributes"
     >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
-        <FormInput
+        <FormCombobox
           :of="form"
           :path="['brand']"
           label="Brand"
           required
-          placeholder="e.g. Kodak"
+          noun="brand"
+          :options="brands"
+          placeholder="Choose or type a brand"
         >
           <template #aside
             ><span class="text-xs text-muted-foreground">e.g. Kodak, Ilford</span></template
           >
-        </FormInput>
+        </FormCombobox>
         <FormInput
           :of="form"
           :path="['name']"
