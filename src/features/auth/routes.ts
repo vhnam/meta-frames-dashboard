@@ -3,7 +3,7 @@ import { h, type VNode } from 'vue';
 
 import { rootRoute } from '#/layouts/rootRoute';
 
-import AuthLayout from './AuthLayout.vue';
+import AuthLayout from './components/AuthLayout.vue';
 import LoginPage from './pages/LoginPage.vue';
 import RecoverPage from './pages/RecoverPage.vue';
 import RegisterPage from './pages/RegisterPage.vue';
