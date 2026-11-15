@@ -20,8 +20,8 @@ import { ask, attempt } from '#/shared/lib/ui';
 import { cn } from '#/shared/lib/utils';
 import { Button } from '#/shared/ui/button';
 
-import CameraFormDialog from '../components/CameraFormDialog.vue';
-import ManageLensesDialog from '../components/ManageLensesDialog.vue';
+import CameraFormDialog from '../components/camera-form-dialog/CameraFormDialog.vue';
+import ManageLensesDialog from '../components/manage-lenses-dialog/ManageLensesDialog.vue';
 import { cameraName } from '../format';
 import { useCameraDetail, useDeleteCamera, useSetCameraActive } from '../queries';
 
