@@ -1,4 +1,4 @@
-import type { NumberingMode, OnConflict } from "./types";
+import type { NumberingMode, OnConflict } from './types';
 
 /** One file with the frame it will be stored under. */
 export interface ImportEntry {
@@ -16,11 +16,11 @@ export function buildImportForm(
   entries: readonly ImportEntry[],
 ): FormData {
   const form = new FormData();
-  form.append("scannerId", scannerId);
-  form.append("onConflict", onConflict);
+  form.append('scannerId', scannerId);
+  form.append('onConflict', onConflict);
   for (const entry of entries) {
-    form.append("frameNumber", String(entry.frameNumber));
-    form.append("file", entry.file, entry.file.name);
+    form.append('frameNumber', String(entry.frameNumber));
+    form.append('file', entry.file, entry.file.name);
   }
   return form;
 }
@@ -32,7 +32,7 @@ export function previewBody(
   startFrame: number,
   offset: number,
 ) {
-  return mode === "sequential"
+  return mode === 'sequential'
     ? { fileNames, startFrame }
     : { fileNames, ...(offset ? { offset } : {}) };
 }

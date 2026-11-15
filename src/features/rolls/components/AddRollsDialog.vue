@@ -1,35 +1,37 @@
 <script setup lang="ts">
-import { stockName, useStockList } from "#/features/film-stocks";
-import { useAddRolls } from "../queries";
-import { AddRollsSchema } from "../schema";
-import { FORMATS, MONTH_OPTIONS } from "../types";
-import { getInput, reset, setInput, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import QuickPicks from "#/shared/components/QuickPicks.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { Button } from "#/shared/ui/button";
-import { attempt } from "#/shared/lib/ui";
-import { StockFormDialog } from "#/features/film-stocks";
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import { stockName, useStockList } from '#/features/film-stocks';
+import { StockFormDialog } from '#/features/film-stocks';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import QuickPicks from '#/shared/components/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+import { Button } from '#/shared/ui/button';
+
+import { useAddRolls } from '../queries';
+import { AddRollsSchema } from '../schema';
+import { FORMATS, MONTH_OPTIONS } from '../types';
 
 const props = defineProps<{ stockId?: string }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const stocks = useStockList();
 const addRolls = useAddRolls();
 const form = useForm({
   schema: AddRollsSchema,
-  initialInput: { format: "135", exposures: 36, quantity: 1 },
+  initialInput: { format: '135', exposures: 36, quantity: 1 },
 });
 const stockOpen = ref(false);
 
 watch(open, (isOpen) => {
   if (isOpen)
     reset(form, {
-      initialInput: { stockId: props.stockId ?? "", format: "135", exposures: 36, quantity: 1 },
+      initialInput: { stockId: props.stockId ?? '', format: '135', exposures: 36, quantity: 1 },
     });
 });
 
@@ -45,14 +47,14 @@ const QUANTITY_PICKS = [1, 3, 5, 10];
 
 /** Default exposures follow the format. */
 watch(
-  () => getInput(form, { path: ["format"] }),
+  () => getInput(form, { path: ['format'] }),
   (format) => {
-    if (format === "135") setInput(form, { path: ["exposures"], input: 36 });
-    else if (format === "120") setInput(form, { path: ["exposures"], input: 12 });
+    if (format === '135') setInput(form, { path: ['exposures'], input: 36 });
+    else if (format === '120') setInput(form, { path: ['exposures'], input: 12 });
   },
 );
 
-const quantity = computed(() => Number(getInput(form, { path: ["quantity"] })) || 1);
+const quantity = computed(() => Number(getInput(form, { path: ['quantity'] })) || 1);
 
 async function submit(output: v.InferOutput<typeof AddRollsSchema>) {
   const ok = await attempt(
@@ -78,7 +80,11 @@ async function submit(output: v.InferOutput<typeof AddRollsSchema>) {
     :pending="addRolls.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Film" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Film"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <FormSelect
@@ -94,7 +100,7 @@ async function submit(output: v.InferOutput<typeof AddRollsSchema>) {
                 type="button"
                 variant="outline"
                 size="sm"
-                class="bg-card text-primary hover:text-primary h-7 px-3 text-xs font-semibold"
+                class="h-7 bg-card px-3 text-xs font-semibold text-primary hover:text-primary"
                 @click="stockOpen = true"
               >
                 + New film stock…
@@ -132,7 +138,11 @@ async function submit(output: v.InferOutput<typeof AddRollsSchema>) {
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Purchase" note="Shipping excluded">
+    <FormSection
+      no="02"
+      title="Purchase"
+      note="Shipping excluded"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"
@@ -168,7 +178,11 @@ async function submit(output: v.InferOutput<typeof AddRollsSchema>) {
       </div>
     </FormSection>
 
-    <FormSection no="03" title="Expiry" note="As printed on the box">
+    <FormSection
+      no="03"
+      title="Expiry"
+      note="As printed on the box"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"

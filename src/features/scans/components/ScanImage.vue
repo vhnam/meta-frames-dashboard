@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watchEffect, ref } from "vue";
-import { useScanFile } from "../queries";
+import { computed, onBeforeUnmount, watchEffect, ref } from 'vue';
+
+import { useScanFile } from '../queries';
 
 const props = defineProps<{ scanId: string; alt: string }>();
 
@@ -21,9 +22,29 @@ const failed = computed(() => file.isError.value);
 </script>
 
 <template>
-  <a v-if="url" :href="url" target="_blank" rel="noopener" class="block">
-    <img :src="url" :alt="alt" class="max-h-80 w-full rounded-md border object-contain" />
+  <a
+    v-if="url"
+    :href="url"
+    target="_blank"
+    rel="noopener"
+    class="block"
+  >
+    <img
+      :src="url"
+      :alt="alt"
+      class="max-h-80 w-full rounded-md border object-contain"
+    />
   </a>
-  <p v-else-if="failed" class="text-destructive text-sm">The image could not be loaded.</p>
-  <p v-else class="text-muted-foreground text-sm">Loading…</p>
+  <p
+    v-else-if="failed"
+    class="text-sm text-destructive"
+  >
+    The image could not be loaded.
+  </p>
+  <p
+    v-else
+    class="text-sm text-muted-foreground"
+  >
+    Loading…
+  </p>
 </template>

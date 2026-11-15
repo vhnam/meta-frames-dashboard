@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { useLabList } from "#/features/labs";
-import { useSaveLabOrder } from "../queries";
-import { LabOrderSchema } from "../schema";
-import type { LabOrder, LabOrderLineInput } from "../types";
-import { IconCheck, IconPencil, IconPlus, IconTrash } from "@tabler/icons-vue";
-import { getInput, reset, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, defineAsyncComponent, ref, watch } from "vue";
-import FormField from "#/shared/components/FormField.vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormRichText from "#/shared/components/FormRichText.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import { RichText } from "#/shared/components/richText";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { Button } from "#/shared/ui/button";
-import { Input } from "#/shared/ui/input";
-import { formatVnd } from "#/shared/lib/format";
-import { attempt } from "#/shared/lib/ui";
+import { getInput, reset, useForm } from '@formisch/vue';
+import { IconCheck, IconPencil, IconPlus, IconTrash } from '@tabler/icons-vue';
+import type * as v from 'valibot';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
+
+import { useLabList } from '#/features/labs';
+import FormField from '#/shared/components/FormField.vue';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormRichText from '#/shared/components/FormRichText.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import { RichText } from '#/shared/components/richText';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { formatVnd } from '#/shared/lib/format';
+import { attempt } from '#/shared/lib/ui';
+import { Button } from '#/shared/ui/button';
+import { Input } from '#/shared/ui/input';
+
+import { useSaveLabOrder } from '../queries';
+import { LabOrderSchema } from '../schema';
+import type { LabOrder, LabOrderLineInput } from '../types';
 
 // TipTap is large: load it only when the form opens.
-const RichTextEditor = defineAsyncComponent(() => import("#/shared/components/RichTextEditor.vue"));
+const RichTextEditor = defineAsyncComponent(() => import('#/shared/components/RichTextEditor.vue'));
 
 const props = defineProps<{ order?: LabOrder }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ saved: [id: string] }>();
 
 const labs = useLabList();
@@ -36,8 +38,8 @@ const editingLine = ref<string>();
 
 const newLine = (): LabOrderLineInput => ({
   id: crypto.randomUUID(),
-  product: "",
-  options: "",
+  product: '',
+  options: '',
   quantity: 1,
   unitPrice: 0,
 });
@@ -65,8 +67,8 @@ watch(open, (isOpen) => {
     : [newLine()];
   reset(form, {
     initialInput: {
-      labId: order?.labId ?? "",
-      code: order?.code ?? "",
+      labId: order?.labId ?? '',
+      code: order?.code ?? '',
       orderedAt: toLocalInput(order?.orderedAt ?? new Date().toISOString()),
       dueDate: order?.dueDate ?? undefined,
       vat: order?.vat,
@@ -90,25 +92,25 @@ const subtotal = computed(() =>
 const total = computed(
   () =>
     subtotal.value +
-    (getInput(form, { path: ["vat"] }) ?? 0) -
-    (getInput(form, { path: ["discount"] }) ?? 0),
+    (getInput(form, { path: ['vat'] }) ?? 0) -
+    (getInput(form, { path: ['discount'] }) ?? 0),
 );
 
 function linesProblem() {
-  if (!lines.value.length) return "Add at least one line.";
-  if (lines.value.some((line) => !line.product.trim())) return "Every line needs a product.";
+  if (!lines.value.length) return 'Add at least one line.';
+  if (lines.value.some((line) => !line.product.trim())) return 'Every line needs a product.';
   if (lines.value.some((line) => !(line.quantity >= 1) || !Number.isInteger(line.quantity)))
-    return "Quantity must be a whole number, at least 1.";
-  if (lines.value.some((line) => !(line.unitPrice >= 0))) return "Prices must be 0 or more.";
+    return 'Quantity must be a whole number, at least 1.';
+  if (lines.value.some((line) => !(line.unitPrice >= 0))) return 'Prices must be 0 or more.';
   if (lines.value.some((line) => line.quantity < jobsOnLine(line.id)))
-    return "A line cannot take fewer rolls than it already has.";
+    return 'A line cannot take fewer rolls than it already has.';
   return undefined;
 }
 
 async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
   linesError.value = linesProblem();
   if (linesError.value) return;
-  let id = props.order?.id ?? "";
+  let id = props.order?.id ?? '';
   const ok = await attempt(
     save
       .mutateAsync({
@@ -123,7 +125,7 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
   );
   if (ok) {
     open.value = false;
-    emit("saved", id);
+    emit('saved', id);
   }
 }
 </script>
@@ -141,7 +143,11 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
     :pending="save.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Order" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Order"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormSelect
           :of="form"
@@ -153,7 +159,13 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
           placeholder="Select a lab"
           :options="labOptions"
         />
-        <FormInput :of="form" :path="['code']" label="Order code" required placeholder="0510006" />
+        <FormInput
+          :of="form"
+          :path="['code']"
+          label="Order code"
+          required
+          placeholder="0510006"
+        />
         <FormInput
           :of="form"
           :path="['orderedAt']"
@@ -161,20 +173,30 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
           required
           type="datetime-local"
         />
-        <FormInput :of="form" :path="['dueDate']" label="Due" optional type="date" />
+        <FormInput
+          :of="form"
+          :path="['dueDate']"
+          label="Due"
+          optional
+          type="date"
+        />
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Lines" note="One line per product, as on the order">
+    <FormSection
+      no="02"
+      title="Lines"
+      note="One line per product, as on the order"
+    >
       <div class="grid gap-3">
         <ol class="grid gap-3">
           <li
             v-for="(line, index) in lines"
             :key="line.id"
-            class="bg-card grid gap-4 rounded-lg border p-4"
+            class="grid gap-4 rounded-lg border bg-card p-4"
           >
             <div class="flex items-center justify-between gap-3">
-              <span class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
+              <span class="text-[0.7rem] tracking-[0.12em] text-muted-foreground uppercase">
                 Line {{ index + 1 }}
               </span>
               <div class="flex items-center gap-2">
@@ -198,14 +220,21 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
             <div
               class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-4 sm:grid-cols-[minmax(0,1fr)_5rem_9rem]"
             >
-              <FormField label="Product" required class="col-span-2 sm:col-span-1">
+              <FormField
+                label="Product"
+                required
+                class="col-span-2 sm:col-span-1"
+              >
                 <Input
                   v-model="line.product"
                   :aria-label="`Product of line ${index + 1}`"
                   placeholder="35mm Colour film"
                 />
               </FormField>
-              <FormField label="Qty" required>
+              <FormField
+                label="Qty"
+                required
+              >
                 <Input
                   v-model.number="line.quantity"
                   type="number"
@@ -214,7 +243,10 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
                   :aria-label="`Quantity of line ${index + 1}`"
                 />
               </FormField>
-              <FormField label="Unit price" required>
+              <FormField
+                label="Unit price"
+                required
+              >
                 <div class="relative">
                   <Input
                     v-model.number="line.unitPrice"
@@ -225,7 +257,7 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
                     :aria-label="`Unit price of line ${index + 1}`"
                   />
                   <span
-                    class="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs"
+                    class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground"
                     aria-hidden="true"
                   >
                     ₫
@@ -242,7 +274,12 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
               :aria-label="`Description of line ${index + 1}`"
             >
               <template #aside>
-                <Button type="button" size="xs" variant="outline" @click="editingLine = undefined">
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  @click="editingLine = undefined"
+                >
                   <IconCheck aria-hidden="true" /> Done
                 </Button>
               </template>
@@ -254,11 +291,11 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
             </FormField>
             <div
               v-else-if="line.options"
-              class="bg-background/60 flex items-start justify-between gap-3 rounded-md border px-3 py-2"
+              class="flex items-start justify-between gap-3 rounded-md border bg-background/60 px-3 py-2"
             >
               <RichText
                 :markdown="line.options"
-                class="text-muted-foreground line-clamp-2 min-w-0 text-sm"
+                class="line-clamp-2 min-w-0 text-sm text-muted-foreground"
               />
               <Button
                 type="button"
@@ -276,7 +313,7 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
                 type="button"
                 size="xs"
                 variant="ghost"
-                class="text-muted-foreground -ml-2"
+                class="-ml-2 text-muted-foreground"
                 :aria-label="`Add description to line ${index + 1}`"
                 @click="editingLine = line.id"
               >
@@ -286,15 +323,29 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
           </li>
         </ol>
         <div>
-          <Button type="button" size="sm" variant="outline" @click="lines.push(newLine())">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            @click="lines.push(newLine())"
+          >
             <IconPlus class="size-4" /> Add line
           </Button>
         </div>
-        <p v-if="linesError" class="text-destructive text-sm">{{ linesError }}</p>
+        <p
+          v-if="linesError"
+          class="text-sm text-destructive"
+        >
+          {{ linesError }}
+        </p>
       </div>
     </FormSection>
 
-    <FormSection no="03" title="Amounts" note="Amounts in dong, as on the order">
+    <FormSection
+      no="03"
+      title="Amounts"
+      note="Amounts in dong, as on the order"
+    >
       <div class="grid gap-y-4">
         <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
           <FormInput
@@ -321,14 +372,23 @@ async function submit(output: v.InferOutput<typeof LabOrderSchema>) {
           />
         </div>
         <div class="flex items-baseline justify-end gap-4">
-          <span class="text-muted-foreground text-sm">Total</span>
+          <span class="text-sm text-muted-foreground">Total</span>
           <span class="text-lg font-semibold tabular-nums">{{ formatVnd(total) }}</span>
         </div>
       </div>
     </FormSection>
 
-    <FormSection no="04" title="Notes">
-      <FormRichText :of="form" :path="['notes']" label="Notes" optional placeholder="Paid by..." />
+    <FormSection
+      no="04"
+      title="Notes"
+    >
+      <FormRichText
+        :of="form"
+        :path="['notes']"
+        label="Notes"
+        optional
+        placeholder="Paid by..."
+      />
     </FormSection>
   </SectionedFormDialog>
 </template>

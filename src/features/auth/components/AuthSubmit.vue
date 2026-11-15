@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "#/shared/ui/button";
+import { Button } from '#/shared/ui/button';
 
 defineProps<{ pending?: boolean }>();
 </script>
@@ -7,7 +7,7 @@ defineProps<{ pending?: boolean }>();
 <template>
   <Button
     type="submit"
-    class="font-heading h-11 w-full text-base font-bold tracking-[0.08em] uppercase"
+    class="h-11 w-full font-heading text-base font-bold tracking-[0.08em] uppercase"
     :disabled="pending"
   >
     <slot />

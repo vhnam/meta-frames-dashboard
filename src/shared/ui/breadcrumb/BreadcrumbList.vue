@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import type { HTMLAttributes } from "vue";
-import { cn } from "#/shared/lib/utils";
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '#/shared/lib/utils';
 
 const props = defineProps<{
-  class?: HTMLAttributes["class"];
+  class?: HTMLAttributes['class'];
 }>();
 </script>
 
@@ -12,7 +13,7 @@ const props = defineProps<{
     data-slot="breadcrumb-list"
     :class="
       cn(
-        'text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5',
+        'flex flex-wrap items-center gap-1.5 text-sm break-words text-muted-foreground sm:gap-2.5',
         props.class,
       )
     "

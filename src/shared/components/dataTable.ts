@@ -15,7 +15,7 @@ import {
   tableFeatures,
   type ColumnDef,
   type RowData,
-} from "@tanstack/vue-table";
+} from '@tanstack/vue-table';
 
 /** Per-column extras: `filter` turns the column into a dropdown (TanStack column filter). */
 export interface DataTableColumnMeta {
@@ -30,7 +30,7 @@ export interface DataTableColumnMeta {
   /** Width and overflow classes applied to the header and body cells. */
   class?: string;
   /** Right-align the header and cells (for example an actions column). */
-  align?: "right";
+  align?: 'right';
 }
 
 export const PAGE_SIZES = [10, 20, 50] as const;

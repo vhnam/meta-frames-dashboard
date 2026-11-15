@@ -1,11 +1,13 @@
-import "#/styles/index.css";
-import "vue-sonner/style.css";
+import { createApp } from 'vue';
+
+import '#/styles/index.css';
 // follows OS color-scheme changes on every page, not only where the menu is mounted
-import "#/shared/lib/theme";
-import { createApp } from "vue";
-import App from "./App.vue";
-import { installProviders } from "./providers";
+import '#/shared/lib/theme';
+
+import 'vue-sonner/style.css';
+import App from './App.vue';
+import { installProviders } from './providers';
 
 const app = createApp(App);
 installProviders(app);
-app.mount("#app");
+app.mount('#app');

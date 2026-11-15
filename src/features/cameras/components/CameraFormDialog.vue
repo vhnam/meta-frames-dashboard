@@ -1,30 +1,32 @@
 <script setup lang="ts">
-import { useCameraDetail, useSaveCamera } from "../queries";
-import { useKnownBrands, useKnownMounts } from "../known";
-import { CameraSchema } from "../schema";
-import { Field, getInput, reset, setInput, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, watch } from "vue";
-import FormCombobox from "#/shared/components/FormCombobox.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormRichText from "#/shared/components/FormRichText.vue";
-import QuickPicks from "#/shared/components/QuickPicks.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { Switch } from "#/shared/ui/switch";
-import { attempt } from "#/shared/lib/ui";
+import { Field, getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, watch } from 'vue';
+
+import FormCombobox from '#/shared/components/FormCombobox.vue';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormRichText from '#/shared/components/FormRichText.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import QuickPicks from '#/shared/components/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+import { Switch } from '#/shared/ui/switch';
+
+import { useKnownBrands, useKnownMounts } from '../known';
+import { useCameraDetail, useSaveCamera } from '../queries';
+import { CameraSchema } from '../schema';
 
 const props = defineProps<{ cameraId?: string }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ saved: [id: string] }>();
 
 const detail = useCameraDetail(() => props.cameraId);
 const save = useSaveCamera();
 const form = useForm({ schema: CameraSchema, initialInput: { fixedLens: false } });
-const fixedLens = computed(() => !!getInput(form, { path: ["fixedLens"] }));
+const fixedLens = computed(() => !!getInput(form, { path: ['fixedLens'] }));
 const editing = computed(() => !!props.cameraId);
 const mounts = useKnownMounts();
-const brands = useKnownBrands("camera");
+const brands = useKnownBrands('camera');
 
 const FOCAL_PICKS = [24, 35, 50];
 const APERTURE_PICKS = [1.4, 2, 2.8];
@@ -36,11 +38,11 @@ function fill(loaded?: Detail) {
   const lens = camera?.fixedLens ? loaded?.lenses[0] : undefined;
   reset(form, {
     initialInput: {
-      brand: camera?.brand ?? "",
-      model: camera?.model ?? "",
+      brand: camera?.brand ?? '',
+      model: camera?.model ?? '',
       fixedLens: camera?.fixedLens ?? false,
-      mount: camera?.mount ?? "",
-      description: camera?.description ?? "",
+      mount: camera?.mount ?? '',
+      description: camera?.description ?? '',
       focalLength: lens?.focalLength,
       maxAperture: lens?.maxAperture,
     },
@@ -78,13 +80,13 @@ async function submit(output: v.InferOutput<typeof CameraSchema>) {
     output.fixedLens && !props.cameraId
       ? { focalLength: output.focalLength!, maxAperture: output.maxAperture! }
       : undefined;
-  let id = props.cameraId ?? "";
+  let id = props.cameraId ?? '';
   const ok = await attempt(
     save.mutateAsync({ id: props.cameraId, input, builtIn }).then((saved) => (id = saved)),
   );
   if (ok) {
     open.value = false;
-    emit("saved", id);
+    emit('saved', id);
   }
 }
 </script>
@@ -102,7 +104,11 @@ async function submit(output: v.InferOutput<typeof CameraSchema>) {
     :pending="save.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Camera body" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Camera body"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormCombobox
           :of="form"
@@ -114,25 +120,38 @@ async function submit(output: v.InferOutput<typeof CameraSchema>) {
           placeholder="Choose or type a brand"
         >
           <template #aside>
-            <span class="text-muted-foreground text-xs">e.g. Nikon, Leica</span>
+            <span class="text-xs text-muted-foreground">e.g. Nikon, Leica</span>
           </template>
         </FormCombobox>
-        <FormInput :of="form" :path="['model']" label="Model" required placeholder="e.g. FM2">
+        <FormInput
+          :of="form"
+          :path="['model']"
+          label="Model"
+          required
+          placeholder="e.g. FM2"
+        >
           <template #aside>
-            <span class="text-muted-foreground text-xs">e.g. FM2, M6</span>
+            <span class="text-xs text-muted-foreground">e.g. FM2, M6</span>
           </template>
         </FormInput>
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Lens & mount">
-      <Field :of="form" :path="['fixedLens']" v-slot="field">
+    <FormSection
+      no="02"
+      title="Lens & mount"
+    >
+      <Field
+        :of="form"
+        :path="['fixedLens']"
+        v-slot="field"
+      >
         <label
-          class="border-primary/15 bg-primary/5 flex items-center justify-between gap-4 rounded-lg border p-4"
+          class="flex items-center justify-between gap-4 rounded-lg border border-primary/15 bg-primary/5 p-4"
         >
           <span class="grid gap-1">
             <span class="font-heading text-sm font-medium">Fixed (built-in) lens</span>
-            <span class="text-muted-foreground text-xs">
+            <span class="text-xs text-muted-foreground">
               {{
                 editing
                   ? "Can't be changed after the camera is added."
@@ -159,10 +178,13 @@ async function submit(output: v.InferOutput<typeof CameraSchema>) {
         placeholder="Choose or type a mount"
       >
         <template #aside>
-          <span class="text-muted-foreground text-xs">e.g. Canon FD, Nikon F, Leica M</span>
+          <span class="text-xs text-muted-foreground">e.g. Canon FD, Nikon F, Leica M</span>
         </template>
       </FormCombobox>
-      <div v-else-if="!editing" class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+      <div
+        v-else-if="!editing"
+        class="grid gap-x-5 gap-y-6 sm:grid-cols-2"
+      >
         <FormInput
           :of="form"
           :path="['focalLength']"
@@ -204,10 +226,18 @@ async function submit(output: v.InferOutput<typeof CameraSchema>) {
           </template>
         </FormInput>
       </div>
-      <p v-else class="text-muted-foreground text-sm">Edit the built-in lens on the Lenses page.</p>
+      <p
+        v-else
+        class="text-sm text-muted-foreground"
+      >
+        Edit the built-in lens on the Lenses page.
+      </p>
     </FormSection>
 
-    <FormSection no="03" title="Notes">
+    <FormSection
+      no="03"
+      title="Notes"
+    >
       <FormRichText
         :of="form"
         :path="['description']"
@@ -216,7 +246,7 @@ async function submit(output: v.InferOutput<typeof CameraSchema>) {
         placeholder="Condition, quirks, light seals, meter accuracy…"
       >
         <template #aside>
-          <span class="text-muted-foreground text-xs">Markdown shortcuts work</span>
+          <span class="text-xs text-muted-foreground">Markdown shortcuts work</span>
         </template>
       </FormRichText>
     </FormSection>

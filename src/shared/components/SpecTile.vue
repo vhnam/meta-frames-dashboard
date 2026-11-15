@@ -4,11 +4,15 @@ defineProps<{ label: string; sub?: string }>();
 </script>
 
 <template>
-  <div class="bg-background/60 grid content-start gap-1.5 rounded-lg border p-4">
-    <span class="text-muted-foreground text-[0.7rem] tracking-[0.12em] uppercase">
+  <div class="grid content-start gap-1.5 rounded-lg border bg-background/60 p-4">
+    <span class="text-[0.7rem] tracking-[0.12em] text-muted-foreground uppercase">
       {{ label }}
     </span>
     <div class="font-heading text-base font-semibold"><slot /></div>
-    <span v-if="sub" class="text-muted-foreground text-xs">{{ sub }}</span>
+    <span
+      v-if="sub"
+      class="text-xs text-muted-foreground"
+      >{{ sub }}</span
+    >
   </div>
 </template>

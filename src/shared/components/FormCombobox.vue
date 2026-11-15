@@ -1,10 +1,11 @@
 <script setup lang="ts" generic="TSchema extends FormSchema, TPath extends RequiredPath">
-import { Field } from "@formisch/vue";
-import type { FormSchema, FormStore, RequiredPath, ValidPath } from "@formisch/vue";
-import type * as v from "valibot";
-import type { ComboOption } from "./combobox";
-import CreatableCombobox from "./CreatableCombobox.vue";
-import FormField from "./FormField.vue";
+import { Field } from '@formisch/vue';
+import type { FormSchema, FormStore, RequiredPath, ValidPath } from '@formisch/vue';
+import type * as v from 'valibot';
+
+import type { ComboOption } from './combobox';
+import CreatableCombobox from './CreatableCombobox.vue';
+import FormField from './FormField.vue';
 
 defineProps<{
   of: FormStore<TSchema>;
@@ -21,7 +22,11 @@ defineProps<{
 </script>
 
 <template>
-  <Field :of="of" :path="path" v-slot="field">
+  <Field
+    :of="of"
+    :path="path"
+    v-slot="field"
+  >
     <FormField
       :label="label"
       :optional="optional"
@@ -29,7 +34,11 @@ defineProps<{
       :hint="hint"
       :error="field.errors?.[0]"
     >
-      <template v-if="$slots.aside" #aside><slot name="aside" /></template>
+      <template
+        v-if="$slots.aside"
+        #aside
+        ><slot name="aside"
+      /></template>
       <CreatableCombobox
         :model-value="(field.input as string | undefined) ?? ''"
         :options="options"

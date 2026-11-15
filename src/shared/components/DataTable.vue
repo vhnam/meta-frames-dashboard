@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="TData extends RowData">
-import { FlexRender, useTable, type RowData } from "@tanstack/vue-table";
 import {
   IconArrowDown,
   IconArrowUp,
@@ -11,15 +10,15 @@ import {
   IconSearch,
   IconSelector,
   IconX,
-} from "@tabler/icons-vue";
-import { dataTableFeatures, PAGE_SIZES, type DataTableColumn } from "./dataTable";
-import { useRouter } from "@tanstack/vue-router";
-import { computed, onMounted, ref, toRef, watch } from "vue";
-import { parseListSearch, toListSearch } from "#/shared/lib/listSearch";
-import { cn } from "#/shared/lib/utils";
-import { Button } from "#/shared/ui/button";
-import { Card, CardContent } from "#/shared/ui/card";
-import { Input } from "#/shared/ui/input";
+} from '@tabler/icons-vue';
+import { useRouter } from '@tanstack/vue-router';
+import { FlexRender, useTable, type RowData } from '@tanstack/vue-table';
+import { computed, onMounted, ref, toRef, watch } from 'vue';
+
+import { parseListSearch, toListSearch } from '#/shared/lib/listSearch';
+import { cn } from '#/shared/lib/utils';
+import { Button } from '#/shared/ui/button';
+import { Card, CardContent } from '#/shared/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,8 +27,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#/shared/ui/dropdown-menu";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "#/shared/ui/empty";
+} from '#/shared/ui/dropdown-menu';
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '#/shared/ui/empty';
+import { Input } from '#/shared/ui/input';
 import {
   Pagination,
   PaginationContent,
@@ -37,8 +37,8 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "#/shared/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/shared/ui/select";
+} from '#/shared/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/shared/ui/select';
 import {
   Table,
   TableBody,
@@ -47,7 +47,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#/shared/ui/table";
+} from '#/shared/ui/table';
+
+import { dataTableFeatures, PAGE_SIZES, type DataTableColumn } from './dataTable';
 
 const props = defineProps<{
   columns: DataTableColumn<TData>[];
@@ -74,11 +76,11 @@ const props = defineProps<{
 }>();
 
 /** Column filter values by column id; bind it to keep them outside the table (e.g. in the URL). */
-const columnFilters = defineModel<Record<string, string>>("columnFilters", { default: () => ({}) });
+const columnFilters = defineModel<Record<string, string>>('columnFilters', { default: () => ({}) });
 
 /** Search applied to the table; `draft` is what is typed, applied on Apply or Enter. */
-const filter = ref("");
-const draft = ref("");
+const filter = ref('');
+const draft = ref('');
 const router = useRouter({ warn: false });
 const initial = router ? parseListSearch(router.state.location.search) : {};
 const pagination = ref({
@@ -95,7 +97,7 @@ function syncListSearch() {
   if (current.page === next.page && current.pageSize === next.pageSize) return;
   // keep the page's own search keys; undefined drops page/pageSize at their defaults
   void router.navigate({
-    to: ".",
+    to: '.',
     search: (prev: Record<string, unknown>) => ({
       ...prev,
       page: next.page,
@@ -116,16 +118,16 @@ const columnFilterState = computed(() =>
 const table = useTable({
   features: dataTableFeatures,
   columns: props.columns,
-  data: toRef(props, "data"),
+  data: toRef(props, 'data'),
   getRowId: props.getRowId,
-  globalFilterFn: "includesString",
+  globalFilterFn: 'includesString',
   state: computed(() => ({
     globalFilter: filter.value,
     pagination: pagination.value,
     columnFilters: columnFilterState.value,
   })),
   onColumnFiltersChange: (next: unknown) => {
-    const list = (typeof next === "function" ? next(columnFilterState.value) : next) as {
+    const list = (typeof next === 'function' ? next(columnFilterState.value) : next) as {
       id: string;
       value: unknown;
     }[];
@@ -134,10 +136,10 @@ const table = useTable({
     );
   },
   onPaginationChange: (next: unknown) => {
-    pagination.value = typeof next === "function" ? next(pagination.value) : next;
+    pagination.value = typeof next === 'function' ? next(pagination.value) : next;
   },
   onGlobalFilterChange: (next: unknown) => {
-    filter.value = String(typeof next === "function" ? next(filter.value) : (next ?? ""));
+    filter.value = String(typeof next === 'function' ? next(filter.value) : (next ?? ''));
   },
 });
 
@@ -173,17 +175,17 @@ function apply() {
 }
 
 /** The typed keyword is the one in effect: Apply has nothing left to do. */
-const applied = computed(() => filter.value !== "" && draft.value.trim() === filter.value);
+const applied = computed(() => filter.value !== '' && draft.value.trim() === filter.value);
 
 function clearSearch() {
-  draft.value = "";
-  filter.value = "";
+  draft.value = '';
+  filter.value = '';
 }
 
-const alignClass = (meta: { align?: "right"; class?: string } | undefined) =>
-  cn(meta?.align === "right" && "text-right", meta?.class);
+const alignClass = (meta: { align?: 'right'; class?: string } | undefined) =>
+  cn(meta?.align === 'right' && 'text-right', meta?.class);
 
-const ALL = "__all__";
+const ALL = '__all__';
 const selected = (column: (typeof filterColumns.value)[number]) =>
   String(column.getFilterValue() ?? ALL);
 
@@ -220,8 +222,14 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
 </script>
 
 <template>
-  <Card v-if="!hideFilters" class="mb-4 py-5">
-    <CardContent class="px-5" :class="{ 'flex flex-wrap items-center gap-3': $slots.actions }">
+  <Card
+    v-if="!hideFilters"
+    class="mb-4 py-5"
+  >
+    <CardContent
+      class="px-5"
+      :class="{ 'flex flex-wrap items-center gap-3': $slots.actions }"
+    >
       <form
         class="flex flex-wrap items-center gap-3"
         :class="{ 'min-w-0 flex-1 basis-80': $slots.actions }"
@@ -230,24 +238,27 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
       >
         <div class="relative min-w-0 flex-1 basis-64">
           <IconSearch
-            class="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2"
+            class="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
           <Input
             v-model="draft"
             type="text"
-            class="bg-background h-11 pr-11 pl-11"
+            class="h-11 bg-background pr-11 pl-11"
             :aria-label="filterLabel ?? 'Search'"
             :placeholder="filterPlaceholder ?? 'Search…'"
           />
           <button
             v-if="draft"
             type="button"
-            class="text-muted-foreground hover:text-foreground hover:bg-accent absolute top-1/2 right-2.5 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
+            class="absolute top-1/2 right-2.5 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
             aria-label="Clear search"
             @click="clearSearch"
           >
-            <IconX class="size-4" aria-hidden="true" />
+            <IconX
+              class="size-4"
+              aria-hidden="true"
+            />
           </button>
         </div>
         <Button
@@ -256,8 +267,11 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           class="h-11 min-w-28 border px-6"
           :disabled="applied"
         >
-          <IconCheck v-if="applied" aria-hidden="true" />
-          {{ applied ? "Applied" : "Apply" }}
+          <IconCheck
+            v-if="applied"
+            aria-hidden="true"
+          />
+          {{ applied ? 'Applied' : 'Apply' }}
         </Button>
       </form>
       <slot name="actions" />
@@ -276,7 +290,7 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
             :key="header.id"
             :class="
               cn(
-                'text-foreground/80 h-12 px-3 text-xs font-semibold tracking-[0.08em] uppercase first:pl-6 last:pr-6',
+                'h-12 px-3 text-xs font-semibold tracking-[0.08em] text-foreground/80 uppercase first:pl-6 last:pr-6',
                 alignClass(header.column.columnDef.meta),
               )
             "
@@ -291,28 +305,43 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
               <button
                 v-if="header.column.getCanSort()"
                 type="button"
-                class="hover:text-foreground inline-flex items-center gap-1.5 uppercase"
+                class="inline-flex items-center gap-1.5 uppercase hover:text-foreground"
                 @click="header.column.getToggleSortingHandler()?.($event)"
               >
                 <FlexRender :header="header" />
-                <IconArrowUp v-if="header.column.getIsSorted() === 'asc'" class="size-3.5" />
+                <IconArrowUp
+                  v-if="header.column.getIsSorted() === 'asc'"
+                  class="size-3.5"
+                />
                 <IconArrowDown
                   v-else-if="header.column.getIsSorted() === 'desc'"
                   class="size-3.5"
                 />
-                <IconSelector v-else class="size-3.5 opacity-60" />
+                <IconSelector
+                  v-else
+                  class="size-3.5 opacity-60"
+                />
               </button>
-              <FlexRender v-else :header="header" />
+              <FlexRender
+                v-else
+                :header="header"
+              />
               <DropdownMenu v-if="header.column.columnDef.meta?.filter">
                 <DropdownMenuTrigger as-child>
                   <button
                     type="button"
-                    class="hover:bg-accent rounded p-0.5"
+                    class="rounded p-0.5 hover:bg-accent"
                     :class="header.column.getIsFiltered() ? 'text-primary' : 'text-foreground/70'"
                     :aria-label="`Filter ${header.column.columnDef.meta.filter.label}`"
                   >
-                    <IconFilterFilled v-if="header.column.getIsFiltered()" class="size-3.5" />
-                    <IconFilter v-else class="size-3.5" />
+                    <IconFilterFilled
+                      v-if="header.column.getIsFiltered()"
+                      class="size-3.5"
+                    />
+                    <IconFilter
+                      v-else
+                      class="size-3.5"
+                    />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -339,7 +368,9 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
               </DropdownMenu>
             </div>
           </TableHead>
-          <TableHead v-if="onSelect" class="w-px pr-6 pl-0"
+          <TableHead
+            v-if="onSelect"
+            class="w-px pr-6 pl-0"
             ><span class="sr-only">Open</span></TableHead
           >
         </TableRow>
@@ -354,7 +385,7 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           :class="[
             rowClass?.(row.original),
             onSelect &&
-              'group/row cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset',
+              'group/row cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
           ]"
           @click="activate($event, row.original)"
           @keydown.enter="activate($event, row.original)"
@@ -367,9 +398,12 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           >
             <FlexRender :cell="cell" />
           </TableCell>
-          <TableCell v-if="onSelect" class="w-px py-4 pr-6 pl-0">
+          <TableCell
+            v-if="onSelect"
+            class="w-px py-4 pr-6 pl-0"
+          >
             <IconChevronRight
-              class="text-muted-foreground group-hover/row:text-foreground size-4 transition-transform group-hover/row:translate-x-0.5"
+              class="size-4 text-muted-foreground transition-transform group-hover/row:translate-x-0.5 group-hover/row:text-foreground"
               aria-hidden="true"
             />
           </TableCell>
@@ -381,13 +415,13 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           <Empty class="p-0 md:p-0">
             <EmptyHeader>
               <EmptyTitle>{{
-                data.length ? "No matches" : (emptyTitle ?? "Nothing here yet")
+                data.length ? 'No matches' : (emptyTitle ?? 'Nothing here yet')
               }}</EmptyTitle>
               <EmptyDescription>
                 {{
                   data.length
-                    ? "Try a different search or clear the filters."
-                    : (emptyText ?? "Add one to get started.")
+                    ? 'Try a different search or clear the filters.'
+                    : (emptyText ?? 'Add one to get started.')
                 }}
               </EmptyDescription>
             </EmptyHeader>
@@ -397,18 +431,28 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
     </Table>
     <div
       v-if="rowCount"
-      class="bg-muted/40 flex flex-wrap items-center justify-between gap-3 border-t px-6 py-4 text-sm"
+      class="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/40 px-6 py-4 text-sm"
     >
-      <div class="text-muted-foreground flex items-center gap-3">
+      <div class="flex items-center gap-3 text-muted-foreground">
         <span>Rows per page:</span>
-        <Select :model-value="String(pagination.pageSize)" @update:model-value="setPageSize">
-          <SelectTrigger size="sm" class="bg-card text-foreground w-18" aria-label="Rows per page">
+        <Select
+          :model-value="String(pagination.pageSize)"
+          @update:model-value="setPageSize"
+        >
+          <SelectTrigger
+            size="sm"
+            class="w-18 bg-card text-foreground"
+            aria-label="Rows per page"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem v-for="size in PAGE_SIZES" :key="size" :value="String(size)">{{
-              size
-            }}</SelectItem>
+            <SelectItem
+              v-for="size in PAGE_SIZES"
+              :key="size"
+              :value="String(size)"
+              >{{ size }}</SelectItem
+            >
           </SelectContent>
         </Select>
       </div>
@@ -424,10 +468,17 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
           @update:page="(pageNumber) => table.setPageIndex(pageNumber - 1)"
         >
           <PaginationContent v-slot="{ items }">
-            <PaginationPrevious size="icon-sm" class="bg-card" aria-label="Previous page">
+            <PaginationPrevious
+              size="icon-sm"
+              class="bg-card"
+              aria-label="Previous page"
+            >
               <IconChevronLeft class="size-4" />
             </PaginationPrevious>
-            <template v-for="(item, i) in items" :key="i">
+            <template
+              v-for="(item, i) in items"
+              :key="i"
+            >
               <PaginationItem
                 v-if="item.type === 'page'"
                 :value="item.value"
@@ -437,9 +488,16 @@ function activate(event: MouseEvent | KeyboardEvent, row: TData) {
               >
                 {{ item.value }}
               </PaginationItem>
-              <PaginationEllipsis v-else :index="i" />
+              <PaginationEllipsis
+                v-else
+                :index="i"
+              />
             </template>
-            <PaginationNext size="icon-sm" class="bg-card" aria-label="Next page">
+            <PaginationNext
+              size="icon-sm"
+              class="bg-card"
+              aria-label="Next page"
+            >
               <IconChevronRight class="size-4" />
             </PaginationNext>
           </PaginationContent>

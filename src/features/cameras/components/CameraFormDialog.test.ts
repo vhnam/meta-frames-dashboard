@@ -1,23 +1,25 @@
 // @vitest-environment happy-dom
-import { VueQueryPlugin } from "@tanstack/vue-query";
-import { flushPromises, mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { nextTick } from "vue";
-import { queryClient } from "#/shared/api/client";
-import { installFakeServer, server } from "#/test/fakeServer";
-import CameraFormDialog from "./CameraFormDialog.vue";
+import { VueQueryPlugin } from '@tanstack/vue-query';
+import { flushPromises, mount } from '@vue/test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { nextTick } from 'vue';
+
+import { queryClient } from '#/shared/api/client';
+import { installFakeServer, server } from '#/test/fakeServer';
+
+import CameraFormDialog from './CameraFormDialog.vue';
 
 installFakeServer();
-vi.mock("vue-sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 beforeEach(() => {
   server.reset();
   queryClient.clear();
 });
 
-describe("CameraFormDialog", () => {
-  it("fills the form when the camera detail arrives after the dialog opened", async () => {
-    const cam = server.addCamera({ brand: "Nikon", model: "S2", mount: "S" });
+describe('CameraFormDialog', () => {
+  it('fills the form when the camera detail arrives after the dialog opened', async () => {
+    const cam = server.addCamera({ brand: 'Nikon', model: 'S2', mount: 'S' });
     const wrapper = mount(CameraFormDialog, {
       attachTo: document.body,
       props: { open: false, cameraId: undefined },
@@ -27,14 +29,14 @@ describe("CameraFormDialog", () => {
     await wrapper.setProps({ cameraId: cam.id, open: true } as never);
     await nextTick();
     await vi.waitFor(() => {
-      const values = [...document.body.querySelectorAll("input")].map((input) => input.value);
-      expect(values).toContain("Nikon");
-      expect(values).toContain("S2");
+      const values = [...document.body.querySelectorAll('input')].map((input) => input.value);
+      expect(values).toContain('Nikon');
+      expect(values).toContain('S2');
     });
     await flushPromises();
     // every dialog needs a description for screen readers
     const description = document.body.querySelector('[data-slot="dialog-description"]');
-    expect(description?.textContent).toContain("Update the body");
+    expect(description?.textContent).toContain('Update the body');
     wrapper.unmount();
   });
 });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useId } from "vue";
-import { Label } from "#/shared/ui/label";
+import { useId } from 'vue';
+
+import { Label } from '#/shared/ui/label';
 
 defineProps<{ label: string }>();
 const id = useId();

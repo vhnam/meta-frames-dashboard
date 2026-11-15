@@ -1,17 +1,17 @@
-import type { ScanSettings } from "#/features/scanners/types";
-import type { Camera } from "#/features/cameras/types";
-import type { FilmStock, Process } from "#/features/film-stocks/types";
-import type { Lens } from "#/features/lenses/types";
+import type { Camera } from '#/features/cameras/types';
+import type { FilmStock, Process } from '#/features/film-stocks/types';
+import type { Lens } from '#/features/lenses/types';
+import type { ScanSettings } from '#/features/scanners/types';
 
 export const ROLL_STATUSES = [
-  "in_stock",
-  "in_camera",
-  "done_shooting",
-  "at_lab",
-  "developed",
-  "scanned",
+  'in_stock',
+  'in_camera',
+  'done_shooting',
+  'at_lab',
+  'developed',
+  'scanned',
 ] as const;
-export const FORMATS = ["135", "120", "110", "4x5"] as const;
+export const FORMATS = ['135', '120', '110', '4x5'] as const;
 
 export type RollStatus = (typeof ROLL_STATUSES)[number];
 
@@ -88,34 +88,34 @@ export interface RollRow {
 
 /** The Rolls tabs past "All", in lifecycle order; the server derives a roll's stage. */
 export const ROLL_STAGES = [
-  "in_stock",
-  "in_camera",
-  "done_shooting",
-  "processing",
-  "completed",
+  'in_stock',
+  'in_camera',
+  'done_shooting',
+  'processing',
+  'completed',
 ] as const;
 export type RollStage = (typeof ROLL_STAGES)[number];
 
 /** The badge of a processing roll: what is being done to it, or what it waits for. */
 export const STAGE_DETAILS = [
-  "lab_developing",
-  "lab_scanning",
-  "home_developing",
-  "home_scanning",
-  "rescanning",
-  "waiting_scan",
-  "waiting_home_scan",
-  "waiting_lab_scan",
-  "printing",
+  'lab_developing',
+  'lab_scanning',
+  'home_developing',
+  'home_scanning',
+  'rescanning',
+  'waiting_scan',
+  'waiting_home_scan',
+  'waiting_lab_scan',
+  'printing',
 ] as const;
 export type StageDetail = (typeof STAGE_DETAILS)[number];
 
 /** Who does a step: the owner at home, or a lab. */
-export type StepActor = "self" | "lab";
+export type StepActor = 'self' | 'lab';
 
 /** What the owner plans for a roll; a missing field is not decided yet. */
 export interface RollPlan {
-  target: "developed" | "scanned" | null;
+  target: 'developed' | 'scanned' | null;
   developBy: StepActor | null;
   scanBy: StepActor | null;
 }
@@ -181,7 +181,7 @@ export interface RollJob {
 }
 export interface RollDetail extends Pick<
   RollListRow,
-  "stage" | "stageDetail" | "needsScan" | "plan"
+  'stage' | 'stageDetail' | 'needsScan' | 'plan'
 > {
   roll: Roll;
   stock: FilmStock;
@@ -204,18 +204,18 @@ export interface ExpiryReport {
 }
 
 export const MONTH_OPTIONS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ].map((label, index) => ({ value: String(index + 1), label }));
 
 export interface LoadRollInput {
@@ -226,18 +226,18 @@ export interface LoadRollInput {
   shotIso?: number;
 }
 
-export const PROCESSING_TYPES = ["develop", "develop_scan", "scan", "print"] as const;
+export const PROCESSING_TYPES = ['develop', 'develop_scan', 'scan', 'print'] as const;
 export type ProcessingType = (typeof PROCESSING_TYPES)[number];
 /** Job types that produce scans, and so need at least one scanner. */
-export const producesScans = (type: ProcessingType) => type === "develop_scan" || type === "scan";
+export const producesScans = (type: ProcessingType) => type === 'develop_scan' || type === 'scan';
 /** Job types that develop the film, so the lab returns negatives. */
-export const developsFilm = (type: ProcessingType) => type === "develop" || type === "develop_scan";
+export const developsFilm = (type: ProcessingType) => type === 'develop' || type === 'develop_scan';
 /**
  * Jobs that take a negatives-returned date. A print job closes only on it (PR-6), and a lab keeps
  * "Negatives at lab" set until it is recorded, so a scan at a lab takes one too (RO-25).
  */
 export const recordsNegativesReturned = (type: ProcessingType, atLab: boolean) =>
-  developsFilm(type) || type === "print" || (type === "scan" && atLab);
+  developsFilm(type) || type === 'print' || (type === 'scan' && atLab);
 /**
  * The open develop job not developed yet ("Mark developed"). Negatives or scans back count as
  * developed, as in the server's stage rule, for jobs from before the developed date existed.
@@ -256,7 +256,7 @@ export const developingJob = (jobs: RollJob[]) =>
  * not while a lab holds it (a lab job cancelled before the roll came back).
  */
 export const canStartHomeDevelop = (status: RollStatus, jobs: RollJob[], negativesAtLab: boolean) =>
-  status === "done_shooting" && !jobs.length && !negativesAtLab;
+  status === 'done_shooting' && !jobs.length && !negativesAtLab;
 export const canMarkDeveloped = (status: RollStatus, jobs: RollJob[], negativesAtLab: boolean) =>
   !!developingJob(jobs) || canStartHomeDevelop(status, jobs, negativesAtLab);
 /**
@@ -270,24 +270,24 @@ export const canStartHomeScan = (
   stageDetail: StageDetail | null,
   needsScan: boolean,
 ) =>
-  stageDetail === "waiting_scan" ||
-  stageDetail === "waiting_home_scan" ||
-  stageDetail === "waiting_lab_scan" ||
-  (needsScan && (status === "done_shooting" || status === "developed" || status === "scanned"));
+  stageDetail === 'waiting_scan' ||
+  stageDetail === 'waiting_home_scan' ||
+  stageDetail === 'waiting_lab_scan' ||
+  (needsScan && (status === 'done_shooting' || status === 'developed' || status === 'scanned'));
 /**
  * Services a roll can be sent for now. Developing happens once: after the first job only scan and
  * print remain, and none while the roll is still at the lab or not yet finished.
  */
 export const sendableTypes = (status: RollStatus, jobCount: number): ProcessingType[] => {
-  if (status === "done_shooting") return jobCount ? ["scan", "print"] : [...PROCESSING_TYPES];
-  if (status === "scanned" || status === "developed") return ["scan", "print"];
+  if (status === 'done_shooting') return jobCount ? ['scan', 'print'] : [...PROCESSING_TYPES];
+  if (status === 'scanned' || status === 'developed') return ['scan', 'print'];
   return [];
 };
 export const PROCESSING_TYPE_LABELS: Record<(typeof PROCESSING_TYPES)[number], string> = {
-  develop: "Develop",
-  develop_scan: "Develop + scan",
-  scan: "Scan",
-  print: "Print",
+  develop: 'Develop',
+  develop_scan: 'Develop + scan',
+  scan: 'Scan',
+  print: 'Print',
 };
 
 export interface SendToLabInput {

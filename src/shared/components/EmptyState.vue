@@ -3,7 +3,7 @@ defineProps<{ text: string }>();
 </script>
 
 <template>
-  <div class="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+  <div class="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
     {{ text }}
   </div>
 </template>

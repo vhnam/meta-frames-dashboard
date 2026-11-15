@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ScannerFormDialog, useScannerList } from "#/features/scanners";
-import { computed, ref, watch } from "vue";
-import { IconPlus } from "@tabler/icons-vue";
-import { Button } from "#/shared/ui/button";
-import { Checkbox } from "#/shared/ui/checkbox";
-import { Switch } from "#/shared/ui/switch";
+import { IconPlus } from '@tabler/icons-vue';
+import { computed, ref, watch } from 'vue';
+
+import { ScannerFormDialog, useScannerList } from '#/features/scanners';
+import { Button } from '#/shared/ui/button';
+import { Checkbox } from '#/shared/ui/checkbox';
+import { Switch } from '#/shared/ui/switch';
 
 /** The lab's scanners in order. */
 const selected = defineModel<string[]>({ required: true });
 /** The scanner a job sent there starts with, if any. */
-const defaultId = defineModel<string>("defaultId");
+const defaultId = defineModel<string>('defaultId');
 
 const scanners = useScannerList();
 /** Ticked scanners first, in their order, then the rest as the API lists them. */
@@ -54,11 +55,16 @@ watch(
 <template>
   <fieldset class="grid min-w-0 gap-2">
     <legend class="sr-only">Scanners</legend>
-    <p v-if="scanners.isPending.value" class="text-muted-foreground text-sm">Loading scanners…</p>
+    <p
+      v-if="scanners.isPending.value"
+      class="text-sm text-muted-foreground"
+    >
+      Loading scanners…
+    </p>
     <div
       v-for="scanner in rows"
       :key="scanner.id"
-      class="dark:bg-input/30 flex min-h-11 min-w-0 items-center justify-between gap-3 rounded-md border bg-white px-3 text-sm"
+      class="flex min-h-11 min-w-0 items-center justify-between gap-3 rounded-md border bg-white px-3 text-sm dark:bg-input/30"
     >
       <label class="flex min-w-0 items-center gap-3">
         <Checkbox
@@ -66,11 +72,15 @@ watch(
           @update:model-value="(on) => toggle(scanner.id, on === true)"
         />
         <span class="truncate">{{ scanner.name }}</span>
-        <span v-if="!scanner.builtIn" class="text-muted-foreground text-xs">Yours</span>
+        <span
+          v-if="!scanner.builtIn"
+          class="text-xs text-muted-foreground"
+          >Yours</span
+        >
       </label>
       <label
         v-if="selected.includes(scanner.id)"
-        class="text-muted-foreground flex shrink-0 items-center gap-2 text-xs"
+        class="flex shrink-0 items-center gap-2 text-xs text-muted-foreground"
       >
         Default
         <Switch
@@ -80,11 +90,19 @@ watch(
       </label>
     </div>
     <div>
-      <Button type="button" variant="ghost" size="sm" @click="adding = true">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        @click="adding = true"
+      >
         <IconPlus class="size-4" />
         Add a scanner this lab runs
       </Button>
     </div>
-    <ScannerFormDialog v-model:open="adding" @saved="(scannerId) => (justAdded = scannerId)" />
+    <ScannerFormDialog
+      v-model:open="adding"
+      @saved="(scannerId) => (justAdded = scannerId)"
+    />
   </fieldset>
 </template>

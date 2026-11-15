@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { IconAdjustmentsHorizontal, IconChevronDown, IconPlus } from '@tabler/icons-vue';
+import { computed, ref, watch } from 'vue';
+
 import {
   ScanSettingsFields,
   ScannerFormDialog,
@@ -7,13 +10,12 @@ import {
   startingSettings,
   useScannerKinds,
   useScannerList,
-} from "#/features/scanners";
-import type { ScanSettings, ScannerKind } from "#/features/scanners";
-import type { ScanOrder } from "../types";
-import { computed, ref, watch } from "vue";
-import { IconAdjustmentsHorizontal, IconChevronDown, IconPlus } from "@tabler/icons-vue";
-import { Button } from "#/shared/ui/button";
-import { Checkbox } from "#/shared/ui/checkbox";
+} from '#/features/scanners';
+import type { ScanSettings, ScannerKind } from '#/features/scanners';
+import { Button } from '#/shared/ui/button';
+import { Checkbox } from '#/shared/ui/checkbox';
+
+import type { ScanOrder } from '../types';
 
 const props = defineProps<{
   error?: string;
@@ -57,7 +59,7 @@ const rows = computed((): Row[] => {
       (order): Row =>
         all.find((scanner) => scanner.id === order.scannerId) ?? {
           id: order.scannerId,
-          name: props.names?.[order.scannerId] ?? "Scanner",
+          name: props.names?.[order.scannerId] ?? 'Scanner',
           builtIn: false,
           kind: null,
           defaultSettings: {},
@@ -109,12 +111,17 @@ watch(
 
 <template>
   <fieldset class="grid min-w-0 gap-2">
-    <legend class="font-heading mb-1 text-sm font-medium">Scanners</legend>
-    <p v-if="scanners.isPending.value" class="text-muted-foreground text-sm">Loading scanners…</p>
+    <legend class="mb-1 font-heading text-sm font-medium">Scanners</legend>
+    <p
+      v-if="scanners.isPending.value"
+      class="text-sm text-muted-foreground"
+    >
+      Loading scanners…
+    </p>
     <div
       v-for="scanner in rows"
       :key="scanner.id"
-      class="dark:bg-input/30 min-w-0 rounded-md border bg-white text-sm"
+      class="min-w-0 rounded-md border bg-white text-sm dark:bg-input/30"
     >
       <div class="flex min-h-11 items-center justify-between gap-3 px-3">
         <label class="flex min-w-0 shrink-0 items-center gap-3">
@@ -124,18 +131,25 @@ watch(
             @update:model-value="(on) => toggle(scanner, on === true)"
           />
           <span class="truncate">{{ scanner.name }}</span>
-          <span v-if="!scanner.builtIn" class="text-muted-foreground text-xs">Yours</span>
+          <span
+            v-if="!scanner.builtIn"
+            class="text-xs text-muted-foreground"
+            >Yours</span
+          >
         </label>
         <button
           v-if="find(scanner.id)"
           type="button"
-          class="text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring/50 aria-expanded:bg-muted aria-expanded:text-foreground -mr-1.5 flex min-w-0 items-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-xs outline-none hover:border-border focus-visible:ring-3"
+          class="-mr-1.5 flex min-w-0 items-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-xs text-muted-foreground outline-none hover:border-border hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:bg-muted aria-expanded:text-foreground"
           :aria-expanded="expanded.has(scanner.id)"
           :aria-controls="`order-settings-${scanner.id}`"
           :title="describeSettings(find(scanner.id)!.settings, optionsOf(scanner))"
           @click="flip(scanner.id)"
         >
-          <IconAdjustmentsHorizontal class="size-3.5 shrink-0" aria-hidden="true" />
+          <IconAdjustmentsHorizontal
+            class="size-3.5 shrink-0"
+            aria-hidden="true"
+          />
           <span class="truncate">
             {{ describeSettings(find(scanner.id)!.settings, optionsOf(scanner)) }}
           </span>
@@ -167,17 +181,33 @@ watch(
         size="sm"
         @click="showAll = !showAll"
       >
-        {{ showAll ? "Only this lab's scanners" : "Show all scanners" }}
+        {{ showAll ? "Only this lab's scanners" : 'Show all scanners' }}
       </Button>
-      <Button type="button" variant="ghost" size="sm" @click="adding = true">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        @click="adding = true"
+      >
         <IconPlus class="size-4" />
         Add a scanner of your own
       </Button>
     </div>
-    <p v-if="props.locked?.length" class="text-muted-foreground text-xs">
+    <p
+      v-if="props.locked?.length"
+      class="text-xs text-muted-foreground"
+    >
       A scanner with imported scans cannot be removed.
     </p>
-    <p v-if="props.error" class="text-destructive text-xs">{{ props.error }}</p>
-    <ScannerFormDialog v-model:open="adding" @saved="added" />
+    <p
+      v-if="props.error"
+      class="text-xs text-destructive"
+    >
+      {{ props.error }}
+    </p>
+    <ScannerFormDialog
+      v-model:open="adding"
+      @saved="added"
+    />
   </fieldset>
 </template>

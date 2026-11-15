@@ -1,10 +1,12 @@
 <script setup lang="ts" generic="TSchema extends FormSchema, TPath extends RequiredPath">
-import { Field } from "@formisch/vue";
-import type { FormSchema, FormStore, RequiredPath, ValidPath } from "@formisch/vue";
-import type * as v from "valibot";
-import { Input } from "#/shared/ui/input";
-import { Textarea } from "#/shared/ui/textarea";
-import FormField from "./FormField.vue";
+import { Field } from '@formisch/vue';
+import type { FormSchema, FormStore, RequiredPath, ValidPath } from '@formisch/vue';
+import type * as v from 'valibot';
+
+import { Input } from '#/shared/ui/input';
+import { Textarea } from '#/shared/ui/textarea';
+
+import FormField from './FormField.vue';
 
 defineProps<{
   of: FormStore<TSchema>;
@@ -28,7 +30,11 @@ defineProps<{
 </script>
 
 <template>
-  <Field :of="of" :path="path" v-slot="field">
+  <Field
+    :of="of"
+    :path="path"
+    v-slot="field"
+  >
     <FormField
       :label="label"
       :optional="optional"
@@ -36,7 +42,11 @@ defineProps<{
       :hint="hint"
       :error="field.errors?.[0]"
     >
-      <template v-if="$slots.aside" #aside><slot name="aside" /></template>
+      <template
+        v-if="$slots.aside"
+        #aside
+        ><slot name="aside"
+      /></template>
       <Textarea
         v-if="multiline"
         :model-value="field.input as string"
@@ -45,7 +55,10 @@ defineProps<{
         :disabled="disabled"
         @update:model-value="(value) => (field.input = value as never)"
       />
-      <div v-else class="relative">
+      <div
+        v-else
+        class="relative"
+      >
         <Input
           :model-value="field.input as string | number | undefined"
           v-bind="field.props"
@@ -63,7 +76,7 @@ defineProps<{
         />
         <span
           v-if="suffix"
-          class="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs"
+          class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground"
           aria-hidden="true"
         >
           {{ suffix }}

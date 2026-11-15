@@ -1,31 +1,33 @@
 <script setup lang="ts">
-import { PROCESS_NAMES, stockName, stockWarnings } from "../format";
-import { useSaveStock, useStockList } from "../queries";
-import { StockSchema } from "../schema";
-import { FILM_TYPES, FILM_TYPE_LABELS, PACKAGINGS, PACKAGING_LABELS, PROCESSES } from "../types";
-import { getInput, reset, setInput, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormRichText from "#/shared/components/FormRichText.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import QuickPicks from "#/shared/components/QuickPicks.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { Button } from "#/shared/ui/button";
-import { attempt } from "#/shared/lib/ui";
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import FormInput from '#/shared/components/FormInput.vue';
+import FormRichText from '#/shared/components/FormRichText.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import QuickPicks from '#/shared/components/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+import { Button } from '#/shared/ui/button';
+
+import { PROCESS_NAMES, stockName, stockWarnings } from '../format';
+import { useSaveStock, useStockList } from '../queries';
+import { StockSchema } from '../schema';
+import { FILM_TYPES, FILM_TYPE_LABELS, PACKAGINGS, PACKAGING_LABELS, PROCESSES } from '../types';
 
 const props = withDefaults(defineProps<{ stockId?: string; allowInlineBase?: boolean }>(), {
   allowInlineBase: true,
 });
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ saved: [id: string] }>();
 
 const stocks = useStockList();
 const save = useSaveStock();
 const form = useForm({
   schema: StockSchema,
-  initialInput: { type: "color", process: "C-41", packaging: "factory" },
+  initialInput: { type: 'color', process: 'C-41', packaging: 'factory' },
 });
 const baseOpen = ref(false);
 
@@ -34,16 +36,16 @@ watch(open, (isOpen) => {
   const stock = stocks.data.value?.find((row) => row.stock.id === props.stockId)?.stock;
   reset(form, {
     initialInput: {
-      brand: stock?.brand ?? "",
-      name: stock?.name ?? "",
-      type: stock?.type ?? "color",
+      brand: stock?.brand ?? '',
+      name: stock?.name ?? '',
+      type: stock?.type ?? 'color',
       boxIso: stock?.boxIso,
-      process: stock?.process ?? "C-41",
-      packaging: stock?.packaging ?? "factory",
-      stockOrigin: stock?.stockOrigin ?? "",
-      packOrigin: stock?.packOrigin ?? "",
-      baseStockId: stock?.baseStockId ?? "",
-      description: stock?.description ?? "",
+      process: stock?.process ?? 'C-41',
+      packaging: stock?.packaging ?? 'factory',
+      stockOrigin: stock?.stockOrigin ?? '',
+      packOrigin: stock?.packOrigin ?? '',
+      baseStockId: stock?.baseStockId ?? '',
+      description: stock?.description ?? '',
     },
   });
 });
@@ -70,8 +72,8 @@ const processOptions = PROCESSES.map((value) => ({
 const packagingOptions = PACKAGINGS.map((value) => ({ value, label: PACKAGING_LABELS[value] }));
 
 const ISO_PICKS = [100, 200, 400, 800];
-const boxIso = computed(() => Number(getInput(form, { path: ["boxIso"] })));
-const pickIso = (iso: number) => setInput(form, { path: ["boxIso"], input: String(iso) });
+const boxIso = computed(() => Number(getInput(form, { path: ['boxIso'] })));
+const pickIso = (iso: number) => setInput(form, { path: ['boxIso'], input: String(iso) });
 
 const editing = computed(() => !!props.stockId);
 
@@ -83,13 +85,13 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
     description: output.description.trim(),
     baseStockId: output.baseStockId || null,
   };
-  let id = props.stockId ?? "";
+  let id = props.stockId ?? '';
   const ok = await attempt(
     save.mutateAsync({ id: props.stockId, input }).then((saved) => (id = saved)),
   );
   if (ok) {
     open.value = false;
-    emit("saved", id);
+    emit('saved', id);
   }
 }
 </script>
@@ -109,16 +111,32 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
     @submit="submit"
   >
     <!-- 01 -->
-    <FormSection no="01" title="Primary specifications" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Primary specifications"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
-        <FormInput :of="form" :path="['brand']" label="Brand" required placeholder="e.g. Kodak">
+        <FormInput
+          :of="form"
+          :path="['brand']"
+          label="Brand"
+          required
+          placeholder="e.g. Kodak"
+        >
           <template #aside
-            ><span class="text-muted-foreground text-xs">e.g. Kodak, Ilford</span></template
+            ><span class="text-xs text-muted-foreground">e.g. Kodak, Ilford</span></template
           >
         </FormInput>
-        <FormInput :of="form" :path="['name']" label="Name" required placeholder="e.g. Portra 400">
+        <FormInput
+          :of="form"
+          :path="['name']"
+          label="Name"
+          required
+          placeholder="e.g. Portra 400"
+        >
           <template #aside
-            ><span class="text-muted-foreground text-xs">e.g. Portra 400</span></template
+            ><span class="text-xs text-muted-foreground">e.g. Portra 400</span></template
           >
         </FormInput>
         <FormSelect
@@ -150,7 +168,11 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
     </FormSection>
 
     <!-- 02 -->
-    <FormSection no="02" title="Chemistry & format" note="Standard lab process">
+    <FormSection
+      no="02"
+      title="Chemistry & format"
+      note="Standard lab process"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormSelect
           :of="form"
@@ -169,8 +191,14 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
           placeholder="Select packaging"
         />
       </div>
-      <p v-for="warning in warnings" :key="warning" class="text-sm text-amber-600">{{ warning }}</p>
-      <div class="border-primary/15 bg-primary/5 rounded-lg border p-5">
+      <p
+        v-for="warning in warnings"
+        :key="warning"
+        class="text-sm text-amber-600"
+      >
+        {{ warning }}
+      </p>
+      <div class="rounded-lg border border-primary/15 bg-primary/5 p-5">
         <FormSelect
           :of="form"
           :path="['baseStockId']"
@@ -180,12 +208,15 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
           :options="baseOptions"
           hint="Original raw emulsion this film is repacked or re-spooled from (e.g. CineStill 800T is Vision3 500T)."
         >
-          <template v-if="allowInlineBase" #aside>
+          <template
+            v-if="allowInlineBase"
+            #aside
+          >
             <Button
               type="button"
               variant="outline"
               size="sm"
-              class="bg-card text-primary hover:text-primary h-7 px-3 text-xs font-semibold"
+              class="h-7 bg-card px-3 text-xs font-semibold text-primary hover:text-primary"
               @click="baseOpen = true"
             >
               + New base stock…
@@ -196,7 +227,11 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
     </FormSection>
 
     <!-- 03 -->
-    <FormSection no="03" title="Provenance & archival notes" note="Origins & grain attributes">
+    <FormSection
+      no="03"
+      title="Provenance & archival notes"
+      note="Origins & grain attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"
@@ -222,7 +257,7 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
             placeholder="Add development dilution notes, grain profiles, color latitude, halation characteristics, push/pull behavior…"
           >
             <template #aside>
-              <span class="text-muted-foreground text-xs">Markdown shortcuts work</span>
+              <span class="text-xs text-muted-foreground">Markdown shortcuts work</span>
             </template>
           </FormRichText>
         </div>

@@ -1,10 +1,11 @@
 <script setup lang="ts" generic="TSchema extends FormSchema, TPath extends RequiredPath">
-import { Field } from "@formisch/vue";
-import type { FormSchema, FormStore, RequiredPath, ValidPath } from "@formisch/vue";
-import { IconEye, IconEyeOff } from "@tabler/icons-vue";
-import type * as v from "valibot";
-import { computed, ref, useId } from "vue";
-import { Input } from "#/shared/ui/input";
+import { Field } from '@formisch/vue';
+import type { FormSchema, FormStore, RequiredPath, ValidPath } from '@formisch/vue';
+import { IconEye, IconEyeOff } from '@tabler/icons-vue';
+import type * as v from 'valibot';
+import { computed, ref, useId } from 'vue';
+
+import { Input } from '#/shared/ui/input';
 
 const props = defineProps<{
   of: FormStore<TSchema>;
@@ -19,16 +20,27 @@ const props = defineProps<{
 
 const id = useId();
 const shown = ref(false);
-const isPassword = computed(() => props.type === "password");
-const inputType = computed(() => (isPassword.value && shown.value ? "text" : props.type));
+const isPassword = computed(() => props.type === 'password');
+const inputType = computed(() => (isPassword.value && shown.value ? 'text' : props.type));
 </script>
 
 <template>
-  <Field :of="of" :path="path" v-slot="field">
+  <Field
+    :of="of"
+    :path="path"
+    v-slot="field"
+  >
     <div class="grid content-start gap-2">
-      <label :for="id" class="text-xs font-semibold tracking-[0.12em] uppercase">
+      <label
+        :for="id"
+        class="text-xs font-semibold tracking-[0.12em] uppercase"
+      >
         {{ label }}
-        <span v-if="optional" class="text-muted-foreground">(optional)</span>
+        <span
+          v-if="optional"
+          class="text-muted-foreground"
+          >(optional)</span
+        >
       </label>
       <div class="relative">
         <Input
@@ -39,23 +51,36 @@ const inputType = computed(() => (isPassword.value && shown.value ? "text" : pro
           :placeholder="placeholder"
           :autocomplete="autocomplete"
           :aria-invalid="!!field.errors"
-          class="font-heading h-11 px-3.5 text-base md:text-base"
+          class="h-11 px-3.5 font-heading text-base md:text-base"
           :class="{ 'pr-11': isPassword }"
           @update:model-value="(value) => (field.input = value as never)"
         />
         <button
           v-if="isPassword"
           type="button"
-          class="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md outline-none focus-visible:ring-3"
+          class="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
           :aria-label="shown ? 'Hide password' : 'Show password'"
           :aria-pressed="shown"
           @click="shown = !shown"
         >
-          <component :is="shown ? IconEyeOff : IconEye" class="size-5" aria-hidden="true" />
+          <component
+            :is="shown ? IconEyeOff : IconEye"
+            class="size-5"
+            aria-hidden="true"
+          />
         </button>
       </div>
-      <p v-if="hint" class="text-muted-foreground text-xs">{{ hint }}</p>
-      <p v-if="field.errors" class="text-destructive text-xs" role="alert">
+      <p
+        v-if="hint"
+        class="text-xs text-muted-foreground"
+      >
+        {{ hint }}
+      </p>
+      <p
+        v-if="field.errors"
+        class="text-xs text-destructive"
+        role="alert"
+      >
         {{ field.errors[0] }}
       </p>
     </div>

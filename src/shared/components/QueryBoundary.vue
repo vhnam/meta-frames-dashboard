@@ -1,11 +1,13 @@
 <script setup lang="ts" generic="TData">
-import { IconAlertTriangle, IconLoader2 } from "@tabler/icons-vue";
-import type { UseQueryReturnType } from "@tanstack/vue-query";
-import { useIntervalFn } from "@vueuse/core";
-import { computed, ref } from "vue";
-import { Button } from "#/shared/ui/button";
-import { Skeleton } from "#/shared/ui/skeleton";
-import EmptyState from "./EmptyState.vue";
+import { IconAlertTriangle, IconLoader2 } from '@tabler/icons-vue';
+import type { UseQueryReturnType } from '@tanstack/vue-query';
+import { useIntervalFn } from '@vueuse/core';
+import { computed, ref } from 'vue';
+
+import { Button } from '#/shared/ui/button';
+import { Skeleton } from '#/shared/ui/skeleton';
+
+import EmptyState from './EmptyState.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -17,7 +19,7 @@ const props = withDefaults(
     /** Hide the freshness bar, e.g. for small embedded queries. */
     quiet?: boolean;
   }>(),
-  { emptyText: "Nothing here yet.", skeletonRows: 4 },
+  { emptyText: 'Nothing here yet.', skeletonRows: 4 },
 );
 
 const result = props.query;
@@ -35,7 +37,7 @@ const empty = computed(() => {
 
 const ago = computed(() => {
   const seconds = Math.max(0, Math.round((now.value - result.dataUpdatedAt.value) / 1000));
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return 'just now';
   const minutes = Math.round(seconds / 60);
   return minutes < 60 ? `${minutes} min ago` : `${Math.round(minutes / 60)} h ago`;
 });
@@ -43,19 +45,30 @@ const ago = computed(() => {
 
 <template>
   <!-- loading: first fetch, nothing cached -->
-  <slot v-if="result.isPending.value" name="loading">
-    <div class="grid gap-2" role="status" aria-label="Loading">
-      <Skeleton v-for="index in skeletonRows" :key="index" class="h-10 w-full" />
+  <slot
+    v-if="result.isPending.value"
+    name="loading"
+  >
+    <div
+      class="grid gap-2"
+      role="status"
+      aria-label="Loading"
+    >
+      <Skeleton
+        v-for="index in skeletonRows"
+        :key="index"
+        class="h-10 w-full"
+      />
     </div>
   </slot>
 
   <!-- error: nothing cached to fall back on -->
   <div
     v-else-if="result.isError.value && !hasData"
-    class="border-destructive/40 flex items-start gap-3 rounded-lg border p-4 text-sm"
+    class="flex items-start gap-3 rounded-lg border border-destructive/40 p-4 text-sm"
     role="alert"
   >
-    <IconAlertTriangle class="text-destructive mt-0.5 size-4 shrink-0" />
+    <IconAlertTriangle class="mt-0.5 size-4 shrink-0 text-destructive" />
     <div class="grid flex-1 gap-1">
       <span class="font-medium">Couldn't load this data.</span>
       <span class="text-muted-foreground">{{ result.error.value?.message }}</span>
@@ -74,21 +87,30 @@ const ago = computed(() => {
     <!-- background refetch / refresh failure -->
     <div
       v-if="!quiet && (result.isFetching.value || result.isError.value)"
-      class="text-muted-foreground flex items-center justify-end gap-2 text-xs"
+      class="flex items-center justify-end gap-2 text-xs text-muted-foreground"
       aria-live="polite"
     >
       <template v-if="result.isFetching.value">
         <IconLoader2 class="size-3 animate-spin" /> Updating…
       </template>
       <template v-else-if="result.isError.value">
-        <IconAlertTriangle class="text-destructive size-3" />
+        <IconAlertTriangle class="size-3 text-destructive" />
         Couldn't refresh · showing data from {{ ago }}
-        <Button size="sm" variant="ghost" class="h-6 px-2" @click="result.refetch()">Retry</Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          class="h-6 px-2"
+          @click="result.refetch()"
+          >Retry</Button
+        >
       </template>
     </div>
 
     <!-- empty / not found -->
-    <slot v-if="empty" name="empty">
+    <slot
+      v-if="empty"
+      name="empty"
+    >
       <EmptyState :text="emptyText" />
     </slot>
 

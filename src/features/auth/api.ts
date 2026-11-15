@@ -1,11 +1,13 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { isAxiosError } from "axios";
-import { http } from "#/shared/api/http";
-import type { User } from "./types";
+import { queryOptions } from '@tanstack/vue-query';
+import { isAxiosError } from 'axios';
+
+import { http } from '#/shared/api/http';
+
+import type { User } from './types';
 
 export const authKeys = {
-  all: ["auth"] as const,
-  me: () => [...authKeys.all, "me"] as const,
+  all: ['auth'] as const,
+  me: () => [...authKeys.all, 'me'] as const,
 };
 
 export interface ApiUser {
@@ -24,12 +26,12 @@ interface AuthResult {
 const toUser = (apiUser: ApiUser): User => ({
   id: apiUser.id,
   email: apiUser.email,
-  name: apiUser.name ?? "",
+  name: apiUser.name ?? '',
   avatarUrl: apiUser.avatarUrl,
   createdAt: apiUser.createdAt,
 });
 
-const fetchMe = async () => toUser((await http.get<ApiUser>("/auth/me")).data);
+const fetchMe = async () => toUser((await http.get<ApiUser>('/auth/me')).data);
 
 export const authQueries = {
   /** The signed-in user, or `null` without a valid session. */
@@ -49,7 +51,7 @@ export const authQueries = {
 };
 
 export const login = async (variables: { email: string; password: string }): Promise<User> => {
-  const { data } = await http.post<AuthResult>("/auth/login", variables);
+  const { data } = await http.post<AuthResult>('/auth/login', variables);
   return data.user ? toUser(data.user) : fetchMe();
 };
 
@@ -63,22 +65,22 @@ export const register = async (variables: {
     password: variables.password,
     name: variables.name.trim() || undefined,
   };
-  const { data } = await http.post<AuthResult>("/auth/register", body);
+  const { data } = await http.post<AuthResult>('/auth/register', body);
   return data.user ? toUser(data.user) : fetchMe();
 };
 
 export const logout = async () => {
-  await http.post("/auth/logout");
+  await http.post('/auth/logout');
 };
 
 /** Emails a reset link. The answer is the same whether or not the account exists. */
 export const startRecovery = async (variables: { email: string }) =>
-  (await http.post<AuthResult>("/auth/recover", variables)).data.message;
+  (await http.post<AuthResult>('/auth/recover', variables)).data.message;
 
 export const resetPassword = async (variables: { token: string; password: string }) => {
-  await http.post("/auth/recover/end", variables);
+  await http.post('/auth/recover/end', variables);
 };
 
 /** Where the browser goes for "Sign in with Google"; the API lands it back on `redir`. */
 export const googleSignInUrl = (redir: string) =>
-  `${(http.defaults.baseURL ?? "").replace(/\/$/, "")}/auth/oauth2/google?${new URLSearchParams({ redir })}`;
+  `${(http.defaults.baseURL ?? '').replace(/\/$/, '')}/auth/oauth2/google?${new URLSearchParams({ redir })}`;

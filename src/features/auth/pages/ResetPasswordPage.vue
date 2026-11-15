@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { Form, useForm } from "@formisch/vue";
-import { Link, useRouter } from "@tanstack/vue-router";
-import { isAxiosError } from "axios";
-import type * as v from "valibot";
-import { computed } from "vue";
-import { notify } from "#/shared/lib/toast";
-import { errorMessage } from "#/shared/api/client";
-import { Button } from "#/shared/ui/button";
-import AuthCard from "../components/AuthCard.vue";
-import AuthInput from "../components/AuthInput.vue";
-import AuthSubmit from "../components/AuthSubmit.vue";
-import FormAlert from "../components/FormAlert.vue";
-import { useResetPassword } from "../queries";
-import { PASSWORD_HINT, ResetPasswordSchema } from "../schema";
+import { Form, useForm } from '@formisch/vue';
+import { Link, useRouter } from '@tanstack/vue-router';
+import { isAxiosError } from 'axios';
+import type * as v from 'valibot';
+import { computed } from 'vue';
+
+import { errorMessage } from '#/shared/api/client';
+import { notify } from '#/shared/lib/toast';
+import { Button } from '#/shared/ui/button';
+
+import AuthCard from '../components/AuthCard.vue';
+import AuthInput from '../components/AuthInput.vue';
+import AuthSubmit from '../components/AuthSubmit.vue';
+import FormAlert from '../components/FormAlert.vue';
+import { useResetPassword } from '../queries';
+import { PASSWORD_HINT, ResetPasswordSchema } from '../schema';
 
 const props = defineProps<{ token?: string }>();
 
@@ -20,7 +22,7 @@ const router = useRouter();
 const reset = useResetPassword();
 const form = useForm({
   schema: ResetPasswordSchema,
-  initialInput: { password: "", confirmPassword: "" },
+  initialInput: { password: '', confirmPassword: '' },
 });
 // unknown, used or expired token: the user needs a new email
 const badToken = computed(
@@ -30,12 +32,12 @@ const badToken = computed(
 
 async function submit({ password }: v.InferOutput<typeof ResetPasswordSchema>) {
   try {
-    await reset.mutateAsync({ token: props.token ?? "", password });
+    await reset.mutateAsync({ token: props.token ?? '', password });
   } catch {
     return; // shown inline
   }
-  notify.success("Password changed. Log in with your new password.");
-  await router.navigate({ to: "/auth/login" });
+  notify.success('Password changed. Log in with your new password.');
+  await router.navigate({ to: '/auth/login' });
 }
 </script>
 
@@ -47,18 +49,23 @@ async function submit({ password }: v.InferOutput<typeof ResetPasswordSchema>) {
     <template v-if="badToken">
       <FormAlert>
         {{
-          props.token ? errorMessage(reset.error.value) : "This reset link is missing its token."
+          props.token ? errorMessage(reset.error.value) : 'This reset link is missing its token.'
         }}
         Request a new link to continue.
       </FormAlert>
       <Button
         as-child
-        class="font-heading h-11 w-full text-base font-bold tracking-[0.08em] uppercase"
+        class="h-11 w-full font-heading text-base font-bold tracking-[0.08em] uppercase"
       >
         <Link to="/auth/recover">Request a new link</Link>
       </Button>
     </template>
-    <Form v-else :of="form" class="grid gap-5" @submit="submit">
+    <Form
+      v-else
+      :of="form"
+      class="grid gap-5"
+      @submit="submit"
+    >
       <FormAlert v-if="reset.isError.value">{{ errorMessage(reset.error.value) }}</FormAlert>
       <AuthInput
         :of="form"
@@ -78,13 +85,13 @@ async function submit({ password }: v.InferOutput<typeof ResetPasswordSchema>) {
         placeholder="Repeat the password"
       />
       <AuthSubmit :pending="reset.isPending.value">
-        {{ reset.isPending.value ? "Saving…" : "Change password" }}
+        {{ reset.isPending.value ? 'Saving…' : 'Change password' }}
       </AuthSubmit>
     </Form>
     <p class="text-center">
       <Link
         to="/auth/login"
-        class="text-primary text-xs font-semibold tracking-[0.12em] uppercase underline-offset-4 hover:underline"
+        class="text-xs font-semibold tracking-[0.12em] text-primary uppercase underline-offset-4 hover:underline"
       >
         Back to log in
       </Link>

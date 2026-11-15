@@ -1,43 +1,45 @@
 <script setup lang="ts">
-import { roomOnLine, useLabOrderList } from "#/features/lab-orders";
-import { useLabList } from "#/features/labs";
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import { PROCESSES } from '#/features/film-stocks/types';
+import { PROCESS_LABELS } from '#/features/film-stocks/types';
+import type { Process } from '#/features/film-stocks/types';
+import { roomOnLine, useLabOrderList } from '#/features/lab-orders';
+import OrderLinesPicker from '#/features/lab-orders/components/OrderLinesPicker.vue';
+import { useLabList } from '#/features/labs';
 import {
   NORITSU_HS1800,
   sameSettings,
   startingSettings,
   useScannerKinds,
   useScannerList,
-} from "#/features/scanners";
-import { PROCESSES } from "#/features/film-stocks/types";
-import { PROCESS_LABELS } from "#/features/film-stocks/types";
-import type { Process } from "#/features/film-stocks/types";
+} from '#/features/scanners';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormRichText from '#/shared/components/FormRichText.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { formatDate } from '#/shared/lib/format';
+import { attempt } from '#/shared/lib/ui';
+
 import {
   useRecordNegativesReturned,
   useRecordScansReceived,
   useSendToLab,
   useUpdateJob,
-} from "../queries";
-import { SendToLabSchema } from "../schema";
+} from '../queries';
+import { SendToLabSchema } from '../schema';
 import {
   PROCESSING_TYPES,
   PROCESSING_TYPE_LABELS,
   developsFilm,
   producesScans,
   recordsNegativesReturned,
-} from "../types";
-import type { ProcessingType, RollJob, RollRow, ScanOrder } from "../types";
-import { getInput, reset, setInput, useForm } from "@formisch/vue";
-import OrderLinesPicker from "#/features/lab-orders/components/OrderLinesPicker.vue";
-import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
-import ScanOrderPicker from "./ScanOrderPicker.vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormRichText from "#/shared/components/FormRichText.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { attempt } from "#/shared/lib/ui";
-import { formatDate } from "#/shared/lib/format";
+} from '../types';
+import type { ProcessingType, RollJob, RollRow, ScanOrder } from '../types';
+import ScanOrderPicker from './ScanOrderPicker.vue';
 
 const props = defineProps<{
   row?: RollRow;
@@ -52,7 +54,7 @@ const props = defineProps<{
   /** Scan the roll again, at a lab or at home: worded as a re-scan rather than a send. */
   rescan?: boolean;
 }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const labs = useLabList();
 const orders = useLabOrderList();
@@ -97,22 +99,22 @@ watch(open, (isOpen) => {
     });
     return;
   }
-  const first = offered.value[0] ?? "develop_scan";
+  const first = offered.value[0] ?? 'develop_scan';
   scanOrders.value = producesScans(first) ? defaultScanOrders(SELF) : [];
   // the form starts at home, where the work is done by the time it is recorded
-  const today = new Date().toLocaleDateString("en-CA");
+  const today = new Date().toLocaleDateString('en-CA');
   reset(form, {
     initialInput: {
       labId: SELF,
       type: first,
-      process: props.process ?? "C-41",
+      process: props.process ?? 'C-41',
       scansReceivedAt: today,
       negativesReturnedAt: today,
     },
   });
 });
 
-const type = computed(() => getInput(form, { path: ["type"] }));
+const type = computed(() => getInput(form, { path: ['type'] }));
 const lockedScanners = computed(
   () =>
     props.job?.scanOrders.filter((order) => order.scanCount > 0).map((order) => order.scannerId) ??
@@ -125,9 +127,9 @@ const orderedNames = computed(() =>
   ),
 );
 const needsScanners = computed(() => !!type.value && producesScans(type.value));
-const labId = computed(() => getInput(form, { path: ["labId"] }));
+const labId = computed(() => getInput(form, { path: ['labId'] }));
 const atHome = computed(() => labId.value === SELF);
-const orderId = computed(() => getInput(form, { path: ["orderId"] }) || undefined);
+const orderId = computed(() => getInput(form, { path: ['orderId'] }) || undefined);
 const ownOrderLineIds = computed(() => props.job?.order?.items.map((item) => item.id) ?? []);
 /** This lab's orders with room for the roll; the job's own order always counts. */
 const labOrders = computed(() =>
@@ -145,7 +147,7 @@ const orderLines = computed(
 );
 // an order belongs to one lab, so another lab leaves it behind
 watch(labId, () => {
-  if (open.value && !props.job) setInput(form, { path: ["orderId"], input: undefined });
+  if (open.value && !props.job) setInput(form, { path: ['orderId'], input: undefined });
 });
 // another order starts with nothing ticked; back on its own order, a job finds its lines again
 watch(orderId, (order) => {
@@ -162,12 +164,12 @@ const recordsNegatives = computed(
 );
 /** At home the date marks the work done; from a lab, the negatives coming back. */
 const negativesLabel = computed(() =>
-  !atHome.value ? "Negatives received" : type.value === "print" ? "Printed" : "Negatives developed",
+  !atHome.value ? 'Negatives received' : type.value === 'print' ? 'Printed' : 'Negatives developed',
 );
 /** Receipt dates are asked for when editing a job, and for work done at home. */
 const showReceipts = computed(() => !!props.job || atHome.value);
 /** Stand-in value for working at home: the API takes no lab id then. */
-const SELF = "self";
+const SELF = 'self';
 /** The scanner used at home by default: the first of the account's own, if any. */
 const homeScanner = computed(() => scanners.data.value?.find((scanner) => !scanner.builtIn)?.id);
 /** The scanners a lab runs, in order; none at home or for a lab that names none. */
@@ -216,13 +218,13 @@ watch([labId, homeScanner, () => kinds.data.value, () => labs.data.value], ([lab
 });
 
 const SELF_LABELS: Record<ProcessingType, string> = {
-  develop: "Self-develop",
-  develop_scan: "Self-develop",
-  scan: "Self-scan (at home)",
-  print: "Self-print (at home)",
+  develop: 'Self-develop',
+  develop_scan: 'Self-develop',
+  scan: 'Self-scan (at home)',
+  print: 'Self-print (at home)',
 };
 const labOptions = computed(() => [
-  { value: SELF, label: type.value ? SELF_LABELS[type.value] : "Myself (at home)" },
+  { value: SELF, label: type.value ? SELF_LABELS[type.value] : 'Myself (at home)' },
   ...(labs.data.value ?? []).map((lab) => ({ value: lab.id, label: lab.name })),
 ]);
 // built here: inline in the template, vue-tsc reported a `.value` access on the label maps
@@ -234,8 +236,8 @@ const editableTypes = computed((): ProcessingType[] => {
   const job = props.job;
   if (!job) return [];
   const types: ProcessingType[] = developsFilm(job.type)
-    ? ["develop", "develop_scan"]
-    : ["scan", "print"];
+    ? ['develop', 'develop_scan']
+    : ['scan', 'print'];
   return lockedScanners.value.length ? types.filter(producesScans) : types;
 });
 const typeOptions = computed(() =>
@@ -256,13 +258,13 @@ const summary = computed(() =>
     props.finishedOn ? `finished ${formatDate(props.finishedOn)}` : undefined,
   ]
     .filter(Boolean)
-    .join(" · "),
+    .join(' · '),
 );
 
 /** Section numbers: the roll and scanner sections are not always shown. */
 const no = computed(() => {
   let counter = 0;
-  const next = (shown = true) => (shown ? String(++counter).padStart(2, "0") : "");
+  const next = (shown = true) => (shown ? String(++counter).padStart(2, '0') : '');
   return {
     roll: next(!!props.row),
     lab: next(),
@@ -275,11 +277,11 @@ const no = computed(() => {
 async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
   if (!props.row) return;
   if (needsScanners.value && !scanOrders.value.length) {
-    scanError.value = "Pick at least one scanner.";
+    scanError.value = 'Pick at least one scanner.';
     return;
   }
   if (!atHome.value && orderId.value && !orderLineIds.value.length) {
-    orderError.value = "Tick at least one line.";
+    orderError.value = 'Tick at least one line.';
     return;
   }
   const { scansReceivedAt, negativesReturnedAt, orderId: pickedOrder, ...fields } = output;
@@ -346,10 +348,14 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
     :pending="send.isPending.value || update.isPending.value"
     @submit="submit"
   >
-    <FormSection v-if="row" :no="no.roll" title="Roll">
-      <div class="border-primary/15 bg-primary/5 rounded-lg border p-5">
+    <FormSection
+      v-if="row"
+      :no="no.roll"
+      title="Roll"
+    >
+      <div class="rounded-lg border border-primary/15 bg-primary/5 p-5">
         <div class="font-heading text-lg font-semibold">{{ row.stockName }}</div>
-        <div class="text-muted-foreground text-sm">{{ summary }}</div>
+        <div class="text-sm text-muted-foreground">{{ summary }}</div>
       </div>
     </FormSection>
 
@@ -368,7 +374,13 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
           placeholder="Select a lab"
           :options="labOptions"
         />
-        <FormSelect :of="form" :path="['type']" label="Service" required :options="typeOptions" />
+        <FormSelect
+          :of="form"
+          :path="['type']"
+          label="Service"
+          required
+          :options="typeOptions"
+        />
         <FormSelect
           :of="form"
           :path="['process']"
@@ -413,7 +425,12 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
       />
     </FormSection>
 
-    <FormSection v-if="needsScanners" :no="no.scans" title="Scans" note="One order per scanner">
+    <FormSection
+      v-if="needsScanners"
+      :no="no.scans"
+      title="Scans"
+      note="One order per scanner"
+    >
       <ScanOrderPicker
         v-model="scanOrders"
         :error="scanError"
@@ -423,7 +440,11 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
       />
     </FormSection>
 
-    <FormSection :no="no.dates" title="Dates" note="Leave blank when not known yet">
+    <FormSection
+      :no="no.dates"
+      title="Dates"
+      note="Leave blank when not known yet"
+    >
       <div class="grid gap-y-6">
         <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
           <FormInput
@@ -434,7 +455,10 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
             type="date"
           />
         </div>
-        <div v-if="needsScanners" class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+        <div
+          v-if="needsScanners"
+          class="grid gap-x-5 gap-y-6 sm:grid-cols-2"
+        >
           <FormInput
             v-if="!atHome"
             :of="form"
@@ -476,7 +500,10 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
       </div>
     </FormSection>
 
-    <FormSection :no="no.notes" title="Notes">
+    <FormSection
+      :no="no.notes"
+      title="Notes"
+    >
       <FormRichText
         :of="form"
         :path="['notes']"
@@ -485,7 +512,7 @@ async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
         placeholder="Push/pull, scan resolution, tracking number…"
       >
         <template #aside>
-          <span class="text-muted-foreground text-xs">Markdown shortcuts work</span>
+          <span class="text-xs text-muted-foreground">Markdown shortcuts work</span>
         </template>
       </FormRichText>
     </FormSection>

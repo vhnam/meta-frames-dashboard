@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/vue-query";
-import { toValue, type MaybeRefOrGetter } from "vue";
-import { patchQueries, useApiMutation } from "#/shared/api/mutation";
-import { cameraKeys } from "#/features/cameras";
-import { rollKeys } from "#/features/rolls";
-import { deleteLens, lensKeys, lensQueries, saveLens, setLensActive } from "./api";
-import type { LensRow } from "./types";
+import { useQuery } from '@tanstack/vue-query';
+import { toValue, type MaybeRefOrGetter } from 'vue';
+
+import { cameraKeys } from '#/features/cameras';
+import { rollKeys } from '#/features/rolls';
+import { patchQueries, useApiMutation } from '#/shared/api/mutation';
+
+import { deleteLens, lensKeys, lensQueries, saveLens, setLensActive } from './api';
+import type { LensRow } from './types';
 
 export const useLensList = () => useQuery(lensQueries.list());
 
@@ -20,7 +22,7 @@ export const useSaveLens = () =>
     fn: saveLens,
     // camera and roll detail pages show linked lens names
     invalidates: () => [lensKeys.all, cameraKeys.details(), rollKeys.details()],
-    success: (variables) => (variables.id ? "Lens updated" : "Lens added"),
+    success: (variables) => (variables.id ? 'Lens updated' : 'Lens added'),
   });
 
 export const useSetLensActive = () =>
@@ -45,5 +47,5 @@ export const useDeleteLens = () =>
   useApiMutation({
     fn: deleteLens,
     invalidates: () => [lensKeys.all, cameraKeys.details(), rollKeys.details()],
-    success: "Lens deleted",
+    success: 'Lens deleted',
   });

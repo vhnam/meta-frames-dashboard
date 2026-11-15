@@ -1,10 +1,11 @@
 <script setup lang="ts" generic="TSchema extends FormSchema, TPath extends RequiredPath">
-import { Field } from "@formisch/vue";
-import type { FormSchema, FormStore, RequiredPath, ValidPath } from "@formisch/vue";
-import type * as v from "valibot";
-import FormField from "./FormField.vue";
-import Select from "./Select.vue";
-import type { Option } from "./Select.vue";
+import { Field } from '@formisch/vue';
+import type { FormSchema, FormStore, RequiredPath, ValidPath } from '@formisch/vue';
+import type * as v from 'valibot';
+
+import FormField from './FormField.vue';
+import Select from './Select.vue';
+import type { Option } from './Select.vue';
 
 defineProps<{
   of: FormStore<TSchema>;
@@ -22,7 +23,11 @@ defineProps<{
 </script>
 
 <template>
-  <Field :of="of" :path="path" v-slot="field">
+  <Field
+    :of="of"
+    :path="path"
+    v-slot="field"
+  >
     <FormField
       :label="label"
       :optional="optional"
@@ -30,7 +35,11 @@ defineProps<{
       :hint="hint"
       :error="field.errors?.[0]"
     >
-      <template v-if="$slots.aside" #aside><slot name="aside" /></template>
+      <template
+        v-if="$slots.aside"
+        #aside
+        ><slot name="aside"
+      /></template>
       <div class="flex min-w-0 gap-2 [&>[data-slot=select-trigger]]:min-w-0">
         <Select
           :model-value="field.input == null ? '' : String(field.input)"

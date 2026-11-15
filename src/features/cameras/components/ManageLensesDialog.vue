@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { useLensList } from "#/features/lenses";
-import { useCameraDetail, useSetCameraLenses } from "../queries";
-import { computed, ref, watch } from "vue";
-import PlainDialog from "#/shared/components/PlainDialog.vue";
-import { attempt } from "#/shared/lib/ui";
+import { computed, ref, watch } from 'vue';
+
+import { useLensList } from '#/features/lenses';
+import PlainDialog from '#/shared/components/PlainDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+
+import { useCameraDetail, useSetCameraLenses } from '../queries';
 
 const props = defineProps<{ cameraId: string }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const detail = useCameraDetail(() => props.cameraId);
 const lenses = useLensList();
@@ -43,16 +45,28 @@ async function submit() {
     description="Lenses of the same mount are listed first."
     @submit="submit"
   >
-    <p v-if="!candidates.length" class="text-muted-foreground text-sm">
+    <p
+      v-if="!candidates.length"
+      class="text-sm text-muted-foreground"
+    >
       No lenses yet. Add lenses first.
     </p>
-    <label v-for="lens in candidates" :key="lens.id" class="flex items-start gap-2 text-sm">
-      <input v-model="selected" type="checkbox" :value="lens.id" class="mt-0.5" />
+    <label
+      v-for="lens in candidates"
+      :key="lens.id"
+      class="flex items-start gap-2 text-sm"
+    >
+      <input
+        v-model="selected"
+        type="checkbox"
+        :value="lens.id"
+        class="mt-0.5"
+      />
       <span class="grid gap-0.5">
-        <span class="font-medium">{{ [lens.brand, lens.model].filter(Boolean).join(" ") }}</span>
-        <span class="text-muted-foreground text-xs">
+        <span class="font-medium">{{ [lens.brand, lens.model].filter(Boolean).join(' ') }}</span>
+        <span class="text-xs text-muted-foreground">
           {{ lens.focalLength }}mm f/{{ lens.maxAperture.toFixed(1) }} · {{ lens.mount }} mount{{
-            lens.active ? "" : " · inactive"
+            lens.active ? '' : ' · inactive'
           }}
         </span>
       </span>

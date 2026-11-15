@@ -167,13 +167,13 @@
     @apply m-0;
   }
   .rich-text blockquote {
-    @apply border-primary/40 text-muted-foreground border-l-2 pl-3;
+    @apply border-l-2 border-primary/40 pl-3 text-muted-foreground;
   }
   .rich-text code {
-    @apply bg-secondary rounded-sm px-1 py-0.5 font-sans text-[0.85em];
+    @apply rounded-sm bg-secondary px-1 py-0.5 font-sans text-[0.85em];
   }
   .rich-text pre {
-    @apply bg-secondary overflow-x-auto rounded-md p-3 font-sans text-sm;
+    @apply overflow-x-auto rounded-md bg-secondary p-3 font-sans text-sm;
   }
   .rich-text pre code {
     @apply bg-transparent p-0;
@@ -182,10 +182,10 @@
     @apply text-primary underline underline-offset-2;
   }
   .rich-text hr {
-    @apply border-border my-4;
+    @apply my-4 border-border;
   }
   .rich-text p.is-editor-empty:first-child::before {
-    @apply text-muted-foreground pointer-events-none float-left h-0;
+    @apply pointer-events-none float-left h-0 text-muted-foreground;
     content: attr(data-placeholder);
   }
 }

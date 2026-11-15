@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/vue-query";
-import { toValue, type MaybeRefOrGetter } from "vue";
-import { computed } from "vue";
-import { useApiMutation } from "#/shared/api/mutation";
-import { rollKeys } from "#/features/rolls";
-import { deleteLabOrder, labOrderKeys, labOrderQueries, saveLabOrder, setJobLines } from "./api";
+import { useQuery } from '@tanstack/vue-query';
+import { toValue, type MaybeRefOrGetter } from 'vue';
+import { computed } from 'vue';
+
+import { rollKeys } from '#/features/rolls';
+import { useApiMutation } from '#/shared/api/mutation';
+
+import { deleteLabOrder, labOrderKeys, labOrderQueries, saveLabOrder, setJobLines } from './api';
 
 export const useLabOrderList = () => useQuery(labOrderQueries.list());
 
@@ -20,14 +22,14 @@ export const useSaveLabOrder = () =>
     fn: saveLabOrder,
     // the order's VAT and lines set the price of the rolls on it
     invalidates: () => [labOrderKeys.all, rollKeys.details()],
-    success: "Order saved",
+    success: 'Order saved',
   });
 
 export const useDeleteLabOrder = () =>
   useApiMutation({
     fn: deleteLabOrder,
     invalidates: () => [labOrderKeys.all],
-    success: "Order deleted",
+    success: 'Order deleted',
   });
 
 export const useSetJobLines = () =>
@@ -35,5 +37,5 @@ export const useSetJobLines = () =>
     fn: setJobLines,
     invalidates: () => [labOrderKeys.all, rollKeys.details()],
     success: ({ lineIds }) =>
-      lineIds.length ? "Roll's order lines saved" : "Roll taken off the order",
+      lineIds.length ? "Roll's order lines saved" : 'Roll taken off the order',
   });

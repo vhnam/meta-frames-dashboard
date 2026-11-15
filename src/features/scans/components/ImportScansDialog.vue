@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import type { RollJob } from "#/features/rolls";
-import { useScannerList } from "#/features/scanners";
-import PlainDialog from "#/shared/components/PlainDialog.vue";
-import Select from "#/shared/components/Select.vue";
-import { Button } from "#/shared/ui/button";
-import { Input } from "#/shared/ui/input";
-import { Label } from "#/shared/ui/label";
-import { useImportScans, usePreviewImport } from "../queries";
-import type { ImportPreviewItem, ImportResult, NumberingMode, OnConflict } from "../types";
+import { computed, ref, watch } from 'vue';
+
+import type { RollJob } from '#/features/rolls';
+import { useScannerList } from '#/features/scanners';
+import PlainDialog from '#/shared/components/PlainDialog.vue';
+import Select from '#/shared/components/Select.vue';
+import { Button } from '#/shared/ui/button';
+import { Input } from '#/shared/ui/input';
+import { Label } from '#/shared/ui/label';
+
+import { useImportScans, usePreviewImport } from '../queries';
+import type { ImportPreviewItem, ImportResult, NumberingMode, OnConflict } from '../types';
 
 const props = defineProps<{ job: RollJob }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const preview = usePreviewImport();
 const importing = useImportScans();
@@ -24,9 +26,9 @@ const scannerOptions = computed(() =>
     : (allScanners.data.value ?? []).map((scanner) => ({ value: scanner.id, label: scanner.name })),
 );
 
-const scannerId = ref("");
-const onConflict = ref<OnConflict>("skip");
-const mode = ref<NumberingMode>("names");
+const scannerId = ref('');
+const onConflict = ref<OnConflict>('skip');
+const mode = ref<NumberingMode>('names');
 const startFrame = ref(1);
 const offset = ref(0);
 const files = ref<File[]>([]);
@@ -37,9 +39,9 @@ const result = ref<ImportResult>();
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  scannerId.value = scannerOptions.value.length === 1 ? scannerOptions.value[0].value : "";
-  onConflict.value = "skip";
-  mode.value = "names";
+  scannerId.value = scannerOptions.value.length === 1 ? scannerOptions.value[0].value : '';
+  onConflict.value = 'skip';
+  mode.value = 'names';
   startFrame.value = 1;
   offset.value = 0;
   files.value = [];
@@ -50,7 +52,7 @@ watch(open, (isOpen) => {
 
 function pick(event: Event) {
   files.value = [...((event.target as HTMLInputElement).files ?? [])];
-  numbers.value = files.value.map(() => "");
+  numbers.value = files.value.map(() => '');
   items.value = [];
   result.value = undefined;
 }
@@ -69,7 +71,7 @@ async function runPreview() {
     if (files.value !== picked) return; // another file set was chosen meanwhile
     items.value = previewed;
     numbers.value = previewed.map((item) =>
-      item.frameNumber === undefined ? "" : String(item.frameNumber),
+      item.frameNumber === undefined ? '' : String(item.frameNumber),
     );
   } catch {
     if (files.value === picked) items.value = [];
@@ -79,7 +81,7 @@ async function runPreview() {
 /** Files with a valid frame number; the rest are left out of the import. */
 const entries = computed(() =>
   files.value.flatMap((file, index) => {
-    const text = String(numbers.value[index] ?? "").trim();
+    const text = String(numbers.value[index] ?? '').trim();
     const frameNumber = Number(text);
     return text && Number.isInteger(frameNumber) && frameNumber >= 0 ? [{ file, frameNumber }] : [];
   }),
@@ -100,7 +102,7 @@ async function submit() {
   }
 }
 
-const label = "text-sm font-medium";
+const label = 'text-sm font-medium';
 </script>
 
 <template>
@@ -114,7 +116,11 @@ const label = "text-sm font-medium";
   >
     <div class="grid gap-4">
       <div class="grid gap-1.5">
-        <Label :class="label" for="import-scanner">Scanner</Label>
+        <Label
+          :class="label"
+          for="import-scanner"
+          >Scanner</Label
+        >
         <Select
           id="import-scanner"
           v-model="scannerId"
@@ -125,7 +131,11 @@ const label = "text-sm font-medium";
       </div>
 
       <div class="grid gap-1.5">
-        <Label :class="label" for="import-files">Scan files</Label>
+        <Label
+          :class="label"
+          for="import-files"
+          >Scan files</Label
+        >
         <input
           id="import-files"
           type="file"
@@ -138,7 +148,11 @@ const label = "text-sm font-medium";
 
       <div class="grid gap-3 sm:grid-cols-3">
         <div class="grid gap-1.5">
-          <Label :class="label" for="import-mode">Frame numbers</Label>
+          <Label
+            :class="label"
+            for="import-mode"
+            >Frame numbers</Label
+          >
           <Select
             id="import-mode"
             v-model="mode"
@@ -149,16 +163,43 @@ const label = "text-sm font-medium";
             :allow-empty="false"
           />
         </div>
-        <div v-if="mode === 'sequential'" class="grid gap-1.5">
-          <Label :class="label" for="import-start">Start frame</Label>
-          <Input id="import-start" v-model="startFrame" type="number" min="0" />
+        <div
+          v-if="mode === 'sequential'"
+          class="grid gap-1.5"
+        >
+          <Label
+            :class="label"
+            for="import-start"
+            >Start frame</Label
+          >
+          <Input
+            id="import-start"
+            v-model="startFrame"
+            type="number"
+            min="0"
+          />
         </div>
-        <div v-else class="grid gap-1.5">
-          <Label :class="label" for="import-offset">Shift numbers by</Label>
-          <Input id="import-offset" v-model="offset" type="number" />
+        <div
+          v-else
+          class="grid gap-1.5"
+        >
+          <Label
+            :class="label"
+            for="import-offset"
+            >Shift numbers by</Label
+          >
+          <Input
+            id="import-offset"
+            v-model="offset"
+            type="number"
+          />
         </div>
         <div class="grid gap-1.5">
-          <Label :class="label" for="import-conflict">If a frame already has a scan</Label>
+          <Label
+            :class="label"
+            for="import-conflict"
+            >If a frame already has a scan</Label
+          >
           <Select
             id="import-conflict"
             v-model="onConflict"
@@ -183,16 +224,38 @@ const label = "text-sm font-medium";
         </Button>
       </div>
 
-      <table v-if="files.length" class="w-full text-sm" aria-label="Files to import">
+      <table
+        v-if="files.length"
+        class="w-full text-sm"
+        aria-label="Files to import"
+      >
         <thead>
-          <tr class="text-muted-foreground text-left text-xs">
-            <th scope="col" class="py-1 font-medium">File</th>
-            <th scope="col" class="w-28 py-1 font-medium">Frame</th>
-            <th scope="col" class="py-1 font-medium">Note</th>
+          <tr class="text-left text-xs text-muted-foreground">
+            <th
+              scope="col"
+              class="py-1 font-medium"
+            >
+              File
+            </th>
+            <th
+              scope="col"
+              class="w-28 py-1 font-medium"
+            >
+              Frame
+            </th>
+            <th
+              scope="col"
+              class="py-1 font-medium"
+            >
+              Note
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr v-for="(file, index) in files" :key="`${index}-${file.name}`">
+          <tr
+            v-for="(file, index) in files"
+            :key="`${index}-${file.name}`"
+          >
             <td class="py-1.5 break-all">{{ file.name }}</td>
             <td class="py-1.5">
               <Input
@@ -202,25 +265,42 @@ const label = "text-sm font-medium";
                 :aria-label="`Frame number of ${file.name}`"
               />
             </td>
-            <td class="text-destructive py-1.5 text-xs">{{ items[index]?.error }}</td>
+            <td class="py-1.5 text-xs text-destructive">{{ items[index]?.error }}</td>
           </tr>
         </tbody>
       </table>
-      <p v-if="files.length" class="text-muted-foreground text-xs">
+      <p
+        v-if="files.length"
+        class="text-xs text-muted-foreground"
+      >
         {{ entries.length }} of {{ files.length }} files will be imported. A file with no frame
         number is left out.
       </p>
 
-      <section v-if="result" class="grid gap-1 rounded-md border p-3 text-sm" aria-label="Result">
+      <section
+        v-if="result"
+        class="grid gap-1 rounded-md border p-3 text-sm"
+        aria-label="Result"
+      >
         <p class="font-medium">
           Imported {{ result.imported.length }}, skipped {{ result.skipped.length }}, failed
           {{ result.failed.length }}
         </p>
-        <ul v-if="result.skipped.length || result.failed.length" class="grid gap-0.5 text-xs">
-          <li v-for="item in result.skipped" :key="`s-${item.fileName}`">
+        <ul
+          v-if="result.skipped.length || result.failed.length"
+          class="grid gap-0.5 text-xs"
+        >
+          <li
+            v-for="item in result.skipped"
+            :key="`s-${item.fileName}`"
+          >
             Skipped {{ item.fileName }}: {{ item.reason }}
           </li>
-          <li v-for="item in result.failed" :key="`f-${item.fileName}`" class="text-destructive">
+          <li
+            v-for="item in result.failed"
+            :key="`f-${item.fileName}`"
+            class="text-destructive"
+          >
             Failed {{ item.fileName }}: {{ item.reason }}
           </li>
         </ul>

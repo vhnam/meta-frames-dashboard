@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { ScanOption, ScanSettings } from "../types";
-import Select from "#/shared/components/Select.vue";
-import { Checkbox } from "#/shared/ui/checkbox";
-import { Input } from "#/shared/ui/input";
+import Select from '#/shared/components/Select.vue';
+import { Checkbox } from '#/shared/ui/checkbox';
+import { Input } from '#/shared/ui/input';
+
+import type { ScanOption, ScanSettings } from '../types';
 
 /** A field per scan option of a scanner kind, editing a settings object. */
 const props = defineProps<{ options: ScanOption[]; idPrefix: string; disabled?: boolean }>();
@@ -14,7 +15,7 @@ function set(option: ScanOption, value: string | number | boolean) {
 }
 function setInteger(option: ScanOption, text: string | number) {
   const number = Number(text);
-  if (text !== "" && Number.isInteger(number)) set(option, number);
+  if (text !== '' && Number.isInteger(number)) set(option, number);
 }
 const choices = (option: ScanOption) => option.values ?? [];
 const fieldId = (option: ScanOption) => `${props.idPrefix}-${option.key}`;
@@ -22,8 +23,14 @@ const fieldId = (option: ScanOption) => `${props.idPrefix}-${option.key}`;
 
 <template>
   <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2">
-    <template v-for="option in props.options" :key="option.key">
-      <label v-if="option.type === 'boolean'" class="flex items-center gap-2 text-sm sm:col-span-2">
+    <template
+      v-for="option in props.options"
+      :key="option.key"
+    >
+      <label
+        v-if="option.type === 'boolean'"
+        class="flex items-center gap-2 text-sm sm:col-span-2"
+      >
         <Checkbox
           :model-value="valueOf(option) === true"
           :disabled="props.disabled"
@@ -31,10 +38,15 @@ const fieldId = (option: ScanOption) => `${props.idPrefix}-${option.key}`;
         />
         {{ option.label }}
       </label>
-      <div v-else class="grid gap-1.5">
-        <label :for="fieldId(option)" class="text-muted-foreground text-xs">{{
-          option.label
-        }}</label>
+      <div
+        v-else
+        class="grid gap-1.5"
+      >
+        <label
+          :for="fieldId(option)"
+          class="text-xs text-muted-foreground"
+          >{{ option.label }}</label
+        >
         <Select
           v-if="option.type === 'enum'"
           :id="fieldId(option)"
@@ -59,7 +71,10 @@ const fieldId = (option: ScanOption) => `${props.idPrefix}-${option.key}`;
         />
       </div>
     </template>
-    <p v-if="!props.options.length" class="text-muted-foreground text-xs sm:col-span-2">
+    <p
+      v-if="!props.options.length"
+      class="text-xs text-muted-foreground sm:col-span-2"
+    >
       No options for this scanner.
     </p>
   </div>

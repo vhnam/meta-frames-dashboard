@@ -1,34 +1,36 @@
 <script setup lang="ts">
-import { startingSettings, useScannerKinds, useScannerList } from "#/features/scanners";
-import { useSendToLab, useSetScanRequest } from "../../queries";
-import {
-  canMarkDeveloped,
-  canStartHomeDevelop,
-  canStartHomeScan,
-  developingJob,
-  sendableTypes,
-} from "../../types";
-import type { ProcessingType, RollDetail, RollRow } from "../../types";
-import { computed, ref } from "vue";
-import { IconChevronDown } from "@tabler/icons-vue";
-import { Button } from "#/shared/ui/button";
+import { IconChevronDown } from '@tabler/icons-vue';
+import { computed, ref } from 'vue';
+
+import { startingSettings, useScannerKinds, useScannerList } from '#/features/scanners';
+import FormSection from '#/shared/components/FormSection.vue';
+import { formatDate } from '#/shared/lib/format';
+import { notify } from '#/shared/lib/toast';
+import { attempt } from '#/shared/lib/ui';
+import { Button } from '#/shared/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#/shared/ui/dropdown-menu";
-import { formatDate } from "#/shared/lib/format";
-import { notify } from "#/shared/lib/toast";
-import { attempt } from "#/shared/lib/ui";
-import FormSection from "#/shared/components/FormSection.vue";
-import FinishRollDialog from "../FinishRollDialog.vue";
-import MarkDevelopedDialog from "../MarkDevelopedDialog.vue";
-import ProcessingJobs from "../ProcessingJobs.vue";
-import ReturnNegativesDialog from "../ReturnNegativesDialog.vue";
-import RollPlanFields from "../RollPlanFields.vue";
-import SendToLabDialog from "../SendToLabDialog.vue";
+} from '#/shared/ui/dropdown-menu';
+
+import { useSendToLab, useSetScanRequest } from '../../queries';
+import {
+  canMarkDeveloped,
+  canStartHomeDevelop,
+  canStartHomeScan,
+  developingJob,
+  sendableTypes,
+} from '../../types';
+import type { ProcessingType, RollDetail, RollRow } from '../../types';
+import FinishRollDialog from '../FinishRollDialog.vue';
+import MarkDevelopedDialog from '../MarkDevelopedDialog.vue';
+import ProcessingJobs from '../ProcessingJobs.vue';
+import ReturnNegativesDialog from '../ReturnNegativesDialog.vue';
+import RollPlanFields from '../RollPlanFields.vue';
+import SendToLabDialog from '../SendToLabDialog.vue';
 
 const props = defineProps<{ row: RollRow; detail: RollDetail }>();
 
@@ -45,7 +47,7 @@ const returnOpen = ref(false);
 const types = computed(() => sendableTypes(roll.value.status, jobs.value.length));
 /** Once the roll has been processed, scanning it again is the only action left; prints are not
  * offered after the first job. */
-const canRescan = computed(() => jobs.value.length > 0 && types.value.includes("scan"));
+const canRescan = computed(() => jobs.value.length > 0 && types.value.includes('scan'));
 const canSend = computed(() => !jobs.value.length && types.value.length > 0);
 const canStartDeveloping = computed(() =>
   canStartHomeDevelop(roll.value.status, jobs.value, props.detail.negativesAtLab),
@@ -62,13 +64,13 @@ const sendToLab = useSendToLab();
 const setScanRequest = useSetScanRequest();
 const scanners = useScannerList();
 const kinds = useScannerKinds();
-const today = () => new Date().toLocaleDateString("en-CA");
+const today = () => new Date().toLocaleDateString('en-CA');
 
 /** A home job starts today and stays open until its result is recorded. */
 function startAtHome(type: ProcessingType) {
   const ownScanner = scanners.data.value?.find((scanner) => !scanner.builtIn);
-  if (type === "scan" && !ownScanner) {
-    notify.error("Add your own scanner on the Scanners page first.");
+  if (type === 'scan' && !ownScanner) {
+    notify.error('Add your own scanner on the Scanners page first.');
     return;
   }
   return attempt(
@@ -79,7 +81,7 @@ function startAtHome(type: ProcessingType) {
         process: process.value,
         sentAt: today(),
         scanOrders:
-          ownScanner && type === "scan"
+          ownScanner && type === 'scan'
             ? [
                 {
                   scannerId: ownScanner.id,
@@ -100,7 +102,7 @@ const toggleScanMark = () =>
 </script>
 
 <template>
-  <div class="bg-card rounded-xl border p-6 shadow-sm">
+  <div class="rounded-xl border bg-card p-6 shadow-sm">
     <FormSection
       no="03"
       :title="jobs.length ? `Processing history (${jobs.length})` : 'Processing history'"
@@ -108,13 +110,22 @@ const toggleScanMark = () =>
       <template #actions>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button type="button" size="sm">
+            <Button
+              type="button"
+              size="sm"
+            >
               Actions
               <IconChevronDown aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="min-w-56">
-            <DropdownMenuItem v-if="roll.status === 'in_camera'" @select="finishOpen = true">
+          <DropdownMenuContent
+            align="end"
+            class="min-w-56"
+          >
+            <DropdownMenuItem
+              v-if="roll.status === 'in_camera'"
+              @select="finishOpen = true"
+            >
               Mark as finished
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -124,7 +135,10 @@ const toggleScanMark = () =>
             >
               Start developing at home
             </DropdownMenuItem>
-            <DropdownMenuItem v-if="markable" @select="developedOpen = true">
+            <DropdownMenuItem
+              v-if="markable"
+              @select="developedOpen = true"
+            >
               Mark as developed
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -136,39 +150,69 @@ const toggleScanMark = () =>
               @select="startAtHome('scan')"
             >
               Start scanning at home
-              <span v-if="detail.negativesAtLab" class="text-muted-foreground text-xs">
+              <span
+                v-if="detail.negativesAtLab"
+                class="text-xs text-muted-foreground"
+              >
                 A lab still holds the negatives.
               </span>
             </DropdownMenuItem>
-            <DropdownMenuItem v-if="detail.openHandoffId" @select="returnOpen = true">
+            <DropdownMenuItem
+              v-if="detail.openHandoffId"
+              @select="returnOpen = true"
+            >
               Negatives returned
             </DropdownMenuItem>
-            <DropdownMenuItem v-if="canRescan" @select="rescanOpen = true"
+            <DropdownMenuItem
+              v-if="canRescan"
+              @select="rescanOpen = true"
               >Re-scan</DropdownMenuItem
             >
-            <DropdownMenuItem v-if="canSend" @select="sendOpen = true"
+            <DropdownMenuItem
+              v-if="canSend"
+              @select="sendOpen = true"
               >Send to lab</DropdownMenuItem
             >
             <DropdownMenuSeparator />
-            <DropdownMenuItem :disabled="setScanRequest.isPending.value" @select="toggleScanMark">
-              {{ detail.needsScan ? "Remove needs scan" : "Needs scan" }}
+            <DropdownMenuItem
+              :disabled="setScanRequest.isPending.value"
+              @select="toggleScanMark"
+            >
+              {{ detail.needsScan ? 'Remove needs scan' : 'Needs scan' }}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </template>
       <div class="grid gap-4 text-sm">
-        <section class="grid gap-2" aria-label="Plan">
-          <h4 class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Plan</h4>
-          <RollPlanFields :roll-id="roll.id" :plan="detail.plan" />
+        <section
+          class="grid gap-2"
+          aria-label="Plan"
+        >
+          <h4 class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Plan</h4>
+          <RollPlanFields
+            :roll-id="roll.id"
+            :plan="detail.plan"
+          />
         </section>
-        <dl v-if="finishedOn" class="grid grid-cols-[auto_1fr] gap-x-3">
+        <dl
+          v-if="finishedOn"
+          class="grid grid-cols-[auto_1fr] gap-x-3"
+        >
           <dt class="text-muted-foreground">Finished</dt>
           <dd class="tabular-nums">{{ formatDate(finishedOn) }}</dd>
         </dl>
-        <ProcessingJobs :row="row" :jobs="jobs" :process="process" :finished-on="finishedOn" />
+        <ProcessingJobs
+          :row="row"
+          :jobs="jobs"
+          :process="process"
+          :finished-on="finishedOn"
+        />
       </div>
     </FormSection>
-    <FinishRollDialog v-model:open="finishOpen" :row="row" />
+    <FinishRollDialog
+      v-model:open="finishOpen"
+      :row="row"
+    />
     <MarkDevelopedDialog
       v-model:open="developedOpen"
       :roll-id="roll.id"

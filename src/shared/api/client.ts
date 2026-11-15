@@ -1,8 +1,9 @@
-import { MutationCache, QueryClient } from "@tanstack/vue-query";
-import { notify } from "#/shared/lib/toast";
+import { MutationCache, QueryClient } from '@tanstack/vue-query';
+
+import { notify } from '#/shared/lib/toast';
 
 export const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Something went wrong.";
+  error instanceof Error ? error.message : 'Something went wrong.';
 
 /** Server state lives only here. Mutation failures are reported centrally. */
 export const queryClient = new QueryClient({
@@ -22,7 +23,7 @@ export const queryClient = new QueryClient({
   }),
 });
 
-declare module "@tanstack/vue-query" {
+declare module '@tanstack/vue-query' {
   interface Register {
     mutationMeta: {
       /** Skip the central error toast; the caller shows the error inline. */

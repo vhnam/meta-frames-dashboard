@@ -1,5 +1,6 @@
-import { isListingPath, listingPath } from "./nav";
-import { parseListSearch, rememberedSearch } from "#/shared/lib/listSearch";
+import { parseListSearch, rememberedSearch } from '#/shared/lib/listSearch';
+
+import { isListingPath, listingPath } from './nav';
 
 export interface ListBack {
   to: string;
@@ -14,7 +15,7 @@ export function backToListing(
   pathname: string,
   search: { page?: unknown; pageSize?: unknown },
 ): ListBack | null {
-  if (pathname === "/" || isListingPath(pathname)) return null;
+  if (pathname === '/' || isListingPath(pathname)) return null;
   const to = listingPath(pathname);
   if (!to) return null;
   const current = parseListSearch(search);
