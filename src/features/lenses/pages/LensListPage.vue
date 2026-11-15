@@ -15,7 +15,7 @@ import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { Switch } from '#/shared/ui/switch';
 
-import LensFormDialog from '../components/LensFormDialog.vue';
+import LensFormDialog from '../components/lens-form-dialog/LensFormDialog.vue';
 import { useLensList, useSetLensActive } from '../queries';
 import type { LensRow } from '../types';
 
