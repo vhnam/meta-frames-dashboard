@@ -2,8 +2,8 @@
 import { formatDateTime } from '#/shared/lib/format';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '#/shared/ui/sheet';
 
-import type { AuditEntry } from '../types';
-import AuditActionBadge from './AuditActionBadge.vue';
+import type { AuditEntry } from '../../types';
+import AuditActionBadge from '../audit-action-badge/AuditActionBadge.vue';
 
 const open = defineModel<boolean>('open', { default: false });
 
