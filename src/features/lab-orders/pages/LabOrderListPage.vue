@@ -10,7 +10,7 @@ import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { formatDate, formatVnd } from '#/shared/lib/format';
 
-import LabOrderFormDialog from '../components/LabOrderFormDialog.vue';
+import LabOrderFormDialog from '../components/lab-order-form-dialog/LabOrderFormDialog.vue';
 import { useLabOrderList } from '../queries';
 import { rollsOnOrder } from '../types';
 import type { LabOrder } from '../types';

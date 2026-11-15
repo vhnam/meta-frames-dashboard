@@ -7,7 +7,7 @@ import { PROCESSES } from '#/features/film-stocks/types';
 import { PROCESS_LABELS } from '#/features/film-stocks/types';
 import type { Process } from '#/features/film-stocks/types';
 import { roomOnLine, useLabOrderList } from '#/features/lab-orders';
-import OrderLinesPicker from '#/features/lab-orders/components/OrderLinesPicker.vue';
+import OrderLinesPicker from '#/features/lab-orders/components/order-lines-picker/OrderLinesPicker.vue';
 import { useLabList } from '#/features/labs';
 import {
   NORITSU_HS1800,

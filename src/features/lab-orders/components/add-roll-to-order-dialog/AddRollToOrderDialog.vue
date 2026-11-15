@@ -11,11 +11,11 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { formatDate } from '#/shared/lib/format';
 import { attempt } from '#/shared/lib/ui';
 
-import { useLinkableJobs, useSetJobLines } from '../queries';
-import { AddRollToOrderSchema } from '../schema';
-import { roomOnLine } from '../types';
-import type { LabOrder } from '../types';
-import OrderLinesPicker from './OrderLinesPicker.vue';
+import { useLinkableJobs, useSetJobLines } from '../../queries';
+import { AddRollToOrderSchema } from '../../schema';
+import { roomOnLine } from '../../types';
+import type { LabOrder } from '../../types';
+import OrderLinesPicker from '../order-lines-picker/OrderLinesPicker.vue';
 
 const props = defineProps<{ order: LabOrder; lineId?: string }>();
 const open = defineModel<boolean>('open', { required: true });

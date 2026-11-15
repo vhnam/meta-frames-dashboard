@@ -7,7 +7,7 @@ import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 import { labOrderQueries, saveLabOrder } from './api';
-import LabOrderFormDialog from './components/LabOrderFormDialog.vue';
+import LabOrderFormDialog from './components/lab-order-form-dialog/LabOrderFormDialog.vue';
 import { rollsOnOrder, roomOnLine } from './types';
 
 installFakeServer();

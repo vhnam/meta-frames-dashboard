@@ -7,7 +7,7 @@ import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 import { SelectStub } from '#/test/selectStub';
 
-import { labOrderQueries, saveLabOrder } from '../api';
+import { labOrderQueries, saveLabOrder } from '../../api';
 import AddRollToOrderDialog from './AddRollToOrderDialog.vue';
 
 installFakeServer();
