@@ -13,8 +13,8 @@ import { ask, attempt } from '#/shared/lib/ui';
 import { cn } from '#/shared/lib/utils';
 import { Button } from '#/shared/ui/button';
 
-import AddRollToOrderDialog from '../components/AddRollToOrderDialog.vue';
-import LabOrderFormDialog from '../components/LabOrderFormDialog.vue';
+import AddRollToOrderDialog from '../components/add-roll-to-order-dialog/AddRollToOrderDialog.vue';
+import LabOrderFormDialog from '../components/lab-order-form-dialog/LabOrderFormDialog.vue';
 import { useDeleteLabOrder, useLabOrderDetail, useSetJobLines } from '../queries';
 import { jobsOnOrder, rollsOnOrder, roomOnLine } from '../types';
 import type { LabOrderJob, LabOrderLine } from '../types';

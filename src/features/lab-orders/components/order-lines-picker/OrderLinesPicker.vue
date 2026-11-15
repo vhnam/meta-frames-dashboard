@@ -4,8 +4,8 @@ import { computed } from 'vue';
 import { formatVnd } from '#/shared/lib/format';
 import { Checkbox } from '#/shared/ui/checkbox';
 
-import { roomOnLine } from '../types';
-import type { LabOrderLine } from '../types';
+import { roomOnLine } from '../../types';
+import type { LabOrderLine } from '../../types';
 
 const props = defineProps<{
   lines: LabOrderLine[];

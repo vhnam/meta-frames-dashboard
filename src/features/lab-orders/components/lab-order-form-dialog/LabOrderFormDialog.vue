@@ -17,9 +17,9 @@ import { attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 import { Input } from '#/shared/ui/input';
 
-import { useSaveLabOrder } from '../queries';
-import { LabOrderSchema } from '../schema';
-import type { LabOrder, LabOrderLineInput } from '../types';
+import { useSaveLabOrder } from '../../queries';
+import { LabOrderSchema } from '../../schema';
+import type { LabOrder, LabOrderLineInput } from '../../types';
 
 // TipTap is large: load it only when the form opens.
 const RichTextEditor = defineAsyncComponent(
