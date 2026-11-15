@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, watchEffect, ref } from 'vue';
 
-import { useScanFile } from '../queries';
+import { useScanFile } from '../../queries';
 
 const props = defineProps<{ scanId: string; alt: string }>();
 

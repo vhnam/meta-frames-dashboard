@@ -9,8 +9,8 @@ import { Button } from '#/shared/ui/button';
 import { Input } from '#/shared/ui/input';
 import { Label } from '#/shared/ui/label';
 
-import { useImportScans, usePreviewImport } from '../queries';
-import type { ImportPreviewItem, ImportResult, NumberingMode, OnConflict } from '../types';
+import { useImportScans, usePreviewImport } from '../../queries';
+import type { ImportPreviewItem, ImportResult, NumberingMode, OnConflict } from '../../types';
 
 const props = defineProps<{ job: RollJob }>();
 const open = defineModel<boolean>('open', { required: true });
