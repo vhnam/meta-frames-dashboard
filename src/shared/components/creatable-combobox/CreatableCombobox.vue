@@ -32,13 +32,20 @@ const model = defineModel<string>({ default: '' });
 
 const open = ref(false);
 const term = ref(model.value);
-watch(model, (value) => (term.value = value));
+// true once the user types; picking a value resets it, leaving the field keeps it so the list
+// still shows the matches on the next focus
+const typed = ref(false);
+watch(model, (value) => {
+  if (value === term.value.trim()) return;
+  term.value = value;
+  typed.value = false;
+});
 
 const query = computed(() => term.value.trim());
 const filtered = computed(() => {
   const needle = query.value.toLowerCase();
-  // the full list while the text is still the chosen value, so other values stay one click away
-  if (!needle || query.value === model.value) return props.options;
+  // the full list until the user types, so other values stay one click away
+  if (!needle || !typed.value) return props.options;
   return props.options.filter((option) => option.value.toLowerCase().includes(needle));
 });
 const canCreate = computed(
@@ -69,6 +76,7 @@ function commit() {
         :placeholder="placeholder"
         :aria-invalid="invalid || undefined"
         class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent py-1 pr-10 pl-3 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
+        @input="typed = true"
         @blur="commit"
       />
       <ComboboxTrigger
@@ -86,14 +94,14 @@ function commit() {
       <ComboboxContent
         position="popper"
         :side-offset="4"
-        class="z-50 w-(--reka-combobox-trigger-width) min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0"
+        class="z-50 w-(--reka-combobox-trigger-width) min-w-32 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0"
       >
-        <ComboboxViewport class="max-h-60 overflow-y-auto p-1">
+        <ComboboxViewport class="max-h-60 scroll-fade overflow-y-auto p-1">
           <ComboboxItem
             v-for="option in filtered"
             :key="option.value"
             :value="option.value"
-            class="relative flex cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+            class="relative flex cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
           >
             <span class="min-w-0 flex-1 truncate">{{ option.value }}</span>
             <span
@@ -113,7 +121,7 @@ function commit() {
           <ComboboxItem
             v-if="canCreate"
             :value="query"
-            class="flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary outline-hidden select-none data-[highlighted]:bg-primary/10"
+            class="flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-primary outline-hidden select-none data-highlighted:bg-primary/10"
           >
             <IconPlus
               class="size-4"
