@@ -13,7 +13,7 @@ import { ask, attempt } from '#/shared/lib/ui';
 import { cn } from '#/shared/lib/utils';
 import { Button } from '#/shared/ui/button';
 
-import LensFormDialog from '../components/LensFormDialog.vue';
+import LensFormDialog from '../components/lens-form-dialog/LensFormDialog.vue';
 import { lensName } from '../format';
 import { useDeleteLens, useLensDetail, useSetLensActive } from '../queries';
 

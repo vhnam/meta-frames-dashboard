@@ -13,8 +13,8 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { ask, attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 
-import { useDeleteLens, useLensList, useSaveLens } from '../queries';
-import { LensSchema } from '../schema';
+import { useDeleteLens, useLensList, useSaveLens } from '../../queries';
+import { LensSchema } from '../../schema';
 
 const props = defineProps<{ lensId?: string }>();
 const open = defineModel<boolean>('open', { required: true });
