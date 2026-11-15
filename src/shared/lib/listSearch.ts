@@ -1,4 +1,4 @@
-import { PAGE_SIZES } from '#/shared/components/dataTable';
+import { PAGE_SIZES } from '#/shared/components/data-table/dataTable';
 
 const KEY = 'meta-frames:list-pages';
 

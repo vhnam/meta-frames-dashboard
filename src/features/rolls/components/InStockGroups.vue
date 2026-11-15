@@ -8,9 +8,14 @@ import {
   TYPE_TONE,
   type FilmStock,
 } from '#/features/film-stocks';
-import type { DataTableColumn } from '#/shared/components/dataTable';
-import DataTable from '#/shared/components/DataTable.vue';
-import { PRIMARY_TEXT, numberCell, stackCell, tagCell } from '#/shared/components/tableCells';
+import type { DataTableColumn } from '#/shared/components/data-table/dataTable';
+import DataTable from '#/shared/components/data-table/DataTable.vue';
+import {
+  PRIMARY_TEXT,
+  numberCell,
+  stackCell,
+  tagCell,
+} from '#/shared/components/data-table/tableCells';
 import { plainText } from '#/shared/lib/format';
 
 import { formatExpiry } from '../format';

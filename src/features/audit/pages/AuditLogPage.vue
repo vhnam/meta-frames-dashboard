@@ -2,11 +2,11 @@
 import { IconChevronRight } from '@tabler/icons-vue';
 import { h, ref } from 'vue';
 
-import type { DataTableColumn } from '#/shared/components/dataTable';
-import DataTable from '#/shared/components/DataTable.vue';
-import PageHeader from '#/shared/components/PageHeader.vue';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
-import { PRIMARY_TEXT } from '#/shared/components/tableCells';
+import type { DataTableColumn } from '#/shared/components/data-table/dataTable';
+import DataTable from '#/shared/components/data-table/DataTable.vue';
+import { PRIMARY_TEXT } from '#/shared/components/data-table/tableCells';
+import PageHeader from '#/shared/components/page-header/PageHeader.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { formatDateTime } from '#/shared/lib/format';
 
 import AuditActionBadge from '../components/AuditActionBadge.vue';

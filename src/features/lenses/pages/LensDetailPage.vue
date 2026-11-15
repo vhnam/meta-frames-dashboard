@@ -4,11 +4,11 @@ import { Link, useRouter } from '@tanstack/vue-router';
 import { computed, ref } from 'vue';
 
 import { RollStatusBadge, formatExpiry, useRollList } from '#/features/rolls';
-import DetailHero from '#/shared/components/DetailHero.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
-import { RichText } from '#/shared/components/richText';
-import SpecTile from '#/shared/components/SpecTile.vue';
+import DetailHero from '#/shared/components/detail-hero/DetailHero.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
+import { RichText } from '#/shared/components/rich-text/richText';
+import SpecTile from '#/shared/components/spec-tile/SpecTile.vue';
 import { ask, attempt } from '#/shared/lib/ui';
 import { cn } from '#/shared/lib/utils';
 import { Button } from '#/shared/ui/button';

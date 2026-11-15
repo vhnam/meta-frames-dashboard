@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Select from '#/shared/components/Select.vue';
+import Select from '#/shared/components/select/Select.vue';
 import { Checkbox } from '#/shared/ui/checkbox';
 import { Input } from '#/shared/ui/input';
 

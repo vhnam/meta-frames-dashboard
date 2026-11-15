@@ -5,8 +5,8 @@ import { ref } from 'vue';
 
 import { cameraName } from '#/features/cameras';
 import { stockName } from '#/features/film-stocks';
-import DetailHero from '#/shared/components/DetailHero.vue';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
+import DetailHero from '#/shared/components/detail-hero/DetailHero.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { formatDate } from '#/shared/lib/format';
 import { ask, attempt } from '#/shared/lib/ui';
 import { Badge } from '#/shared/ui/badge';

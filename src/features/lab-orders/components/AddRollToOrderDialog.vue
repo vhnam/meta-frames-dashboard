@@ -4,10 +4,10 @@ import type * as v from 'valibot';
 import { computed, ref, watch } from 'vue';
 
 import { PROCESSING_TYPE_LABELS } from '#/features/rolls/types';
-import EmptyState from '#/shared/components/EmptyState.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import FormSelect from '#/shared/components/FormSelect.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import EmptyState from '#/shared/components/empty-state/EmptyState.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { formatDate } from '#/shared/lib/format';
 import { attempt } from '#/shared/lib/ui';
 

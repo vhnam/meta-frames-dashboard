@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { queryClient } from '#/shared/api/client';
-import FormSelect from '#/shared/components/FormSelect.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 // @vitest-environment happy-dom

@@ -6,7 +6,7 @@ import type * as v from 'valibot';
 import { Input } from '#/shared/ui/input';
 import { Textarea } from '#/shared/ui/textarea';
 
-import FormField from './FormField.vue';
+import FormField from '../form-field/FormField.vue';
 
 defineProps<{
   of: FormStore<TSchema>;

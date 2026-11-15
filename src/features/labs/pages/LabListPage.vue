@@ -2,12 +2,12 @@
 import { ref } from 'vue';
 
 import { useScannerList } from '#/features/scanners';
-import AddButton from '#/shared/components/AddButton.vue';
-import type { DataTableColumn } from '#/shared/components/dataTable';
-import DataTable from '#/shared/components/DataTable.vue';
-import PageHeader from '#/shared/components/PageHeader.vue';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
-import { mutedCell, primaryText } from '#/shared/components/tableCells';
+import AddButton from '#/shared/components/add-button/AddButton.vue';
+import type { DataTableColumn } from '#/shared/components/data-table/dataTable';
+import DataTable from '#/shared/components/data-table/DataTable.vue';
+import { mutedCell, primaryText } from '#/shared/components/data-table/tableCells';
+import PageHeader from '#/shared/components/page-header/PageHeader.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 
 import LabFormDialog from '../components/LabFormDialog.vue';
 import { useLabList } from '../queries';

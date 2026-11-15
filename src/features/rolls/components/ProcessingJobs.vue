@@ -10,8 +10,8 @@ import {
   useScannerList,
 } from '#/features/scanners';
 import { CompareScansDialog, ImportScansDialog } from '#/features/scans';
-import EmptyState from '#/shared/components/EmptyState.vue';
-import { RichText } from '#/shared/components/richText';
+import EmptyState from '#/shared/components/empty-state/EmptyState.vue';
+import { RichText } from '#/shared/components/rich-text/richText';
 import { formatDate, formatVnd } from '#/shared/lib/format';
 import { ask, attempt } from '#/shared/lib/ui';
 import { Badge } from '#/shared/ui/badge';

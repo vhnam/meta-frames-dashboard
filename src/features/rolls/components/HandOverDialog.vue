@@ -10,11 +10,11 @@ import {
   useScannerKinds,
   useScannerList,
 } from '#/features/scanners';
-import FormInput from '#/shared/components/FormInput.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import FormSelect from '#/shared/components/FormSelect.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
-import Select from '#/shared/components/Select.vue';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
+import Select from '#/shared/components/select/Select.vue';
 import { attempt } from '#/shared/lib/ui';
 
 import { useHandOverRolls } from '../queries';

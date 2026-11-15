@@ -4,7 +4,7 @@ import { Link } from '@tanstack/vue-router';
 
 import { cameraName } from '#/features/cameras';
 import { lensName } from '#/features/lenses';
-import FormSection from '#/shared/components/FormSection.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
 import { Button } from '#/shared/ui/button';
 
 import type { RollDetail } from '../../types';

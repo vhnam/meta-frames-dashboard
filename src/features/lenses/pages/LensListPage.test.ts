@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { queryClient } from '#/shared/api/client';
-import DataTable from '#/shared/components/DataTable.vue';
+import DataTable from '#/shared/components/data-table/DataTable.vue';
 import { installFakeServer, server } from '#/test/fakeServer';
 import { tableOf } from '#/test/tableOf';
 

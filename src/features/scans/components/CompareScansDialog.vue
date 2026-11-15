@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 
 import type { RollJob } from '#/features/rolls';
-import PlainDialog from '#/shared/components/PlainDialog.vue';
+import PlainDialog from '#/shared/components/plain-dialog/PlainDialog.vue';
 import { Button } from '#/shared/ui/button';
 import { Input } from '#/shared/ui/input';
 import { Label } from '#/shared/ui/label';

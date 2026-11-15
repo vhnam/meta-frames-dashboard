@@ -2,7 +2,7 @@ import { computed } from 'vue';
 
 import { useLensList } from '#/features/lenses/queries';
 import type { Lens } from '#/features/lenses/types';
-import type { ComboOption } from '#/shared/components/combobox';
+import type { ComboOption } from '#/shared/components/creatable-combobox/combobox';
 
 import { useCameraList } from './queries';
 import type { Camera } from './types';

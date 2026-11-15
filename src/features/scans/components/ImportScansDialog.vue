@@ -3,8 +3,8 @@ import { computed, ref, watch } from 'vue';
 
 import type { RollJob } from '#/features/rolls';
 import { useScannerList } from '#/features/scanners';
-import PlainDialog from '#/shared/components/PlainDialog.vue';
-import Select from '#/shared/components/Select.vue';
+import PlainDialog from '#/shared/components/plain-dialog/PlainDialog.vue';
+import Select from '#/shared/components/select/Select.vue';
 import { Button } from '#/shared/ui/button';
 import { Input } from '#/shared/ui/input';
 import { Label } from '#/shared/ui/label';
