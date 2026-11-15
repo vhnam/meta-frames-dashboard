@@ -29,6 +29,7 @@ release. Add a tool name to select part of the graph. For example, run
 ## Git Commits
 
 - Do not add a `Co-Authored-By` trailer (or any other Claude attribution) to commit messages. Write the subject and body only.
+- Write each commit message to the [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/#specification) specification.
 
 ## Changelog
 
@@ -44,7 +45,7 @@ release. Add a tool name to select part of the graph. For example, run
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **meta-frames-dashboard** (3320 symbols, 8082 relationships, 60 execution flows).
+This project is indexed by GitNexus as **meta-frames-dashboard** (3590 symbols, 6936 relationships, 66 execution flows).
 
 > Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
 

@@ -1,14 +1,10 @@
-# Project Rules
-
-## Naming
-
-- Do not use single-character variable names, including callback parameters, loop indices and destructured values. Name the thing it holds: `roll`, `stock`, `index`, `event`, not `r`, `s`, `i`, `e`. `vp lint` enforces it (`id-length`); `_` for an unused parameter and `v` for the valibot import are allowed.
+@AGENTS.md
 
 <!-- gitnexus:start -->
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **meta-frames-dashboard** (3320 symbols, 8082 relationships, 60 execution flows).
+This project is indexed by GitNexus as **meta-frames-dashboard** (3590 symbols, 6936 relationships, 66 execution flows).
 
 > Index stale? Run `node .gitnexus/run.cjs analyze --index-only` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? Bootstrap with `npx`, `bunx`, or `pnpm dlx` — e.g. `bunx gitnexus@latest analyze` (npm 11 npx crash; #1939).
 
