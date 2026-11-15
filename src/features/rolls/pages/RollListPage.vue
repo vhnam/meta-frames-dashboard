@@ -34,11 +34,11 @@ import {
 } from '#/shared/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/shared/ui/tabs';
 
-import AddRollsDialog from '../components/AddRollsDialog.vue';
-import HandOverDialog from '../components/HandOverDialog.vue';
-import InStockGroups from '../components/InStockGroups.vue';
-import InStockToolbar from '../components/InStockToolbar.vue';
-import RollStageBadge, { STAGE_LABELS } from '../components/RollStageBadge.vue';
+import AddRollsDialog from '../components/add-rolls-dialog/AddRollsDialog.vue';
+import HandOverDialog from '../components/hand-over-dialog/HandOverDialog.vue';
+import InStockGroups from '../components/in-stock-groups/InStockGroups.vue';
+import InStockToolbar from '../components/in-stock-toolbar/InStockToolbar.vue';
+import RollStageBadge, { STAGE_LABELS } from '../components/roll-stage-badge/RollStageBadge.vue';
 import { expiryFromNow, formatExpiry, isExpired } from '../format';
 import { useRollList } from '../queries';
 import {

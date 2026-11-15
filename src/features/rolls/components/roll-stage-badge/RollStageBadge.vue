@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { StatusTone } from '#/shared/components/status-badge/StatusBadge.vue';
 
-import type { RollStage, StageDetail } from '../types';
+import type { RollStage, StageDetail } from '../../types';
 
 export const STAGE_LABELS: Record<RollStage, string> = {
   in_stock: 'In stock',

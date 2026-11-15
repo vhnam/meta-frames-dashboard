@@ -6,7 +6,7 @@ import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 // @vitest-environment happy-dom
-import { rollQueries, updateRoll } from '../api';
+import { rollQueries, updateRoll } from '../../api';
 import RollEditDialog from './RollEditDialog.vue';
 
 installFakeServer();

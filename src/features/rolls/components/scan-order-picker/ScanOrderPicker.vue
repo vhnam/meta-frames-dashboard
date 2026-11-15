@@ -15,7 +15,7 @@ import type { ScanSettings, ScannerKind } from '#/features/scanners';
 import { Button } from '#/shared/ui/button';
 import { Checkbox } from '#/shared/ui/checkbox';
 
-import type { ScanOrder } from '../types';
+import type { ScanOrder } from '../../types';
 
 const props = defineProps<{
   error?: string;

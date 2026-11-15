@@ -7,7 +7,7 @@ import { installFakeServer, server } from '#/test/fakeServer';
 import { SelectStub } from '#/test/selectStub';
 
 // @vitest-environment happy-dom
-import { rollQueries } from '../api';
+import { rollQueries } from '../../api';
 import SendToLabDialog from './SendToLabDialog.vue';
 
 installFakeServer();

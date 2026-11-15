@@ -8,9 +8,9 @@ import FormSection from '#/shared/components/form-section/FormSection.vue';
 import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useFinishRoll } from '../queries';
-import { finishRollSchema } from '../schema';
-import type { RollRow } from '../types';
+import { useFinishRoll } from '../../queries';
+import { finishRollSchema } from '../../schema';
+import type { RollRow } from '../../types';
 
 const props = defineProps<{ row: RollRow }>();
 const open = defineModel<boolean>('open', { required: true });

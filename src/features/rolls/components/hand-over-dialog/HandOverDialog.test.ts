@@ -7,8 +7,8 @@ import { installFakeServer, server } from '#/test/fakeServer';
 import { SelectStub } from '#/test/selectStub';
 
 // @vitest-environment happy-dom
-import { rollQueries } from '../api';
-import type { RollListRow } from '../types';
+import { rollQueries } from '../../api';
+import type { RollListRow } from '../../types';
 import HandOverDialog from './HandOverDialog.vue';
 
 installFakeServer();

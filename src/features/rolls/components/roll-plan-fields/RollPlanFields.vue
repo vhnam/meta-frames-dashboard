@@ -2,8 +2,8 @@
 import Select from '#/shared/components/select/Select.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useSetRollPlan } from '../queries';
-import type { RollPlan, StepActor } from '../types';
+import { useSetRollPlan } from '../../queries';
+import type { RollPlan, StepActor } from '../../types';
 
 const props = defineProps<{ rollId: string; plan: RollPlan }>();
 const setPlan = useSetRollPlan();

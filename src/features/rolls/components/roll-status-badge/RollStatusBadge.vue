@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import StatusBadge, { type StatusTone } from '#/shared/components/status-badge/StatusBadge.vue';
 
-import type { RollStatus } from '../types';
+import type { RollStatus } from '../../types';
 
 defineProps<{ status: RollStatus }>();
 

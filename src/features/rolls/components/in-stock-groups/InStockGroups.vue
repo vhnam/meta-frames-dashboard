@@ -18,8 +18,8 @@ import {
 } from '#/shared/components/data-table/tableCells';
 import { plainText } from '#/shared/lib/format';
 
-import { formatExpiry } from '../format';
-import { STOCK_FILTER_VALUES, formatCounts, groupSummary, type StockGroup } from '../rollList';
+import { formatExpiry } from '../../format';
+import { STOCK_FILTER_VALUES, formatCounts, groupSummary, type StockGroup } from '../../rollList';
 
 type GroupRow = StockGroup & { stock: FilmStock | undefined };
 

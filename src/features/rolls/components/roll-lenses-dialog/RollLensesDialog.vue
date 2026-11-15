@@ -9,7 +9,7 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { attempt } from '#/shared/lib/ui';
 import { Checkbox } from '#/shared/ui/checkbox';
 
-import { useSetRollLenses } from '../queries';
+import { useSetRollLenses } from '../../queries';
 
 const props = defineProps<{
   rollId: string;

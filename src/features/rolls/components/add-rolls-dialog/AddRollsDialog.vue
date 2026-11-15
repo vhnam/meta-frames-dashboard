@@ -13,9 +13,9 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 
-import { useAddRolls } from '../queries';
-import { AddRollsSchema } from '../schema';
-import { FORMATS, MONTH_OPTIONS } from '../types';
+import { useAddRolls } from '../../queries';
+import { AddRollsSchema } from '../../schema';
+import { FORMATS, MONTH_OPTIONS } from '../../types';
 
 const props = defineProps<{ stockId?: string }>();
 const open = defineModel<boolean>('open', { required: true });

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 
-import type { RollRow } from '../types';
+import type { RollRow } from '../../types';
 import FinishRollDialog from './FinishRollDialog.vue';
 
 installFakeServer();
