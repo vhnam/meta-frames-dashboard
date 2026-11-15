@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The Brand field of the Add and Edit film stock forms suggests the brands already used on film stocks while you type, one entry per brand whatever its case. Pick one or type a new brand.
 - The Film stock field on Add rolls filters the list as you type. You pick one existing stock.
 
 ### Changed
