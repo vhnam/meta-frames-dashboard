@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-15
+
 This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`, and with the roll workflow: `stage`, `stageDetail`, `needsScan` and `plan` on each roll of `GET /rolls`, `POST /lab-handoffs`, and on a roll `openHandoffId`, `developedAt` on its jobs, `PUT /rolls/{id}/plan`, `PUT /rolls/{id}/developed`, `PUT|DELETE /rolls/{id}/scan-request` and `PUT /lab-handoffs/{id}/returned`. With an older API the Rolls tabs stay empty.
 
 ### Added
@@ -368,7 +370,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/vhnam/meta-frames-dashboard/releases/tag/v1.0.0
