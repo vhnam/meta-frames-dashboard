@@ -1,0 +1,520 @@
+<script setup lang="ts">
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import { PROCESSES } from '#/features/film-stocks/types';
+import { PROCESS_LABELS } from '#/features/film-stocks/types';
+import type { Process } from '#/features/film-stocks/types';
+import { roomOnLine, useLabOrderList } from '#/features/lab-orders';
+import OrderLinesPicker from '#/features/lab-orders/components/order-lines-picker/OrderLinesPicker.vue';
+import { useLabList } from '#/features/labs';
+import {
+  NORITSU_HS1800,
+  sameSettings,
+  startingSettings,
+  useScannerKinds,
+  useScannerList,
+} from '#/features/scanners';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormRichText from '#/shared/components/form-rich-text/FormRichText.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
+import { formatDate } from '#/shared/lib/format';
+import { attempt } from '#/shared/lib/ui';
+
+import {
+  useRecordNegativesReturned,
+  useRecordScansReceived,
+  useSendToLab,
+  useUpdateJob,
+} from '../../queries';
+import { SendToLabSchema } from '../../schema';
+import {
+  PROCESSING_TYPES,
+  PROCESSING_TYPE_LABELS,
+  developsFilm,
+  producesScans,
+  recordsNegativesReturned,
+} from '../../types';
+import type { ProcessingType, RollJob, RollRow, ScanOrder } from '../../types';
+import ScanOrderPicker from '../scan-order-picker/ScanOrderPicker.vue';
+
+const props = defineProps<{
+  row?: RollRow;
+  /** Process of the roll's stock: the default for the job. */
+  process?: Process;
+  /** Date the roll was finished, when known. */
+  finishedOn?: string | null;
+  /** Edit this job instead of sending the roll: its lab stays fixed. */
+  job?: RollJob;
+  /** Services offered for a new job; defaults to all. */
+  types?: ProcessingType[];
+  /** Scan the roll again, at a lab or at home: worded as a re-scan rather than a send. */
+  rescan?: boolean;
+}>();
+const open = defineModel<boolean>('open', { required: true });
+
+const labs = useLabList();
+const orders = useLabOrderList();
+const scanners = useScannerList();
+const kinds = useScannerKinds();
+const send = useSendToLab();
+const update = useUpdateJob();
+const scansReceived = useRecordScansReceived();
+const negativesReturned = useRecordNegativesReturned();
+const form = useForm({ schema: SendToLabSchema });
+
+const scanOrders = ref<ScanOrder[]>([]);
+const scanError = ref<string>();
+const orderLineIds = ref<string[]>([]);
+const orderError = ref<string>();
+
+const offered = computed(() => props.types ?? [...PROCESSING_TYPES]);
+
+watch(open, (isOpen) => {
+  if (!isOpen) return;
+  scanError.value = undefined;
+  orderError.value = undefined;
+  const job = props.job;
+  orderLineIds.value = job?.order?.items.map((item) => item.id) ?? [];
+  if (job) {
+    scanOrders.value = job.scanOrders.map(({ scannerId, settings }) => ({ scannerId, settings }));
+    reset(form, {
+      initialInput: {
+        labId: job.labId ?? SELF,
+        type: job.type,
+        process: job.process,
+        // a job on an order takes its price from its lines
+        price: job.order ? undefined : (job.price ?? undefined),
+        orderId: job.order?.id,
+        sentAt: job.sentDate,
+        scansExpectedAt: job.scansExpectedDate ?? undefined,
+        negativesExpectedAt: job.negativesExpectedDate ?? undefined,
+        notes: job.notes || undefined,
+        scansReceivedAt: job.scansReceivedDate ?? undefined,
+        negativesReturnedAt: job.negativesReturnedDate ?? undefined,
+      },
+    });
+    return;
+  }
+  const first = offered.value[0] ?? 'develop_scan';
+  scanOrders.value = producesScans(first) ? defaultScanOrders(SELF) : [];
+  // the form starts at home, where the work is done by the time it is recorded
+  const today = new Date().toLocaleDateString('en-CA');
+  reset(form, {
+    initialInput: {
+      labId: SELF,
+      type: first,
+      process: props.process ?? 'C-41',
+      scansReceivedAt: today,
+      negativesReturnedAt: today,
+    },
+  });
+});
+
+const type = computed(() => getInput(form, { path: ['type'] }));
+const lockedScanners = computed(
+  () =>
+    props.job?.scanOrders.filter((order) => order.scanCount > 0).map((order) => order.scannerId) ??
+    [],
+);
+/** Names of the job's scanners, for one the scanner list no longer holds. */
+const orderedNames = computed(() =>
+  Object.fromEntries(
+    props.job?.scanOrders.map((order) => [order.scannerId, order.scannerName]) ?? [],
+  ),
+);
+const needsScanners = computed(() => !!type.value && producesScans(type.value));
+const labId = computed(() => getInput(form, { path: ['labId'] }));
+const atHome = computed(() => labId.value === SELF);
+const orderId = computed(() => getInput(form, { path: ['orderId'] }) || undefined);
+const ownOrderLineIds = computed(() => props.job?.order?.items.map((item) => item.id) ?? []);
+/** This lab's orders with room for the roll; the job's own order always counts. */
+const labOrders = computed(() =>
+  (orders.data.value ?? []).filter(
+    (order) =>
+      order.labId === labId.value &&
+      (order.id === props.job?.order?.id || order.lines.some((line) => roomOnLine(line) > 0)),
+  ),
+);
+const orderOptions = computed(() =>
+  labOrders.value.map((order) => ({ value: order.id, label: `#${order.code}` })),
+);
+const orderLines = computed(
+  () => labOrders.value.find((order) => order.id === orderId.value)?.lines ?? [],
+);
+// an order belongs to one lab, so another lab leaves it behind
+watch(labId, () => {
+  if (open.value && !props.job) setInput(form, { path: ['orderId'], input: undefined });
+});
+// another order starts with nothing ticked; back on its own order, a job finds its lines again
+watch(orderId, (order) => {
+  if (open.value)
+    orderLineIds.value = order && order === props.job?.order?.id ? ownOrderLineIds.value : [];
+});
+/** A lab that develops the film returns the negatives; home and scan-only or print jobs do not. */
+const expectsNegatives = computed(
+  () => !!type.value && developsFilm(type.value) && !!labId.value && !atHome.value,
+);
+/** Developing and printing close on the negatives, and a lab scan holds them until returned. */
+const recordsNegatives = computed(
+  () => !!type.value && recordsNegativesReturned(type.value, !atHome.value),
+);
+/** At home the date marks the work done; from a lab, the negatives coming back. */
+const negativesLabel = computed(() =>
+  !atHome.value ? 'Negatives received' : type.value === 'print' ? 'Printed' : 'Negatives developed',
+);
+/** Receipt dates are asked for when editing a job, and for work done at home. */
+const showReceipts = computed(() => !!props.job || atHome.value);
+/** Stand-in value for working at home: the API takes no lab id then. */
+const SELF = 'self';
+/** The scanner used at home by default: the first of the account's own, if any. */
+const homeScanner = computed(() => scanners.data.value?.find((scanner) => !scanner.builtIn)?.id);
+/** The scanners a lab runs, in order; none at home or for a lab that names none. */
+const scannersOfLab = (lab: string | undefined) =>
+  labs.data.value?.find((entry) => entry.id === lab)?.scannerIds ?? [];
+/** Scanners the picker offers: the chosen lab's, or every scanner when it names none. */
+const labScanners = computed(() => scannersOfLab(labId.value));
+/** The scanner a job at this lab starts with: none when the lab names scanners but no default. */
+const defaultScannerOfLab = (lab: string | undefined) => {
+  if (lab === SELF) return homeScanner.value;
+  const entry = labs.data.value?.find((candidate) => candidate.id === lab);
+  return entry?.scannerIds.length ? entry.defaultScannerId : NORITSU_HS1800;
+};
+/**
+ * A lab scans on its default scanner, or the Noritsu when it names none; at home on your own
+ * scanner, when you have one.
+ */
+const defaultScanOrders = (lab: string | undefined): ScanOrder[] => {
+  const scannerId = defaultScannerOfLab(lab);
+  const scanner = scanners.data.value?.find((candidate) => candidate.id === scannerId);
+  return scannerId
+    ? [{ scannerId, settings: scanner ? startingSettings(kinds.data.value, scanner) : {} }]
+    : [];
+};
+/** Untouched since it was picked for the lab: no scanner, or the default one with its defaults. */
+const isDefaultOrder = (orders: ScanOrder[]) => {
+  if (orders.length === 0) return true;
+  const [order] = orders;
+  const defaults = [
+    NORITSU_HS1800,
+    homeScanner.value,
+    ...(labs.data.value ?? []).map((lab) => lab.defaultScannerId),
+  ];
+  if (orders.length > 1 || !defaults.includes(order.scannerId)) return false;
+  const scanner = scanners.data.value?.find((candidate) => candidate.id === order.scannerId);
+  return !scanner || sameSettings(order.settings, startingSettings(kinds.data.value, scanner));
+};
+
+watch(needsScanners, (needs) => {
+  if (needs && !scanOrders.value.length) scanOrders.value = defaultScanOrders(labId.value);
+});
+// a new job follows the lab with its scanner until the scanners are picked by hand
+watch([labId, homeScanner, () => kinds.data.value, () => labs.data.value], ([lab]) => {
+  if (open.value && !props.job && needsScanners.value && isDefaultOrder(scanOrders.value))
+    scanOrders.value = defaultScanOrders(lab);
+});
+
+const SELF_LABELS: Record<ProcessingType, string> = {
+  develop: 'Self-develop',
+  develop_scan: 'Self-develop',
+  scan: 'Self-scan (at home)',
+  print: 'Self-print (at home)',
+};
+const labOptions = computed(() => [
+  { value: SELF, label: type.value ? SELF_LABELS[type.value] : 'Myself (at home)' },
+  ...(labs.data.value ?? []).map((lab) => ({ value: lab.id, label: lab.name })),
+]);
+// built here: inline in the template, vue-tsc reported a `.value` access on the label maps
+/**
+ * Services a job can switch to. Developing happens once, so a developing job stays one and a scan
+ * or print job cannot start developing; a job with imported scans keeps scanning.
+ */
+const editableTypes = computed((): ProcessingType[] => {
+  const job = props.job;
+  if (!job) return [];
+  const types: ProcessingType[] = developsFilm(job.type)
+    ? ['develop', 'develop_scan']
+    : ['scan', 'print'];
+  return lockedScanners.value.length ? types.filter(producesScans) : types;
+});
+const typeOptions = computed(() =>
+  (props.job ? editableTypes.value : offered.value).map((serviceType) => ({
+    value: serviceType,
+    label: PROCESSING_TYPE_LABELS[serviceType],
+  })),
+);
+const processOptions = PROCESSES.map((process) => ({
+  value: process,
+  label: PROCESS_LABELS[process],
+}));
+
+const summary = computed(() =>
+  [
+    props.row?.roll.format,
+    `${props.row?.roll.exposures} exp`,
+    props.finishedOn ? `finished ${formatDate(props.finishedOn)}` : undefined,
+  ]
+    .filter(Boolean)
+    .join(' · '),
+);
+
+/** Section numbers: the roll and scanner sections are not always shown. */
+const no = computed(() => {
+  let counter = 0;
+  const next = (shown = true) => (shown ? String(++counter).padStart(2, '0') : '');
+  return {
+    roll: next(!!props.row),
+    lab: next(),
+    scans: next(needsScanners.value),
+    dates: next(),
+    notes: next(),
+  };
+});
+
+async function submit(output: v.InferOutput<typeof SendToLabSchema>) {
+  if (!props.row) return;
+  if (needsScanners.value && !scanOrders.value.length) {
+    scanError.value = 'Pick at least one scanner.';
+    return;
+  }
+  if (!atHome.value && orderId.value && !orderLineIds.value.length) {
+    orderError.value = 'Tick at least one line.';
+    return;
+  }
+  const { scansReceivedAt, negativesReturnedAt, orderId: pickedOrder, ...fields } = output;
+  const onOrder = !atHome.value && !!pickedOrder;
+  const input = {
+    ...fields,
+    // scans are only expected from a scanning job; negatives from a lab that develops
+    scansExpectedAt: needsScanners.value && !atHome.value ? fields.scansExpectedAt : undefined,
+    negativesExpectedAt: expectsNegatives.value ? fields.negativesExpectedAt : undefined,
+    labId: output.labId === SELF ? undefined : output.labId,
+    orderItemIds: onOrder ? orderLineIds.value : undefined,
+    price: onOrder ? undefined : fields.price,
+    scanOrders: needsScanners.value ? scanOrders.value : [],
+  };
+  const rollId = props.row.roll.id;
+  const job = props.job;
+  const ok = await attempt(
+    (async () => {
+      if (!job)
+        return send.mutateAsync({
+          rollId,
+          input,
+          received: atHome.value
+            ? {
+                scansAt: needsScanners.value ? scansReceivedAt : undefined,
+                negativesAt: recordsNegatives.value ? negativesReturnedAt : undefined,
+              }
+            : undefined,
+        });
+      await update.mutateAsync({ rollId, jobId: job.id, input });
+      // The API has its own endpoints for the two receipt dates; each is only sent when changed.
+      if (scansReceivedAt && needsScanners.value && scansReceivedAt !== job.scansReceivedDate)
+        await scansReceived.mutateAsync({ rollId, jobId: job.id, date: scansReceivedAt });
+      if (
+        negativesReturnedAt &&
+        recordsNegatives.value &&
+        negativesReturnedAt !== job.negativesReturnedDate
+      )
+        await negativesReturned.mutateAsync({ rollId, jobId: job.id, date: negativesReturnedAt });
+    })(),
+  );
+  if (ok) open.value = false;
+}
+</script>
+
+<template>
+  <SectionedFormDialog
+    v-model:open="open"
+    :form="form"
+    size="md"
+    :title="job ? 'Edit Processing Job' : rescan ? 'Re-scan Roll' : 'Send to Lab'"
+    :description="
+      job
+        ? 'Update the order, price, scanners and dates of this job'
+        : rescan
+          ? 'Scan the negatives again, at another lab or yourself. Earlier jobs and scans stay'
+          : atHome
+            ? 'Record work done at home, with the days the negatives and scans were ready'
+            : 'The roll becomes At Lab and shows under In Progress in the Lab tab'
+    "
+    :submit-label="
+      job ? 'Save changes' : rescan ? 'Add re-scan' : atHome ? 'Record processing' : 'Send to lab'
+    "
+    :pending="send.isPending.value || update.isPending.value"
+    @submit="submit"
+  >
+    <FormSection
+      v-if="row"
+      :no="no.roll"
+      title="Roll"
+    >
+      <div class="rounded-lg border border-primary/15 bg-primary/5 p-5">
+        <div class="font-heading text-lg font-semibold">{{ row.stockName }}</div>
+        <div class="text-sm text-muted-foreground">{{ summary }}</div>
+      </div>
+    </FormSection>
+
+    <FormSection
+      :no="no.lab"
+      title="Lab & service"
+      :note="job ? 'The lab is fixed' : '* Required attributes'"
+    >
+      <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+        <FormSelect
+          :of="form"
+          :path="['labId']"
+          label="Lab"
+          required
+          :disabled="!!job"
+          placeholder="Select a lab"
+          :options="labOptions"
+        />
+        <FormSelect
+          :of="form"
+          :path="['type']"
+          label="Service"
+          required
+          :options="typeOptions"
+        />
+        <FormSelect
+          :of="form"
+          :path="['process']"
+          label="Process"
+          required
+          :options="processOptions"
+        />
+        <FormSelect
+          v-if="!atHome"
+          :of="form"
+          :path="['orderId']"
+          label="Order"
+          optional
+          placeholder="Not on an order"
+          :options="orderOptions"
+          :hint="
+            orderOptions.length
+              ? undefined
+              : 'This lab has no order with room. Add one under Orders'
+          "
+        />
+        <FormInput
+          v-if="atHome || !orderId"
+          :of="form"
+          :path="['price']"
+          label="Price"
+          optional
+          type="number"
+          min="0"
+          step="1000"
+          suffix="₫"
+          placeholder="e.g. 280000"
+        />
+      </div>
+      <OrderLinesPicker
+        v-if="!atHome && orderId"
+        v-model="orderLineIds"
+        class="mt-6"
+        :lines="orderLines"
+        :own-line-ids="ownOrderLineIds"
+        :error="orderError"
+      />
+    </FormSection>
+
+    <FormSection
+      v-if="needsScanners"
+      :no="no.scans"
+      title="Scans"
+      note="One order per scanner"
+    >
+      <ScanOrderPicker
+        v-model="scanOrders"
+        :error="scanError"
+        :locked="lockedScanners"
+        :names="orderedNames"
+        :offered="labScanners"
+      />
+    </FormSection>
+
+    <FormSection
+      :no="no.dates"
+      title="Dates"
+      note="Leave blank when not known yet"
+    >
+      <div class="grid gap-y-6">
+        <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+          <FormInput
+            :of="form"
+            :path="['sentAt']"
+            :label="atHome ? 'Date started' : 'Sent to Lab'"
+            optional
+            type="date"
+          />
+        </div>
+        <div
+          v-if="needsScanners"
+          class="grid gap-x-5 gap-y-6 sm:grid-cols-2"
+        >
+          <FormInput
+            v-if="!atHome"
+            :of="form"
+            :path="['scansExpectedAt']"
+            label="Scans expected back"
+            optional
+            type="date"
+          />
+          <FormInput
+            v-if="showReceipts"
+            :of="form"
+            :path="['scansReceivedAt']"
+            :label="atHome ? 'Scanned' : 'Scans received'"
+            optional
+            type="date"
+          />
+        </div>
+        <div
+          v-if="expectsNegatives || (showReceipts && recordsNegatives)"
+          class="grid gap-x-5 gap-y-6 sm:grid-cols-2"
+        >
+          <FormInput
+            v-if="expectsNegatives"
+            :of="form"
+            :path="['negativesExpectedAt']"
+            label="Negatives expected back"
+            optional
+            type="date"
+          />
+          <FormInput
+            v-if="showReceipts && recordsNegatives"
+            :of="form"
+            :path="['negativesReturnedAt']"
+            :label="negativesLabel"
+            optional
+            type="date"
+          />
+        </div>
+      </div>
+    </FormSection>
+
+    <FormSection
+      :no="no.notes"
+      title="Notes"
+    >
+      <FormRichText
+        :of="form"
+        :path="['notes']"
+        label="Notes"
+        optional
+        placeholder="Push/pull, scan resolution, tracking number…"
+      >
+        <template #aside>
+          <span class="text-xs text-muted-foreground">Markdown shortcuts work</span>
+        </template>
+      </FormRichText>
+    </FormSection>
+  </SectionedFormDialog>
+</template>

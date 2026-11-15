@@ -1,5 +1,5 @@
-import type { Lens } from "./types";
+import type { Lens } from './types';
 
 export const lensName = (
-  lens: Pick<Lens, "brand" | "model" | "focalLength" | "maxAperture"> | undefined,
-) => (lens ? `${[lens.brand, lens.model].filter(Boolean).join(" ")}`.trim() : "—");
+  lens: Pick<Lens, 'brand' | 'model' | 'focalLength' | 'maxAperture'> | undefined,
+) => (lens ? `${[lens.brand, lens.model].filter(Boolean).join(' ')}`.trim() : '—');

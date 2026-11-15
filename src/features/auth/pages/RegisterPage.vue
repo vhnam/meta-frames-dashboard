@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { Form, useForm } from "@formisch/vue";
-import { Link, useRouter } from "@tanstack/vue-router";
-import type * as v from "valibot";
-import { computed } from "vue";
-import { errorMessage } from "#/shared/api/client";
-import AuthCard from "../components/AuthCard.vue";
-import AuthInput from "../components/AuthInput.vue";
-import AuthSubmit from "../components/AuthSubmit.vue";
-import FormAlert from "../components/FormAlert.vue";
-import GoogleSignIn from "../components/GoogleSignIn.vue";
-import { useRegister } from "../queries";
-import { PASSWORD_HINT, RegisterSchema } from "../schema";
-import { safeRedirect } from "../session";
+import { Form, useForm } from '@formisch/vue';
+import { Link, useRouter } from '@tanstack/vue-router';
+import type * as v from 'valibot';
+import { computed } from 'vue';
+
+import { errorMessage } from '#/shared/api/client';
+
+import AuthCard from '../components/auth-card/AuthCard.vue';
+import AuthInput from '../components/auth-input/AuthInput.vue';
+import AuthSubmit from '../components/auth-submit/AuthSubmit.vue';
+import FormAlert from '../components/form-alert/FormAlert.vue';
+import GoogleSignIn from '../components/google-sign-in/GoogleSignIn.vue';
+import { useRegister } from '../queries';
+import { PASSWORD_HINT, RegisterSchema } from '../schema';
+import { safeRedirect } from '../session';
 
 const props = defineProps<{ redirect?: string }>();
 
@@ -19,7 +21,7 @@ const router = useRouter();
 const registerUser = useRegister();
 const form = useForm({
   schema: RegisterSchema,
-  initialInput: { name: "", email: "", password: "", confirmPassword: "" },
+  initialInput: { name: '', email: '', password: '', confirmPassword: '' },
 });
 const target = computed(() => safeRedirect(props.redirect));
 
@@ -34,9 +36,16 @@ async function submit({ name, email, password }: v.InferOutput<typeof RegisterSc
 </script>
 
 <template>
-  <AuthCard title="Create an account" description="Track every roll, from stock to scan.">
+  <AuthCard
+    title="Create an account"
+    description="Track every roll, from stock to scan."
+  >
     <GoogleSignIn :redirect="target" />
-    <Form :of="form" class="grid gap-5" @submit="submit">
+    <Form
+      :of="form"
+      class="grid gap-5"
+      @submit="submit"
+    >
       <FormAlert v-if="registerUser.isError.value">
         {{ errorMessage(registerUser.error.value) }}
       </FormAlert>
@@ -73,15 +82,15 @@ async function submit({ name, email, password }: v.InferOutput<typeof RegisterSc
         placeholder="Repeat the password"
       />
       <AuthSubmit :pending="registerUser.isPending.value">
-        {{ registerUser.isPending.value ? "Creating account…" : "Create account" }}
+        {{ registerUser.isPending.value ? 'Creating account…' : 'Create account' }}
       </AuthSubmit>
     </Form>
-    <p class="text-muted-foreground text-center text-sm">
+    <p class="text-center text-sm text-muted-foreground">
       Already have an account?
       <Link
         to="/auth/login"
         :search="{ redirect: props.redirect }"
-        class="text-primary ml-1 text-xs font-semibold tracking-[0.12em] uppercase underline-offset-4 hover:underline"
+        class="ml-1 text-xs font-semibold tracking-[0.12em] text-primary uppercase underline-offset-4 hover:underline"
       >
         Log in
       </Link>

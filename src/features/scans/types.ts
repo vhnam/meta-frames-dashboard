@@ -28,10 +28,10 @@ export interface ImportResult {
   scansReceivedAt: string;
 }
 
-export type OnConflict = "skip" | "replace";
+export type OnConflict = 'skip' | 'replace';
 
 /** How frame numbers are chosen: read from the file names, or counted from a start frame. */
-export type NumberingMode = "names" | "sequential";
+export type NumberingMode = 'names' | 'sequential';
 
 export interface FrameComparison {
   frameNumber: number;

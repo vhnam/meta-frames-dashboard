@@ -1,25 +1,27 @@
 <script setup lang="ts">
-import { cameraName } from "#/features/cameras";
-import { stockName } from "#/features/film-stocks";
-import { useDeleteRoll, useRollDetail } from "../queries";
-import type { RollDetail, RollRow } from "../types";
-import { IconPencil, IconTrash } from "@tabler/icons-vue";
-import { useRouter } from "@tanstack/vue-router";
-import { ref } from "vue";
-import DetailHero from "#/shared/components/DetailHero.vue";
-import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import RollStageBadge from "../components/RollStageBadge.vue";
-import RollEditDialog from "../components/RollEditDialog.vue";
-import RollLensesDialog from "../components/RollLensesDialog.vue";
-import RollSummaryCard from "../components/detail/RollSummaryCard.vue";
-import RollGearCard from "../components/detail/RollGearCard.vue";
-import ProcessingHistoryCard from "../components/detail/ProcessingHistoryCard.vue";
-import FramesCard from "../components/detail/FramesCard.vue";
-import LoadRollDialog from "../components/LoadRollDialog.vue";
-import { Badge } from "#/shared/ui/badge";
-import { Button } from "#/shared/ui/button";
-import { formatDate } from "#/shared/lib/format";
-import { ask, attempt } from "#/shared/lib/ui";
+import { IconPencil, IconTrash } from '@tabler/icons-vue';
+import { useRouter } from '@tanstack/vue-router';
+import { ref } from 'vue';
+
+import { cameraName } from '#/features/cameras';
+import { stockName } from '#/features/film-stocks';
+import DetailHero from '#/shared/components/detail-hero/DetailHero.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
+import { formatDate } from '#/shared/lib/format';
+import { ask, attempt } from '#/shared/lib/ui';
+import { Badge } from '#/shared/ui/badge';
+import { Button } from '#/shared/ui/button';
+
+import FramesCard from '../components/frames-card/FramesCard.vue';
+import LoadRollDialog from '../components/load-roll-dialog/LoadRollDialog.vue';
+import ProcessingHistoryCard from '../components/processing-history-card/ProcessingHistoryCard.vue';
+import RollEditDialog from '../components/roll-edit-dialog/RollEditDialog.vue';
+import RollGearCard from '../components/roll-gear-card/RollGearCard.vue';
+import RollLensesDialog from '../components/roll-lenses-dialog/RollLensesDialog.vue';
+import RollStageBadge from '../components/roll-stage-badge/RollStageBadge.vue';
+import RollSummaryCard from '../components/roll-summary-card/RollSummaryCard.vue';
+import { useDeleteRoll, useRollDetail } from '../queries';
+import type { RollDetail, RollRow } from '../types';
 
 const props = defineProps<{ rollId: string }>();
 const router = useRouter();
@@ -31,8 +33,8 @@ const loadOpen = ref(false);
 const lensesOpen = ref(false);
 
 async function doDelete() {
-  if ((await ask("Delete this roll?")) && (await attempt(deleteRoll.mutateAsync(props.rollId))))
-    router.navigate({ to: "/app/rolls" });
+  if ((await ask('Delete this roll?')) && (await attempt(deleteRoll.mutateAsync(props.rollId))))
+    router.navigate({ to: '/app/rolls' });
 }
 
 const rowOf = (rollDetail: RollDetail): RollRow => ({
@@ -45,7 +47,10 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
 </script>
 
 <template>
-  <QueryBoundary :query="detail" empty-text="Roll not found.">
+  <QueryBoundary
+    :query="detail"
+    empty-text="Roll not found."
+  >
     <template #default="{ data: loaded }">
       <div class="grid gap-6">
         <DetailHero
@@ -63,7 +68,11 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
             >
               <IconTrash aria-hidden="true" /> Delete
             </Button>
-            <Button variant="outline" class="bg-card" @click="editOpen = true">
+            <Button
+              variant="outline"
+              class="bg-card"
+              @click="editOpen = true"
+            >
               <IconPencil aria-hidden="true" /> Edit roll
             </Button>
           </template>
@@ -73,9 +82,20 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
             >
               {{ loaded.roll.format }} · {{ loaded.roll.exposures }} exp
             </span>
-            <RollStageBadge :stage="loaded.stage" :detail="loaded.stageDetail" />
-            <Badge v-if="loaded.negativesAtLab" variant="outline">Negatives at lab</Badge>
-            <Badge v-if="loaded.needsScan" variant="outline">Needs scan</Badge>
+            <RollStageBadge
+              :stage="loaded.stage"
+              :detail="loaded.stageDetail"
+            />
+            <Badge
+              v-if="loaded.negativesAtLab"
+              variant="outline"
+              >Negatives at lab</Badge
+            >
+            <Badge
+              v-if="loaded.needsScan"
+              variant="outline"
+              >Needs scan</Badge
+            >
           </template>
           <template #stats>
             <div>
@@ -84,34 +104,47 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
                 class="text-lg font-semibold"
                 :class="loaded.camera ? 'text-primary' : 'text-muted-foreground'"
               >
-                {{ loaded.camera ? cameraName(loaded.camera) : "—" }}
+                {{ loaded.camera ? cameraName(loaded.camera) : '—' }}
               </dd>
-              <dd v-if="loaded.roll.startDate" class="text-muted-foreground text-xs">
+              <dd
+                v-if="loaded.roll.startDate"
+                class="text-xs text-muted-foreground"
+              >
                 since {{ formatDate(loaded.roll.startDate) }}
               </dd>
             </div>
             <div>
               <dt>Frames</dt>
               <dd class="text-lg font-semibold tabular-nums">{{ loaded.frames.length }}</dd>
-              <dd class="text-muted-foreground text-xs">of {{ loaded.roll.exposures }} exp</dd>
+              <dd class="text-xs text-muted-foreground">of {{ loaded.roll.exposures }} exp</dd>
             </div>
             <div>
               <dt>Processing</dt>
               <dd class="text-lg font-semibold tabular-nums">{{ loaded.jobs.length }}</dd>
-              <dd class="text-muted-foreground text-xs">
-                {{ loaded.jobs.length === 1 ? "job" : "jobs" }}
+              <dd class="text-xs text-muted-foreground">
+                {{ loaded.jobs.length === 1 ? 'job' : 'jobs' }}
               </dd>
             </div>
           </template>
         </DetailHero>
 
         <RollSummaryCard :detail="loaded" />
-        <RollGearCard :detail="loaded" @manage-lenses="lensesOpen = true" @load="loadOpen = true" />
-        <ProcessingHistoryCard :row="rowOf(loaded)" :detail="loaded" />
+        <RollGearCard
+          :detail="loaded"
+          @manage-lenses="lensesOpen = true"
+          @load="loadOpen = true"
+        />
+        <ProcessingHistoryCard
+          :row="rowOf(loaded)"
+          :detail="loaded"
+        />
         <FramesCard :frames="loaded.frames" />
       </div>
 
-      <RollEditDialog v-model:open="editOpen" :row="rowOf(loaded)" />
+      <RollEditDialog
+        v-model:open="editOpen"
+        :row="rowOf(loaded)"
+      />
       <RollLensesDialog
         v-model:open="lensesOpen"
         :roll-id="loaded.roll.id"
@@ -119,7 +152,10 @@ const rowOf = (rollDetail: RollDetail): RollRow => ({
         :candidates="loaded.cameraLenses"
         :selected-ids="loaded.lenses.map((lens) => lens.id)"
       />
-      <LoadRollDialog v-model:open="loadOpen" :row="rowOf(loaded)" />
+      <LoadRollDialog
+        v-model:open="loadOpen"
+        :row="rowOf(loaded)"
+      />
     </template>
   </QueryBoundary>
 </template>

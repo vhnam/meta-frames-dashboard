@@ -1,10 +1,12 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { http } from "#/shared/api/http";
-import type { AuditAction, AuditEntry } from "./types";
+import { queryOptions } from '@tanstack/vue-query';
+
+import { http } from '#/shared/api/http';
+
+import type { AuditAction, AuditEntry } from './types';
 
 export const auditKeys = {
-  all: ["audit"] as const,
-  list: () => [...auditKeys.all, "list"] as const,
+  all: ['audit'] as const,
+  list: () => [...auditKeys.all, 'list'] as const,
 };
 
 /** Meta-Frame API audit entry, as returned by `GET /audit-logs`. */
@@ -20,9 +22,9 @@ interface ApiAuditLog {
 }
 
 /** Timestamps change on every write; they are noise next to the real edit. */
-const IGNORED = new Set(["updated_at", "updatedAt"]);
+const IGNORED = new Set(['updated_at', 'updatedAt']);
 
-export function diffRows(before: ApiAuditLog["before"], after: ApiAuditLog["after"]) {
+export function diffRows(before: ApiAuditLog['before'], after: ApiAuditLog['after']) {
   const beforeFields = before ?? {};
   const afterFields = after ?? {};
   return [...new Set([...Object.keys(beforeFields), ...Object.keys(afterFields)])]
@@ -39,7 +41,7 @@ const toEntry = (log: ApiAuditLog): AuditEntry => ({
   entityType: log.entityType,
   entityId: log.entityId,
   action: log.action,
-  actor: log.actor ?? "",
+  actor: log.actor ?? '',
   changes: diffRows(log.before, log.after),
   createdAt: log.createdAt,
 });
@@ -52,7 +54,7 @@ export const auditQueries = {
     queryOptions({
       queryKey: auditKeys.list(),
       queryFn: async (): Promise<AuditEntry[]> => {
-        const { data } = await http.get<ApiAuditLog[]>("/audit-logs", { params: { limit: LIMIT } });
+        const { data } = await http.get<ApiAuditLog[]>('/audit-logs', { params: { limit: LIMIT } });
         return data.map(toEntry);
       },
     }),

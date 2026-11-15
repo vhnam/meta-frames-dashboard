@@ -1,4 +1,4 @@
-import type { ScanOption, ScanSettings, Scanner, ScannerKind, ScannerKindOptions } from "./types";
+import type { ScanOption, ScanSettings, Scanner, ScannerKind, ScannerKindOptions } from './types';
 
 /** Scan options of a kind; null is a scanner of unknown kind. Empty until the kinds have loaded. */
 export const optionsForKind = (
@@ -16,7 +16,7 @@ export function completeSettings(options: ScanOption[], settings: ScanSettings =
 /** Settings a new scan order on the scanner starts from. */
 export const startingSettings = (
   kinds: ScannerKindOptions[] | undefined,
-  scanner: Pick<Scanner, "kind" | "defaultSettings">,
+  scanner: Pick<Scanner, 'kind' | 'defaultSettings'>,
 ) => completeSettings(optionsForKind(kinds, scanner.kind), scanner.defaultSettings);
 
 /**
@@ -28,8 +28,8 @@ export function settingsParts(settings: ScanSettings, options: ScanOption[]): st
   const known = options.flatMap((option) => {
     if (!(option.key in settings)) return [];
     const value = settings[option.key];
-    if (option.type === "boolean") return value === true ? [option.label] : [];
-    if (option.type === "enum")
+    if (option.type === 'boolean') return value === true ? [option.label] : [];
+    if (option.type === 'enum')
       return [option.values?.find((choice) => choice.value === value)?.label ?? String(value)];
     return [`${option.label}: ${String(value)}`];
   });
@@ -41,7 +41,7 @@ export function settingsParts(settings: ScanSettings, options: ScanOption[]): st
 
 /** Settings in one line, such as "Hi-res · TIFF · With film border". */
 export const describeSettings = (settings: ScanSettings, options: ScanOption[]) =>
-  settingsParts(settings, options).join(" · ") || "Default settings";
+  settingsParts(settings, options).join(' · ') || 'Default settings';
 
 const byKey = (settings: ScanSettings) =>
   JSON.stringify(Object.entries(settings).sort(([left], [right]) => left.localeCompare(right)));

@@ -1,4 +1,4 @@
-import type { Lens } from "#/features/lenses/types";
+import type { Lens } from '#/features/lenses/types';
 
 export interface Camera {
   id: string;

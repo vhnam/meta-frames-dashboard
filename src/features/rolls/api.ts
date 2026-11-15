@@ -1,15 +1,17 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { isAxiosError } from "axios";
-import { http } from "#/shared/api/http";
-import { toCamera } from "#/features/cameras/api";
-import type { ApiCamera } from "#/features/cameras/api";
-import { toStock } from "#/features/film-stocks/api";
-import type { ApiStock } from "#/features/film-stocks/api";
-import type { Process } from "#/features/film-stocks/types";
-import { toLens } from "#/features/lenses/api";
-import type { ApiLens } from "#/features/lenses/api";
-import type { ScanSettings } from "#/features/scanners/types";
-import { byExpiry, expiryState, isExpired } from "./format";
+import { queryOptions } from '@tanstack/vue-query';
+import { isAxiosError } from 'axios';
+
+import { toCamera } from '#/features/cameras/api';
+import type { ApiCamera } from '#/features/cameras/api';
+import { toStock } from '#/features/film-stocks/api';
+import type { ApiStock } from '#/features/film-stocks/api';
+import type { Process } from '#/features/film-stocks/types';
+import { toLens } from '#/features/lenses/api';
+import type { ApiLens } from '#/features/lenses/api';
+import type { ScanSettings } from '#/features/scanners/types';
+import { http } from '#/shared/api/http';
+
+import { byExpiry, expiryState, isExpired } from './format';
 import type {
   AddRollsInput,
   ExpiryReport,
@@ -26,7 +28,7 @@ import type {
   ProcessingType,
   RollStatus,
   UpdateRollInput,
-} from "./types";
+} from './types';
 
 /**
  * Domain-shaped query keys, from broad to narrow:
@@ -37,12 +39,12 @@ import type {
  * narrowest prefix it can affect.
  */
 export const rollKeys = {
-  all: ["rolls"] as const,
-  lists: () => [...rollKeys.all, "list"] as const,
+  all: ['rolls'] as const,
+  lists: () => [...rollKeys.all, 'list'] as const,
   list: (filters: RollFilters) => [...rollKeys.lists(), filters] as const,
-  details: () => [...rollKeys.all, "detail"] as const,
+  details: () => [...rollKeys.all, 'detail'] as const,
   detail: (id: string) => [...rollKeys.details(), id] as const,
-  expiry: () => [...rollKeys.all, "expiry"] as const,
+  expiry: () => [...rollKeys.all, 'expiry'] as const,
 };
 
 /** Meta-Frame API roll, as returned by `GET /rolls`. */
@@ -125,12 +127,12 @@ function toApiRow(apiRoll: ApiRoll): RollListRow {
       shotIso: apiRoll.shotIso ?? null,
       startDate: apiRoll.startedAt ?? null,
       finishDate: apiRoll.finishedAt ?? null,
-      description: apiRoll.description ?? "",
-      createdAt: "",
+      description: apiRoll.description ?? '',
+      createdAt: '',
       version: apiRoll.version ?? null,
     },
-    stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(" "),
-    boxIso: "",
+    stockName: [apiRoll.stockBrand, apiRoll.stockName].filter(Boolean).join(' '),
+    boxIso: '',
     cameraName: apiRoll.cameraName ?? null,
     negativesAtLab: apiRoll.negativesAtLab,
     stage: apiRoll.stage,
@@ -149,7 +151,7 @@ export const rollQueries = {
     queryOptions({
       queryKey: rollKeys.list(filters),
       queryFn: async (): Promise<RollListRow[]> => {
-        const { data } = await http.get<ApiRoll[]>("/rolls", {
+        const { data } = await http.get<ApiRoll[]>('/rolls', {
           params: {
             status: filters.status,
             filmStockId: filters.stockId,
@@ -195,7 +197,7 @@ export const rollQueries = {
           jobs: data.processing.map((job) => ({
             id: job.id,
             labId: job.labId ?? null,
-            labName: job.labName ?? "Home",
+            labName: job.labName ?? 'Home',
             type: job.type,
             process: job.process,
             sentDate: job.sentAt,
@@ -206,7 +208,7 @@ export const rollQueries = {
             developedDate: job.developedAt ?? null,
             price: job.price ?? null,
             order: job.order ?? null,
-            notes: job.notes ?? "",
+            notes: job.notes ?? '',
             scanOrders: (job.scanOrders ?? []).map((order) => ({
               scannerId: order.scannerId,
               scannerName: order.scannerName,
@@ -216,7 +218,7 @@ export const rollQueries = {
             open: job.isOpen,
           })),
           frames: data.frames.map((frame) => ({
-            frame: { id: frame.id, rollId: id, number: frame.number, notes: frame.notes ?? "" },
+            frame: { id: frame.id, rollId: id, number: frame.number, notes: frame.notes ?? '' },
             scanCount: frame.scanCount ?? frame.scans?.length ?? 0,
           })),
           cost: { total: data.totals.total, incomplete: data.totals.incomplete },
@@ -234,11 +236,11 @@ export const rollQueries = {
     queryOptions({
       queryKey: rollKeys.expiry(),
       queryFn: async (): Promise<ExpiryReport> => {
-        const { data } = await http.get<ApiRoll[]>("/rolls", { params: { status: "in_stock" } });
+        const { data } = await http.get<ApiRoll[]>('/rolls', { params: { status: 'in_stock' } });
         const rows = data.map(toApiRow);
         const now = new Date();
         const dated = rows
-          .filter((row) => ["expired", "soon"].includes(expiryState(row.roll, now)))
+          .filter((row) => ['expired', 'soon'].includes(expiryState(row.roll, now)))
           .sort((left, right) => byExpiry(left.roll, right.roll))
           .map((row) => ({ ...row, expired: isExpired(row.roll, now) }));
         const undated = rows.filter((row) => !row.roll.expiryYear);
@@ -253,7 +255,7 @@ const toApiExpiry = (input: { expiryYear?: number | null; expiryMonth?: number |
 
 export const addRolls = async (input: AddRollsInput) => {
   await http.post(
-    "/rolls/bulk",
+    '/rolls/bulk',
     {
       filmStockId: input.stockId,
       format: Number(input.format),
@@ -263,7 +265,7 @@ export const addRolls = async (input: AddRollsInput) => {
       expiry: toApiExpiry(input),
     },
     // one key per submit: a retry of the same request must not add the rolls twice
-    { headers: { "Idempotency-Key": crypto.randomUUID() } },
+    { headers: { 'Idempotency-Key': crypto.randomUUID() } },
   );
   return input.quantity;
 };
@@ -271,7 +273,7 @@ export const addRolls = async (input: AddRollsInput) => {
 /** `If-Match` for the version an edit was based on; none when the version is unknown. */
 const ifMatchVersion = (version: number | null): Record<string, string> =>
   version !== null && Number.isInteger(version) && version >= 0
-    ? { "If-Match": `"${version}"` }
+    ? { 'If-Match': `"${version}"` }
     : {};
 
 /** The roll changed on the server since the copy the edit was based on (412 roll_changed). */
@@ -354,7 +356,7 @@ export const sendToLab = async (variables: {
 /** All or nothing: one roll that cannot go refuses the whole batch, and the error names it. */
 export const handOverRolls = async (input: HandOverInput) => {
   await http.post(
-    "/lab-handoffs",
+    '/lab-handoffs',
     {
       labId: input.labId,
       handedAt: input.handedAt,
@@ -365,7 +367,7 @@ export const handOverRolls = async (input: HandOverInput) => {
       })),
       rolls: input.rolls,
     },
-    { headers: { "Idempotency-Key": input.idempotencyKey } },
+    { headers: { 'Idempotency-Key': input.idempotencyKey } },
   );
   return input.rolls.length;
 };
@@ -412,7 +414,7 @@ export const setRollPlan = async (variables: { rollId: string; plan: RollPlan })
 export const markRollDeveloped = async (variables: {
   rollId: string;
   date: string;
-  target: "developed" | "scanned";
+  target: 'developed' | 'scanned';
 }) => {
   await http.put(`/rolls/${variables.rollId}/developed`, {
     date: variables.date,

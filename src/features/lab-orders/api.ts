@@ -1,19 +1,21 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { http } from "#/shared/api/http";
-import type { LabOrder, LabOrderInput, LabOrderJob, LinkableJob } from "./types";
+import { queryOptions } from '@tanstack/vue-query';
+
+import { http } from '#/shared/api/http';
+
+import type { LabOrder, LabOrderInput, LabOrderJob, LinkableJob } from './types';
 
 export const labOrderKeys = {
-  all: ["lab-orders"] as const,
-  lists: () => [...labOrderKeys.all, "list"] as const,
+  all: ['lab-orders'] as const,
+  lists: () => [...labOrderKeys.all, 'list'] as const,
   list: () => [...labOrderKeys.lists()] as const,
-  detail: (id: string) => [...labOrderKeys.all, "detail", id] as const,
-  linkableJobs: (id: string) => [...labOrderKeys.all, "linkable-jobs", id] as const,
+  detail: (id: string) => [...labOrderKeys.all, 'detail', id] as const,
+  linkableJobs: (id: string) => [...labOrderKeys.all, 'linkable-jobs', id] as const,
 };
 
 interface ApiLabOrderJob {
   id: string;
   rollId: string;
-  type: LabOrderJob["type"];
+  type: LabOrderJob['type'];
   sentAt: string;
   stockName: string;
   format: number;
@@ -64,13 +66,13 @@ const toOrder = (order: ApiLabOrder): LabOrder => ({
   dueDate: order.dueDate ?? null,
   vat: order.vat,
   discount: order.discount,
-  notes: order.notes ?? "",
+  notes: order.notes ?? '',
   subtotal: order.subtotal,
   total: order.total,
   lines: order.items.map((item) => ({
     id: item.id,
     product: item.product,
-    options: item.options ?? "",
+    options: item.options ?? '',
     quantity: item.quantity,
     unitPrice: item.unitPrice,
     lineTotal: item.lineTotal,
@@ -84,7 +86,7 @@ export const labOrderQueries = {
     queryOptions({
       queryKey: labOrderKeys.list(),
       queryFn: async (): Promise<LabOrder[]> =>
-        (await http.get<ApiLabOrder[]>("/lab-orders")).data.map(toOrder),
+        (await http.get<ApiLabOrder[]>('/lab-orders')).data.map(toOrder),
     }),
   detail: (id: string) =>
     queryOptions({
@@ -109,7 +111,7 @@ export const saveLabOrder = async (variables: { id?: string; input: LabOrderInpu
   const { input } = variables;
   await http.put(`/lab-orders/${id}`, {
     labId: input.labId,
-    code: input.code.trim().replace(/^#/, ""),
+    code: input.code.trim().replace(/^#/, ''),
     orderedAt: input.orderedAt,
     dueDate: input.dueDate || undefined,
     vat: input.vat ?? 0,

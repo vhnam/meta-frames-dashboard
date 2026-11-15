@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from "vue";
-import { cn } from "#/shared/lib/utils";
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '#/shared/lib/utils';
 
 const props = defineProps<{
-  class?: HTMLAttributes["class"];
+  class?: HTMLAttributes['class'];
 }>();
 </script>
 
@@ -12,7 +13,7 @@ const props = defineProps<{
     data-slot="alert-title"
     :class="
       cn(
-        'font-medium group-has-[>svg]/alert:col-start-2 cn-font-heading [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground',
+        'cn-font-heading font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground',
         props.class,
       )
     "

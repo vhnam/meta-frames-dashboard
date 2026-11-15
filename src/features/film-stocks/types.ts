@@ -1,28 +1,28 @@
-export const FILM_TYPES = ["color", "bw", "slide"] as const;
-export const PROCESSES = ["C-41", "E-6", "BW", "ECN-2"] as const;
-export const PACKAGINGS = ["factory", "repack", "respooled"] as const;
+export const FILM_TYPES = ['color', 'bw', 'slide'] as const;
+export const PROCESSES = ['C-41', 'E-6', 'BW', 'ECN-2'] as const;
+export const PACKAGINGS = ['factory', 'repack', 'respooled'] as const;
 
 export type FilmType = (typeof FILM_TYPES)[number];
 export type Process = (typeof PROCESSES)[number];
 export type Packaging = (typeof PACKAGINGS)[number];
 
 export const FILM_TYPE_LABELS: Record<FilmType, string> = {
-  color: "Color",
-  bw: "B&W",
-  slide: "Slide",
+  color: 'Color',
+  bw: 'B&W',
+  slide: 'Slide',
 };
 
 export const PROCESS_LABELS: Record<Process, string> = {
-  "C-41": "C-41",
-  "E-6": "E-6",
-  BW: "B&W",
-  "ECN-2": "ECN-2",
+  'C-41': 'C-41',
+  'E-6': 'E-6',
+  BW: 'B&W',
+  'ECN-2': 'ECN-2',
 };
 
 export const PACKAGING_LABELS: Record<Packaging, string> = {
-  factory: "Factory",
-  repack: "Repack",
-  respooled: "Re-spooled",
+  factory: 'Factory',
+  repack: 'Repack',
+  respooled: 'Re-spooled',
 };
 
 export interface FilmStock {
@@ -40,7 +40,7 @@ export interface FilmStock {
   baseStockId: string | null;
 }
 
-export type StockInput = Omit<FilmStock, "id">;
+export type StockInput = Omit<FilmStock, 'id'>;
 
 export interface StockRow {
   stock: FilmStock;

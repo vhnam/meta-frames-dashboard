@@ -1,0 +1,80 @@
+import {
+  IconAperture,
+  IconCamera,
+  IconFlask,
+  IconHistory,
+  IconMovie,
+  IconReceipt,
+  IconScan,
+  IconStack2,
+} from '@tabler/icons-vue';
+import type { Component } from 'vue';
+
+export interface NavItem {
+  title: string;
+  to: string;
+  icon: Component;
+  children?: NavItem[];
+}
+export interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+export const navSections: NavSection[] = [
+  {
+    label: 'Shooting',
+    items: [
+      { title: 'Rolls', to: '/app/rolls', icon: IconMovie },
+      {
+        title: 'Gear',
+        to: '/app/cameras',
+        icon: IconCamera,
+        children: [
+          { title: 'Cameras', to: '/app/cameras', icon: IconCamera },
+          { title: 'Lenses', to: '/app/lenses', icon: IconAperture },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Film & Lab',
+    items: [
+      { title: 'Film Stocks', to: '/app/stocks', icon: IconStack2 },
+      { title: 'Labs', to: '/app/labs', icon: IconFlask },
+      { title: 'Orders', to: '/app/orders', icon: IconReceipt },
+      { title: 'Scanners', to: '/app/scanners', icon: IconScan },
+    ],
+  },
+  {
+    label: 'System',
+    items: [{ title: 'Audit log', to: '/app/audit', icon: IconHistory }],
+  },
+];
+
+const flat = navSections.flatMap((section) =>
+  section.items.flatMap((item) => [item, ...(item.children ?? [])]),
+);
+const listPaths = new Set(flat.map((item) => item.to));
+
+/** A nav destination that renders a list, such as `/app/rolls` or `/app/labs`. */
+export function isListingPath(path: string) {
+  return listPaths.has(path);
+}
+
+/** Longest listing path that is a strict parent of `path`, such as `/app/rolls` for a roll detail. */
+export function listingPath(path: string) {
+  return [...listPaths]
+    .filter((to) => path.startsWith(`${to}/`))
+    .sort((left, right) => right.length - left.length)[0];
+}
+
+/** Title for the current path, matching the longest nav prefix. */
+export function titleForPath(path: string) {
+  const hit = flat
+    .filter((item) =>
+      item.to === '/' ? path === '/' : path === item.to || path.startsWith(item.to + '/'),
+    )
+    .sort((left, right) => right.to.length - left.to.length)[0];
+  return hit?.title ?? 'Not found';
+}

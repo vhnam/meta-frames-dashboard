@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/vue-query";
-import { toValue, type MaybeRefOrGetter } from "vue";
-import { useApiMutation } from "#/shared/api/mutation";
-import { rollKeys } from "#/features/rolls";
-import { importScans, previewImport, scanKeys, scanQueries } from "./api";
+import { useQuery } from '@tanstack/vue-query';
+import { toValue, type MaybeRefOrGetter } from 'vue';
+
+import { rollKeys } from '#/features/rolls';
+import { useApiMutation } from '#/shared/api/mutation';
+
+import { importScans, previewImport, scanKeys, scanQueries } from './api';
 
 export const useFrameComparison = (
   jobId: MaybeRefOrGetter<string>,
@@ -30,5 +32,5 @@ export const useImportScans = () =>
     // keeps the scan id, so every cached image (scanKeys.file) goes stale too
     invalidates: () => [scanKeys.all, rollKeys.all],
     success: (_variables, result) =>
-      `${result.imported.length} scan${result.imported.length === 1 ? "" : "s"} imported`,
+      `${result.imported.length} scan${result.imported.length === 1 ? '' : 's'} imported`,
   });

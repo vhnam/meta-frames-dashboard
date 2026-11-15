@@ -1,4 +1,4 @@
-import { shallowRef } from "vue";
+import { shallowRef } from 'vue';
 
 /** The open confirmation; ConfirmDialog in the root layout renders it. */
 export const pendingAsk = shallowRef<{ message: string; resolve: (ok: boolean) => void }>();

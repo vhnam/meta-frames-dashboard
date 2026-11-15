@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from "vue";
-import { IconLayoutSidebar } from "@tabler/icons-vue";
-import { cn } from "#/shared/lib/utils";
-import { Button } from "#/shared/ui/button";
-import { useSidebar } from "./utils";
+import { IconLayoutSidebar } from '@tabler/icons-vue';
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '#/shared/lib/utils';
+import { Button } from '#/shared/ui/button';
+
+import { useSidebar } from './utils';
 
 const props = defineProps<{
-  class?: HTMLAttributes["class"];
+  class?: HTMLAttributes['class'];
 }>();
 
 const { toggleSidebar } = useSidebar();
