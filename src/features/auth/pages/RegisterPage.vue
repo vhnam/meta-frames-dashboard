@@ -6,11 +6,11 @@ import { computed } from 'vue';
 
 import { errorMessage } from '#/shared/api/client';
 
-import AuthCard from '../components/AuthCard.vue';
-import AuthInput from '../components/AuthInput.vue';
-import AuthSubmit from '../components/AuthSubmit.vue';
-import FormAlert from '../components/FormAlert.vue';
-import GoogleSignIn from '../components/GoogleSignIn.vue';
+import AuthCard from '../components/auth-card/AuthCard.vue';
+import AuthInput from '../components/auth-input/AuthInput.vue';
+import AuthSubmit from '../components/auth-submit/AuthSubmit.vue';
+import FormAlert from '../components/form-alert/FormAlert.vue';
+import GoogleSignIn from '../components/google-sign-in/GoogleSignIn.vue';
 import { useRegister } from '../queries';
 import { PASSWORD_HINT, RegisterSchema } from '../schema';
 import { safeRedirect } from '../session';

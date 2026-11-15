@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { googleSignInUrl } from '../api';
+import { googleSignInUrl } from '../../api';
 
 const props = defineProps<{ redirect: string }>();
 </script>
