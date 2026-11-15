@@ -8,8 +8,8 @@ import FormSection from '#/shared/components/form-section/FormSection.vue';
 import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useReturnHandoff } from '../queries';
-import { ReturnNegativesSchema } from '../schema';
+import { useReturnHandoff } from '../../queries';
+import { ReturnNegativesSchema } from '../../schema';
 
 const props = defineProps<{ rollId: string; handoffId: string }>();
 const open = defineModel<boolean>('open', { required: true });

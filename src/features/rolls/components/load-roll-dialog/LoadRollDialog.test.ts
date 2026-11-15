@@ -7,7 +7,7 @@ import FormSelect from '#/shared/components/form-select/FormSelect.vue';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 // @vitest-environment happy-dom
-import { rollQueries } from '../api';
+import { rollQueries } from '../../api';
 import LoadRollDialog from './LoadRollDialog.vue';
 
 installFakeServer();

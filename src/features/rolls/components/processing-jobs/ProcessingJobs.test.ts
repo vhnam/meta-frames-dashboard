@@ -6,8 +6,8 @@ import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 // @vitest-environment happy-dom
-import { rollQueries } from '../api';
-import type { RollJob } from '../types';
+import { rollQueries } from '../../api';
+import type { RollJob } from '../../types';
 import ProcessingJobs from './ProcessingJobs.vue';
 
 installFakeServer();

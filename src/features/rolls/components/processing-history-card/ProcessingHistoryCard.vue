@@ -25,12 +25,12 @@ import {
   sendableTypes,
 } from '../../types';
 import type { ProcessingType, RollDetail, RollRow } from '../../types';
-import FinishRollDialog from '../FinishRollDialog.vue';
-import MarkDevelopedDialog from '../MarkDevelopedDialog.vue';
-import ProcessingJobs from '../ProcessingJobs.vue';
-import ReturnNegativesDialog from '../ReturnNegativesDialog.vue';
-import RollPlanFields from '../RollPlanFields.vue';
-import SendToLabDialog from '../SendToLabDialog.vue';
+import FinishRollDialog from '../finish-roll-dialog/FinishRollDialog.vue';
+import MarkDevelopedDialog from '../mark-developed-dialog/MarkDevelopedDialog.vue';
+import ProcessingJobs from '../processing-jobs/ProcessingJobs.vue';
+import ReturnNegativesDialog from '../return-negatives-dialog/ReturnNegativesDialog.vue';
+import RollPlanFields from '../roll-plan-fields/RollPlanFields.vue';
+import SendToLabDialog from '../send-to-lab-dialog/SendToLabDialog.vue';
 
 const props = defineProps<{ row: RollRow; detail: RollDetail }>();
 

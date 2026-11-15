@@ -11,9 +11,9 @@ import QuickPicks from '#/shared/components/quick-picks/QuickPicks.vue';
 import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useLoadRoll } from '../queries';
-import { LoadRollSchema } from '../schema';
-import type { RollRow } from '../types';
+import { useLoadRoll } from '../../queries';
+import { LoadRollSchema } from '../../schema';
+import type { RollRow } from '../../types';
 
 const props = defineProps<{ row?: RollRow }>();
 const open = defineModel<boolean>('open', { required: true });

@@ -17,15 +17,15 @@ import { ask, attempt } from '#/shared/lib/ui';
 import { Badge } from '#/shared/ui/badge';
 import { Button } from '#/shared/ui/button';
 
-import { useDeleteJob } from '../queries';
+import { useDeleteJob } from '../../queries';
 import {
   PROCESSING_TYPE_LABELS,
   developsFilm,
   producesScans,
   recordsNegativesReturned,
-} from '../types';
-import type { RollJob, RollRow } from '../types';
-import SendToLabDialog from './SendToLabDialog.vue';
+} from '../../types';
+import type { RollJob, RollRow } from '../../types';
+import SendToLabDialog from '../send-to-lab-dialog/SendToLabDialog.vue';
 
 const props = defineProps<{
   row: RollRow;

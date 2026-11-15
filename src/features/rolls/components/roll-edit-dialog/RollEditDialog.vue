@@ -12,12 +12,12 @@ import QuickPicks from '#/shared/components/quick-picks/QuickPicks.vue';
 import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { Button } from '#/shared/ui/button';
 
-import { isRollChanged, rollQueries } from '../api';
-import { rollChanges } from '../format';
-import { useUpdateRoll } from '../queries';
-import { RollSchema } from '../schema';
-import { FORMATS, MONTH_OPTIONS } from '../types';
-import type { Roll, RollRow } from '../types';
+import { isRollChanged, rollQueries } from '../../api';
+import { rollChanges } from '../../format';
+import { useUpdateRoll } from '../../queries';
+import { RollSchema } from '../../schema';
+import { FORMATS, MONTH_OPTIONS } from '../../types';
+import type { Roll, RollRow } from '../../types';
 
 const props = defineProps<{ row?: RollRow }>();
 const open = defineModel<boolean>('open', { required: true });

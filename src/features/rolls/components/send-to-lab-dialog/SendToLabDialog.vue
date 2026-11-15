@@ -29,17 +29,17 @@ import {
   useRecordScansReceived,
   useSendToLab,
   useUpdateJob,
-} from '../queries';
-import { SendToLabSchema } from '../schema';
+} from '../../queries';
+import { SendToLabSchema } from '../../schema';
 import {
   PROCESSING_TYPES,
   PROCESSING_TYPE_LABELS,
   developsFilm,
   producesScans,
   recordsNegativesReturned,
-} from '../types';
-import type { ProcessingType, RollJob, RollRow, ScanOrder } from '../types';
-import ScanOrderPicker from './ScanOrderPicker.vue';
+} from '../../types';
+import type { ProcessingType, RollJob, RollRow, ScanOrder } from '../../types';
+import ScanOrderPicker from '../scan-order-picker/ScanOrderPicker.vue';
 
 const props = defineProps<{
   row?: RollRow;

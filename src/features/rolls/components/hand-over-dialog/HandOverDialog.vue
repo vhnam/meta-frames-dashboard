@@ -17,12 +17,12 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import Select from '#/shared/components/select/Select.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useHandOverRolls } from '../queries';
-import { handOverType, handOverTypes } from '../rollList';
-import { HandOverSchema } from '../schema';
-import { PROCESSING_TYPE_LABELS, producesScans } from '../types';
-import type { ProcessingType, RollListRow, ScanOrder } from '../types';
-import ScanOrderPicker from './ScanOrderPicker.vue';
+import { useHandOverRolls } from '../../queries';
+import { handOverType, handOverTypes } from '../../rollList';
+import { HandOverSchema } from '../../schema';
+import { PROCESSING_TYPE_LABELS, producesScans } from '../../types';
+import type { ProcessingType, RollListRow, ScanOrder } from '../../types';
+import ScanOrderPicker from '../scan-order-picker/ScanOrderPicker.vue';
 
 const props = defineProps<{ rows: RollListRow[] }>();
 const open = defineModel<boolean>('open', { required: true });

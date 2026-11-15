@@ -9,9 +9,9 @@ import FormSelect from '#/shared/components/form-select/FormSelect.vue';
 import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useMarkDeveloped } from '../queries';
-import { MarkDevelopedSchema } from '../schema';
-import type { RollPlan } from '../types';
+import { useMarkDeveloped } from '../../queries';
+import { MarkDevelopedSchema } from '../../schema';
+import type { RollPlan } from '../../types';
 
 const props = defineProps<{
   rollId: string;

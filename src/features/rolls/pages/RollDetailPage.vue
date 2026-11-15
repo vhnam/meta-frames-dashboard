@@ -12,14 +12,14 @@ import { ask, attempt } from '#/shared/lib/ui';
 import { Badge } from '#/shared/ui/badge';
 import { Button } from '#/shared/ui/button';
 
-import FramesCard from '../components/detail/FramesCard.vue';
-import ProcessingHistoryCard from '../components/detail/ProcessingHistoryCard.vue';
-import RollGearCard from '../components/detail/RollGearCard.vue';
-import RollSummaryCard from '../components/detail/RollSummaryCard.vue';
-import LoadRollDialog from '../components/LoadRollDialog.vue';
-import RollEditDialog from '../components/RollEditDialog.vue';
-import RollLensesDialog from '../components/RollLensesDialog.vue';
-import RollStageBadge from '../components/RollStageBadge.vue';
+import FramesCard from '../components/frames-card/FramesCard.vue';
+import LoadRollDialog from '../components/load-roll-dialog/LoadRollDialog.vue';
+import ProcessingHistoryCard from '../components/processing-history-card/ProcessingHistoryCard.vue';
+import RollEditDialog from '../components/roll-edit-dialog/RollEditDialog.vue';
+import RollGearCard from '../components/roll-gear-card/RollGearCard.vue';
+import RollLensesDialog from '../components/roll-lenses-dialog/RollLensesDialog.vue';
+import RollStageBadge from '../components/roll-stage-badge/RollStageBadge.vue';
+import RollSummaryCard from '../components/roll-summary-card/RollSummaryCard.vue';
 import { useDeleteRoll, useRollDetail } from '../queries';
 import type { RollDetail, RollRow } from '../types';
 
