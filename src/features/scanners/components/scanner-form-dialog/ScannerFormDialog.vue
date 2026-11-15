@@ -11,12 +11,12 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { ask, attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 
-import { completeSettings, optionsForKind } from '../format';
-import { useDeleteScanner, useSaveScanner, useScannerKinds, useScannerList } from '../queries';
-import { ScannerSchema } from '../schema';
-import { SCANNER_KINDS, SCANNER_KIND_LABELS } from '../types';
-import type { ScanSettings } from '../types';
-import ScanSettingsFields from './ScanSettingsFields.vue';
+import { completeSettings, optionsForKind } from '../../format';
+import { useDeleteScanner, useSaveScanner, useScannerKinds, useScannerList } from '../../queries';
+import { ScannerSchema } from '../../schema';
+import { SCANNER_KINDS, SCANNER_KIND_LABELS } from '../../types';
+import type { ScanSettings } from '../../types';
+import ScanSettingsFields from '../scan-settings-fields/ScanSettingsFields.vue';
 
 const props = defineProps<{ scannerId?: string }>();
 const open = defineModel<boolean>('open', { required: true });

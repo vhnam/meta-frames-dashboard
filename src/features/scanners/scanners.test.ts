@@ -7,7 +7,7 @@ import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 import { SelectStub } from '#/test/selectStub';
 
-import ScannerFormDialog from './components/ScannerFormDialog.vue';
+import ScannerFormDialog from './components/scanner-form-dialog/ScannerFormDialog.vue';
 import ScannerListPage from './pages/ScannerListPage.vue';
 
 installFakeServer();

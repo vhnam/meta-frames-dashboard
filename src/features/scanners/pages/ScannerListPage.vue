@@ -14,7 +14,7 @@ import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { plainText } from '#/shared/lib/format';
 
-import ScannerFormDialog from '../components/ScannerFormDialog.vue';
+import ScannerFormDialog from '../components/scanner-form-dialog/ScannerFormDialog.vue';
 import { useScannerList } from '../queries';
 import { SCANNER_KIND_LABELS } from '../types';
 import type { Scanner } from '../types';
