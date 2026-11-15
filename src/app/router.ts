@@ -1,5 +1,7 @@
 import { createRoute, createRouter, redirect } from '@tanstack/vue-router';
 
+import { appRoute } from '#/app/appRoute';
+import { rootRoute } from '#/app/rootRoute';
 import { auditRoutes } from '#/features/audit/routes';
 import { authKeys } from '#/features/auth';
 import { authRoutes } from '#/features/auth/routes';
@@ -10,8 +12,6 @@ import { labsRoutes } from '#/features/labs/routes';
 import { lensesRoutes } from '#/features/lenses/routes';
 import { rollsRoutes } from '#/features/rolls/routes';
 import { scannersRoutes } from '#/features/scanners/routes';
-import { appRoute } from '#/layouts/appRoute';
-import { rootRoute } from '#/layouts/rootRoute';
 import { queryClient } from '#/shared/api/client';
 import { setUnauthorizedHandler } from '#/shared/api/http';
 

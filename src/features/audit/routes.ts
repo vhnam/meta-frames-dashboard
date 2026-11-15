@@ -1,6 +1,6 @@
 import { createRoute } from '@tanstack/vue-router';
 
-import { appRoute } from '#/layouts/appRoute';
+import { appRoute } from '#/app/appRoute';
 
 import AuditLogPage from './pages/AuditLogPage.vue';
 

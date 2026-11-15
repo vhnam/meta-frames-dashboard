@@ -1,9 +1,8 @@
 import { createRootRoute } from '@tanstack/vue-router';
 
+import NotFoundPage from '#/layouts/NotFoundPage.vue';
+import RootLayout from '#/layouts/RootLayout.vue';
 import { parseListSearch } from '#/shared/lib/listSearch';
-
-import NotFoundPage from './NotFoundPage.vue';
-import RootLayout from './RootLayout.vue';
 
 export const rootRoute = createRootRoute({
   component: RootLayout,
