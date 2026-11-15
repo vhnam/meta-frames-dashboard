@@ -4,6 +4,7 @@ import type { FormSchema, FormStore, RequiredPath, ValidPath } from '@formisch/v
 import type * as v from 'valibot';
 
 import FormField from '../form-field/FormField.vue';
+import SearchableSelect from '../searchable-select/SearchableSelect.vue';
 import Select from '../select/Select.vue';
 import type { Option } from '../select/Select.vue';
 
@@ -19,6 +20,8 @@ defineProps<{
   disabled?: boolean;
   /** Store the option value as a number (undefined when cleared). */
   numeric?: boolean;
+  /** Type to filter the options. */
+  searchable?: boolean;
 }>();
 </script>
 
@@ -41,7 +44,17 @@ defineProps<{
         ><slot name="aside"
       /></template>
       <div class="flex min-w-0 gap-2 [&>[data-slot=select-trigger]]:min-w-0">
+        <SearchableSelect
+          v-if="searchable"
+          :model-value="field.input == null ? '' : String(field.input)"
+          :options="options"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :invalid="!!field.errors"
+          @update:model-value="(value) => (field.input = value as never)"
+        />
         <Select
+          v-else
           :model-value="field.input == null ? '' : String(field.input)"
           v-bind="field.props"
           :options="options"

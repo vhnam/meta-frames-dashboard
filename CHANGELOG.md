@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The Film stock field on Add rolls filters the list as you type. You pick one existing stock.
+
 ### Changed
 
 - The formatter settings moved to `.oxfmtrc.json`, which `vite.config.ts` loads. They set a line width of 100, 2-space indent, single quotes in script code (also in Vue files), trailing commas, one attribute per line in Vue templates, sorted imports and sorted Tailwind classes. Run `vp check --fix` to apply them to existing files.
