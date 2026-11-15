@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The formatter settings moved to `.oxfmtrc.json`, which `vite.config.ts` loads. They set a line width of 100, 2-space indent, single quotes in script code (also in Vue files), trailing commas, one attribute per line in Vue templates, sorted imports and sorted Tailwind classes. Run `vp check --fix` to apply them to existing files.
 - The pnpm version in `devEngines` is now 12.21.0.
 
+### Fixed
+
+- A suggestion field, such as a camera brand or model, keeps filtering the list when the text you type is the value already shown, and still filters after you leave the field and open it again.
+
 ## [3.0.0] - 2026-11-15
 
 This release needs a Meta-Frame API with lab orders (`/lab-orders`) and `PUT /processing/{id}/order-items`, and with the roll workflow: `stage`, `stageDetail`, `needsScan` and `plan` on each roll of `GET /rolls`, `POST /lab-handoffs`, and on a roll `openHandoffId`, `developedAt` on its jobs, `PUT /rolls/{id}/plan`, `PUT /rolls/{id}/developed`, `PUT|DELETE /rolls/{id}/scan-request` and `PUT /lab-handoffs/{id}/returned`. With an older API the Rolls tabs stay empty.
