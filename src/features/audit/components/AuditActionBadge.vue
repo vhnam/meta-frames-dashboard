@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StatusBadge, { type StatusTone } from '#/shared/components/StatusBadge.vue';
+import StatusBadge, { type StatusTone } from '#/shared/components/status-badge/StatusBadge.vue';
 
 import type { AuditAction } from '../types';
 

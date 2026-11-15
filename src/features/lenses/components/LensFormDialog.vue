@@ -4,12 +4,12 @@ import type * as v from 'valibot';
 import { computed, watch } from 'vue';
 
 import { useKnownBrands, useKnownMounts } from '#/features/cameras/known';
-import FormCombobox from '#/shared/components/FormCombobox.vue';
-import FormInput from '#/shared/components/FormInput.vue';
-import FormRichText from '#/shared/components/FormRichText.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import QuickPicks from '#/shared/components/QuickPicks.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import FormCombobox from '#/shared/components/form-combobox/FormCombobox.vue';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormRichText from '#/shared/components/form-rich-text/FormRichText.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import QuickPicks from '#/shared/components/quick-picks/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { ask, attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 

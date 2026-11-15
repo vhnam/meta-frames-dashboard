@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import FormSection from '#/shared/components/FormSection.vue';
-import { RichText } from '#/shared/components/richText';
-import SpecTile from '#/shared/components/SpecTile.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import { RichText } from '#/shared/components/rich-text/richText';
+import SpecTile from '#/shared/components/spec-tile/SpecTile.vue';
 import { formatDate, formatVnd } from '#/shared/lib/format';
 
 import { formatExpiry } from '../../format';

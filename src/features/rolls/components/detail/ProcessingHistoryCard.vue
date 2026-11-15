@@ -3,7 +3,7 @@ import { IconChevronDown } from '@tabler/icons-vue';
 import { computed, ref } from 'vue';
 
 import { startingSettings, useScannerKinds, useScannerList } from '#/features/scanners';
-import FormSection from '#/shared/components/FormSection.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
 import { formatDate } from '#/shared/lib/format';
 import { notify } from '#/shared/lib/toast';
 import { attempt } from '#/shared/lib/ui';

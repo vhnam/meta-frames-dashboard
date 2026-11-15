@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { StatusTone } from '#/shared/components/StatusBadge.vue';
+import type { StatusTone } from '#/shared/components/status-badge/StatusBadge.vue';
 
 import type { RollStage, StageDetail } from '../types';
 
@@ -46,7 +46,7 @@ const DETAIL_TONE: Record<StageDetail, StatusTone> = {
 </script>
 
 <script setup lang="ts">
-import StatusBadge from '#/shared/components/StatusBadge.vue';
+import StatusBadge from '#/shared/components/status-badge/StatusBadge.vue';
 
 /** One badge per roll: its stage, or inside processing what is being done or awaited. */
 defineProps<{ stage: RollStage; detail: StageDetail | null }>();

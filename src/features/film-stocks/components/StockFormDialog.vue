@@ -3,12 +3,12 @@ import { getInput, reset, setInput, useForm } from '@formisch/vue';
 import type * as v from 'valibot';
 import { computed, ref, watch } from 'vue';
 
-import FormInput from '#/shared/components/FormInput.vue';
-import FormRichText from '#/shared/components/FormRichText.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import FormSelect from '#/shared/components/FormSelect.vue';
-import QuickPicks from '#/shared/components/QuickPicks.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormRichText from '#/shared/components/form-rich-text/FormRichText.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import QuickPicks from '#/shared/components/quick-picks/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 

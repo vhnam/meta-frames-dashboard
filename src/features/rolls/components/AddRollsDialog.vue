@@ -5,11 +5,11 @@ import { computed, ref, watch } from 'vue';
 
 import { stockName, useStockList } from '#/features/film-stocks';
 import { StockFormDialog } from '#/features/film-stocks';
-import FormInput from '#/shared/components/FormInput.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import FormSelect from '#/shared/components/FormSelect.vue';
-import QuickPicks from '#/shared/components/QuickPicks.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import QuickPicks from '#/shared/components/quick-picks/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 

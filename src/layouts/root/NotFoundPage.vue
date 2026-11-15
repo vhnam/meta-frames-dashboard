@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@tanstack/vue-router';
 
-import BrandLink from '#/shared/components/BrandLink.vue';
-import NotFound from '#/shared/components/NotFound.vue';
+import BrandLink from '#/shared/components/brand-link/BrandLink.vue';
+import NotFound from '#/shared/components/not-found/NotFound.vue';
 import { Button } from '#/shared/ui/button';
 </script>
 

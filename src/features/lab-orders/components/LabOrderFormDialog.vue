@@ -5,13 +5,13 @@ import type * as v from 'valibot';
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 
 import { useLabList } from '#/features/labs';
-import FormField from '#/shared/components/FormField.vue';
-import FormInput from '#/shared/components/FormInput.vue';
-import FormRichText from '#/shared/components/FormRichText.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import FormSelect from '#/shared/components/FormSelect.vue';
-import { RichText } from '#/shared/components/richText';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import FormField from '#/shared/components/form-field/FormField.vue';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormRichText from '#/shared/components/form-rich-text/FormRichText.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import { RichText } from '#/shared/components/rich-text/richText';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { formatVnd } from '#/shared/lib/format';
 import { attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
@@ -22,7 +22,9 @@ import { LabOrderSchema } from '../schema';
 import type { LabOrder, LabOrderLineInput } from '../types';
 
 // TipTap is large: load it only when the form opens.
-const RichTextEditor = defineAsyncComponent(() => import('#/shared/components/RichTextEditor.vue'));
+const RichTextEditor = defineAsyncComponent(
+  () => import('#/shared/components/rich-text-editor/RichTextEditor.vue'),
+);
 
 const props = defineProps<{ order?: LabOrder }>();
 const open = defineModel<boolean>('open', { required: true });

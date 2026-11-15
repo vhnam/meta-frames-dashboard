@@ -16,11 +16,11 @@ import {
   useScannerKinds,
   useScannerList,
 } from '#/features/scanners';
-import FormInput from '#/shared/components/FormInput.vue';
-import FormRichText from '#/shared/components/FormRichText.vue';
-import FormSection from '#/shared/components/FormSection.vue';
-import FormSelect from '#/shared/components/FormSelect.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import FormInput from '#/shared/components/form-input/FormInput.vue';
+import FormRichText from '#/shared/components/form-rich-text/FormRichText.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import FormSelect from '#/shared/components/form-select/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { formatDate } from '#/shared/lib/format';
 import { attempt } from '#/shared/lib/ui';
 

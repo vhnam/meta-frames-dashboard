@@ -7,7 +7,7 @@ import { computed, ref } from 'vue';
 import { Button } from '#/shared/ui/button';
 import { Skeleton } from '#/shared/ui/skeleton';
 
-import EmptyState from './EmptyState.vue';
+import EmptyState from '../empty-state/EmptyState.vue';
 
 const props = withDefaults(
   defineProps<{

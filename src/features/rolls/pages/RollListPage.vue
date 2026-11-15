@@ -4,12 +4,17 @@ import { Link, useRouter } from '@tanstack/vue-router';
 import { computed, h, ref, shallowRef, watch } from 'vue';
 
 import { useStockList, type FilmStock, type FilmType } from '#/features/film-stocks';
-import AddButton from '#/shared/components/AddButton.vue';
-import type { DataTableColumn } from '#/shared/components/dataTable';
-import DataTable from '#/shared/components/DataTable.vue';
-import PageHeader from '#/shared/components/PageHeader.vue';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
-import { PRIMARY_LINK, numberCell, stackCell, tagCell } from '#/shared/components/tableCells';
+import AddButton from '#/shared/components/add-button/AddButton.vue';
+import type { DataTableColumn } from '#/shared/components/data-table/dataTable';
+import DataTable from '#/shared/components/data-table/DataTable.vue';
+import {
+  PRIMARY_LINK,
+  numberCell,
+  stackCell,
+  tagCell,
+} from '#/shared/components/data-table/tableCells';
+import PageHeader from '#/shared/components/page-header/PageHeader.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { plainText, formatDate } from '#/shared/lib/format';
 import { notify } from '#/shared/lib/toast';
 import { cn } from '#/shared/lib/utils';

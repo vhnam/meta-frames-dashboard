@@ -4,10 +4,10 @@ import type { FormSchema, FormStore, RequiredPath, ValidPath } from '@formisch/v
 import type * as v from 'valibot';
 import { defineAsyncComponent } from 'vue';
 
-import FormField from './FormField.vue';
+import FormField from '../form-field/FormField.vue';
 
 // TipTap is large: load it only when a form with notes opens.
-const RichTextEditor = defineAsyncComponent(() => import('./RichTextEditor.vue'));
+const RichTextEditor = defineAsyncComponent(() => import('../rich-text-editor/RichTextEditor.vue'));
 
 defineProps<{
   of: FormStore<TSchema>;

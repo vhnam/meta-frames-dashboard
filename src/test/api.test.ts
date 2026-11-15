@@ -8,7 +8,7 @@ import { cameraKeys, useCameraList, useSetCameraActive } from '#/features/camera
 import { lensKeys, useLensList, useSetLensActive } from '#/features/lenses';
 import { rollKeys, useRollList } from '#/features/rolls';
 import { queryClient } from '#/shared/api/client';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));

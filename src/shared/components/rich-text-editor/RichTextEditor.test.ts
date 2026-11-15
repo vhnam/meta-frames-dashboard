@@ -4,7 +4,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vite-plus/test';
 import { defineComponent, h, ref } from 'vue';
 
-import RichText from './RichText.vue';
+import RichText from '../rich-text/RichText.vue';
 import RichTextEditor from './RichTextEditor.vue';
 
 /** The editor bound with v-model to `notes`, as a form would bind it. */

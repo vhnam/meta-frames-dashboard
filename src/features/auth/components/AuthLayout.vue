@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Outlet } from '@tanstack/vue-router';
 
-import BrandLink from '#/shared/components/BrandLink.vue';
+import BrandLink from '#/shared/components/brand-link/BrandLink.vue';
 </script>
 
 <template>

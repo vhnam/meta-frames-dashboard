@@ -4,8 +4,8 @@ import * as v from 'valibot';
 import { ref, watch } from 'vue';
 
 import type { Lens } from '#/features/lenses';
-import FormSection from '#/shared/components/FormSection.vue';
-import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
+import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/SectionedFormDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 import { Checkbox } from '#/shared/ui/checkbox';
 

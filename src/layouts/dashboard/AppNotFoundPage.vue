@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, useRouter } from '@tanstack/vue-router';
 
-import NotFound from '#/shared/components/NotFound.vue';
+import NotFound from '#/shared/components/not-found/NotFound.vue';
 import { Button } from '#/shared/ui/button';
 
 const router = useRouter();

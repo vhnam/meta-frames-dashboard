@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import AddButton from '#/shared/components/AddButton.vue';
-import type { DataTableColumn } from '#/shared/components/dataTable';
-import DataTable from '#/shared/components/DataTable.vue';
-import PageHeader from '#/shared/components/PageHeader.vue';
-import QueryBoundary from '#/shared/components/QueryBoundary.vue';
-import { mutedCell, primaryText, stackCell, tagCell } from '#/shared/components/tableCells';
+import AddButton from '#/shared/components/add-button/AddButton.vue';
+import type { DataTableColumn } from '#/shared/components/data-table/dataTable';
+import DataTable from '#/shared/components/data-table/DataTable.vue';
+import {
+  mutedCell,
+  primaryText,
+  stackCell,
+  tagCell,
+} from '#/shared/components/data-table/tableCells';
+import PageHeader from '#/shared/components/page-header/PageHeader.vue';
+import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { plainText } from '#/shared/lib/format';
 
 import ScannerFormDialog from '../components/ScannerFormDialog.vue';

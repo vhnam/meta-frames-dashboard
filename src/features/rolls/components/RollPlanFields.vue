@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Select from '#/shared/components/Select.vue';
+import Select from '#/shared/components/select/Select.vue';
 import { attempt } from '#/shared/lib/ui';
 
 import { useSetRollPlan } from '../queries';

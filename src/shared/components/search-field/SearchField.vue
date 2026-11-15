@@ -3,7 +3,7 @@ import { IconSearch, IconX } from '@tabler/icons-vue';
 
 import { Input } from '#/shared/ui/input';
 
-import FilterField from './FilterField.vue';
+import FilterField from '../filter-field/FilterField.vue';
 
 defineProps<{ label: string; placeholder?: string }>();
 const model = defineModel<string>({ default: '' });

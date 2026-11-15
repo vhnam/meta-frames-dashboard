@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FormSection from '#/shared/components/FormSection.vue';
+import FormSection from '#/shared/components/form-section/FormSection.vue';
 import { Badge } from '#/shared/ui/badge';
 
 import type { RollDetail } from '../../types';

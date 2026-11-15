@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 
 import { useLensList } from '#/features/lenses';
-import PlainDialog from '#/shared/components/PlainDialog.vue';
+import PlainDialog from '#/shared/components/plain-dialog/PlainDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 
 import { useCameraDetail, useSetCameraLenses } from '../queries';
