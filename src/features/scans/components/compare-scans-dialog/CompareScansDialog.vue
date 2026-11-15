@@ -7,8 +7,8 @@ import { Button } from '#/shared/ui/button';
 import { Input } from '#/shared/ui/input';
 import { Label } from '#/shared/ui/label';
 
-import { useFrameComparison } from '../queries';
-import ScanImage from './ScanImage.vue';
+import { useFrameComparison } from '../../queries';
+import ScanImage from '../scan-image/ScanImage.vue';
 
 const props = defineProps<{ job: RollJob }>();
 const open = defineModel<boolean>('open', { required: true });
