@@ -3,7 +3,7 @@ import Select from '#/shared/components/select/Select.vue';
 import { Checkbox } from '#/shared/ui/checkbox';
 import { Input } from '#/shared/ui/input';
 
-import type { ScanOption, ScanSettings } from '../types';
+import type { ScanOption, ScanSettings } from '../../types';
 
 /** A field per scan option of a scanner kind, editing a settings object. */
 const props = defineProps<{ options: ScanOption[]; idPrefix: string; disabled?: boolean }>();
