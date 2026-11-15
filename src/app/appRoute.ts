@@ -1,8 +1,8 @@
 import { createRoute, redirect } from '@tanstack/vue-router';
 
 import { currentUser } from '#/features/auth/session';
-import AppNotFoundPage from '#/layouts/AppNotFoundPage.vue';
-import DashboardLayout from '#/layouts/DashboardLayout.vue';
+import AppNotFoundPage from '#/layouts/dashboard/AppNotFoundPage.vue';
+import DashboardLayout from '#/layouts/dashboard/DashboardLayout.vue';
 
 import { rootRoute } from './rootRoute';
 
