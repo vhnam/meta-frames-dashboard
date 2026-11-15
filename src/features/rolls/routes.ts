@@ -1,7 +1,7 @@
 import { createRoute, redirect } from '@tanstack/vue-router';
 import { h, type VNode } from 'vue';
 
-import { appRoute } from '#/layouts/appRoute';
+import { appRoute } from '#/app/appRoute';
 
 import RollDetailPage from './pages/RollDetailPage.vue';
 import RollListPage from './pages/RollListPage.vue';

@@ -1,7 +1,7 @@
 import { createRoute } from '@tanstack/vue-router';
 import { h, type VNode } from 'vue';
 
-import { appRoute } from '#/layouts/appRoute';
+import { appRoute } from '#/app/appRoute';
 
 import CameraDetailPage from './pages/CameraDetailPage.vue';
 import CameraListPage from './pages/CameraListPage.vue';

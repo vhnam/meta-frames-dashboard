@@ -1,7 +1,7 @@
 import { createRoute } from '@tanstack/vue-router';
 import { h, type VNode } from 'vue';
 
-import { appRoute } from '#/layouts/appRoute';
+import { appRoute } from '#/app/appRoute';
 
 import LabOrderDetailPage from './pages/LabOrderDetailPage.vue';
 import LabOrderListPage from './pages/LabOrderListPage.vue';

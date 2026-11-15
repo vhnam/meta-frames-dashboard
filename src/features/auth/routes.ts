@@ -1,7 +1,7 @@
 import { createRoute, redirect } from '@tanstack/vue-router';
 import { h, type VNode } from 'vue';
 
-import { rootRoute } from '#/layouts/rootRoute';
+import { rootRoute } from '#/app/rootRoute';
 
 import AuthLayout from './components/AuthLayout.vue';
 import LoginPage from './pages/LoginPage.vue';

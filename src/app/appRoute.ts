@@ -1,9 +1,9 @@
 import { createRoute, redirect } from '@tanstack/vue-router';
 
 import { currentUser } from '#/features/auth/session';
+import AppNotFoundPage from '#/layouts/AppNotFoundPage.vue';
+import DashboardLayout from '#/layouts/DashboardLayout.vue';
 
-import AppNotFoundPage from './AppNotFoundPage.vue';
-import DashboardLayout from './DashboardLayout.vue';
 import { rootRoute } from './rootRoute';
 
 /** The signed-in dashboard. Every feature page lives under `/app`. */

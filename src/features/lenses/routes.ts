@@ -1,7 +1,7 @@
 import { createRoute } from '@tanstack/vue-router';
 import { h, type VNode } from 'vue';
 
-import { appRoute } from '#/layouts/appRoute';
+import { appRoute } from '#/app/appRoute';
 
 import LensDetailPage from './pages/LensDetailPage.vue';
 import LensListPage from './pages/LensListPage.vue';
