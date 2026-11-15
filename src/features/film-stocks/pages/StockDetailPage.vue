@@ -20,7 +20,7 @@ import { ask, attempt } from '#/shared/lib/ui';
 import { cn } from '#/shared/lib/utils';
 import { Button } from '#/shared/ui/button';
 
-import StockFormDialog from '../components/StockFormDialog.vue';
+import StockFormDialog from '../components/stock-form-dialog/StockFormDialog.vue';
 import { PACKAGING_TONE, TYPE_TONE, stockName, stockWarnings } from '../format';
 import { useDeleteStock, useStockDetail } from '../queries';
 import { FILM_TYPE_LABELS, PACKAGING_LABELS, type StockDetail } from '../types';

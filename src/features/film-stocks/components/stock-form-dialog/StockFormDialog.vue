@@ -12,10 +12,10 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 
-import { PROCESS_NAMES, stockName, stockWarnings } from '../format';
-import { useSaveStock, useStockList } from '../queries';
-import { StockSchema } from '../schema';
-import { FILM_TYPES, FILM_TYPE_LABELS, PACKAGINGS, PACKAGING_LABELS, PROCESSES } from '../types';
+import { PROCESS_NAMES, stockName, stockWarnings } from '../../format';
+import { useSaveStock, useStockList } from '../../queries';
+import { StockSchema } from '../../schema';
+import { FILM_TYPES, FILM_TYPE_LABELS, PACKAGINGS, PACKAGING_LABELS, PROCESSES } from '../../types';
 
 const props = withDefaults(defineProps<{ stockId?: string; allowInlineBase?: boolean }>(), {
   allowInlineBase: true,
