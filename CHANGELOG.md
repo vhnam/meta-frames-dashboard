@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The Brand field of the Add and Edit film stock forms suggests the brands already used on film stocks while you type, one entry per brand whatever its case. Pick one or type a new brand.
+- The Film stock field on Add rolls filters the list as you type. You pick one existing stock.
+
 ### Changed
 
 - The formatter settings moved to `.oxfmtrc.json`, which `vite.config.ts` loads. They set a line width of 100, 2-space indent, single quotes in script code (also in Vue files), trailing commas, one attribute per line in Vue templates, sorted imports and sorted Tailwind classes. Run `vp check --fix` to apply them to existing files.
 - The pnpm version in `devEngines` is now 12.21.0.
+
+### Fixed
+
+- A suggestion field, such as a camera brand or model, keeps filtering the list when the text you type is the value already shown, and still filters after you leave the field and open it again.
 
 ## [3.0.0] - 2026-11-15
 

@@ -92,6 +92,7 @@ async function submit(output: v.InferOutput<typeof AddRollsSchema>) {
             :path="['stockId']"
             label="Film stock"
             required
+            searchable
             placeholder="Select film stock"
             :options="stockOptions"
           >

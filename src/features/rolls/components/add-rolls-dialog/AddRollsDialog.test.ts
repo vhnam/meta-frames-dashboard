@@ -19,7 +19,7 @@ beforeEach(() => {
 
 describe('AddRollsDialog', () => {
   it('creates rolls through POST /rolls/bulk', async () => {
-    const stock = server.addStock({ name: 'ColorPlus 200' });
+    server.addStock({ name: 'ColorPlus 200' });
     const wrapper = mount(AddRollsDialog, {
       attachTo: document.body,
       props: { open: false },
@@ -27,9 +27,9 @@ describe('AddRollsDialog', () => {
     });
     await wrapper.setProps({ open: true } as never);
     await flushPromises();
-    const stockSelect = document.body.querySelector('select') as HTMLSelectElement;
-    stockSelect.value = stock.id;
-    stockSelect.dispatchEvent(new Event('change'));
+    (document.body.querySelector('[aria-label="Show options"]') as HTMLButtonElement).click();
+    await flushPromises();
+    (document.body.querySelector('[role="option"]') as HTMLElement).click();
     await flushPromises();
     (document.body.querySelector('button[type=submit]') as HTMLButtonElement).click();
     await vi.waitFor(() => expect(server.rolls).toHaveLength(1));
