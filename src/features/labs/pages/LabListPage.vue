@@ -9,7 +9,7 @@ import { mutedCell, primaryText } from '#/shared/components/data-table/tableCell
 import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 
-import LabFormDialog from '../components/LabFormDialog.vue';
+import LabFormDialog from '../components/lab-form-dialog/LabFormDialog.vue';
 import { useLabList } from '../queries';
 import type { Lab } from '../types';
 

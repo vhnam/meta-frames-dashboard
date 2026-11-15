@@ -9,9 +9,9 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { ask, attempt } from '#/shared/lib/ui';
 import { Button } from '#/shared/ui/button';
 
-import { useDeleteLab, useLabList, useSaveLab } from '../queries';
-import { LabSchema } from '../schema';
-import LabScannerPicker from './LabScannerPicker.vue';
+import { useDeleteLab, useLabList, useSaveLab } from '../../queries';
+import { LabSchema } from '../../schema';
+import LabScannerPicker from '../lab-scanner-picker/LabScannerPicker.vue';
 
 const props = defineProps<{ labId?: string }>();
 const open = defineModel<boolean>('open', { required: true });

@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { queryClient } from '#/shared/api/client';
 import { installFakeServer, server } from '#/test/fakeServer';
 
-import LabFormDialog from './components/LabFormDialog.vue';
+import LabFormDialog from './components/lab-form-dialog/LabFormDialog.vue';
 
 installFakeServer();
 vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
