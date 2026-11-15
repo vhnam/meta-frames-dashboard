@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useId } from "vue";
-import { Label } from "#/shared/ui/label";
-import { Switch } from "#/shared/ui/switch";
+import { useId } from 'vue';
+
+import { Label } from '#/shared/ui/label';
+import { Switch } from '#/shared/ui/switch';
 
 /** The In stock view switch, shown beside the table search like Hand to lab on other tabs. */
 defineProps<{ grouped: boolean }>();
-const emit = defineEmits<{ "update:grouped": [value: boolean] }>();
+const emit = defineEmits<{ 'update:grouped': [value: boolean] }>();
 
 const groupId = useId();
 </script>

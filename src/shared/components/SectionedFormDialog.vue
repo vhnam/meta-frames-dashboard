@@ -1,17 +1,18 @@
 <script setup lang="ts" generic="TSchema extends FormSchema">
-import { Form } from "@formisch/vue";
-import type { FormSchema, FormStore } from "@formisch/vue";
-import { IconX } from "@tabler/icons-vue";
-import type * as v from "valibot";
-import { Button } from "#/shared/ui/button";
+import { Form } from '@formisch/vue';
+import type { FormSchema, FormStore } from '@formisch/vue';
+import { IconX } from '@tabler/icons-vue';
+import type * as v from 'valibot';
+
+import { cn } from '#/shared/lib/utils';
+import { Button } from '#/shared/ui/button';
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "#/shared/ui/dialog";
-import { cn } from "#/shared/lib/utils";
+} from '#/shared/ui/dialog';
 
 /**
  * A larger form dialog for records with several groups of fields: a header, numbered
@@ -27,22 +28,22 @@ withDefaults(
     pending?: boolean;
     /** Shows the record without Save: the footer only closes the dialog. */
     readOnly?: boolean;
-    size?: "md" | "lg";
+    size?: 'md' | 'lg';
   }>(),
-  { submitLabel: "Save", size: "lg" },
+  { submitLabel: 'Save', size: 'lg' },
 );
 const emit = defineEmits<{ submit: [output: v.InferOutput<TSchema>] }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 /** Roomier controls in the sans heading face, as on the auth pages, on white so they stand
  * out from the paper background. */
 const FIELDS = [
-  "[&_[data-slot=label]]:font-heading",
-  "[&_:is([data-slot=input],[data-slot=select-trigger],[data-slot=rich-text])]:bg-white",
-  "dark:[&_:is([data-slot=input],[data-slot=select-trigger],[data-slot=rich-text])]:bg-input/30",
-  "[&_[data-slot=input]]:font-heading [&_[data-slot=input]]:h-11 [&_[data-slot=input]]:text-base!",
-  "[&_[data-slot=select-trigger]]:font-heading [&_[data-slot=select-trigger]]:h-11! [&_[data-slot=select-trigger]]:text-base",
-].join(" ");
+  '[&_[data-slot=label]]:font-heading',
+  '[&_:is([data-slot=input],[data-slot=select-trigger],[data-slot=rich-text])]:bg-white',
+  'dark:[&_:is([data-slot=input],[data-slot=select-trigger],[data-slot=rich-text])]:bg-input/30',
+  '[&_[data-slot=input]]:font-heading [&_[data-slot=input]]:h-11 [&_[data-slot=input]]:text-base!',
+  '[&_[data-slot=select-trigger]]:font-heading [&_[data-slot=select-trigger]]:h-11! [&_[data-slot=select-trigger]]:text-base',
+].join(' ');
 </script>
 
 <template>
@@ -56,19 +57,22 @@ const FIELDS = [
         )
       "
     >
-      <div class="bg-card flex items-start justify-between gap-4 border-b px-6 py-6 sm:px-9">
+      <div class="flex items-start justify-between gap-4 border-b bg-card px-6 py-6 sm:px-9">
         <div class="grid gap-2">
           <DialogTitle class="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
             {{ title }}
           </DialogTitle>
-          <DialogDescription class="text-muted-foreground text-sm">
+          <DialogDescription class="text-sm text-muted-foreground">
             {{ description }}
           </DialogDescription>
         </div>
         <DialogClose
-          class="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 -mr-1 rounded-md p-1 outline-none focus-visible:ring-3"
+          class="-mr-1 rounded-md p-1 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <IconX class="size-6" aria-hidden="true" />
+          <IconX
+            class="size-6"
+            aria-hidden="true"
+          />
           <span class="sr-only">Close</span>
         </DialogClose>
       </div>
@@ -85,14 +89,23 @@ const FIELDS = [
           <slot />
         </div>
 
-        <div class="bg-card flex items-center gap-3 border-t px-6 py-4 sm:px-9">
+        <div class="flex items-center gap-3 border-t bg-card px-6 py-4 sm:px-9">
           <!-- left side of the footer, e.g. Delete when editing -->
           <slot name="footer-start" />
           <div class="ml-auto flex gap-3">
-            <Button type="button" variant="outline" @click="open = false">
-              {{ readOnly ? "Close" : "Cancel" }}
+            <Button
+              type="button"
+              variant="outline"
+              @click="open = false"
+            >
+              {{ readOnly ? 'Close' : 'Cancel' }}
             </Button>
-            <Button v-if="!readOnly" type="submit" :disabled="pending">{{ submitLabel }}</Button>
+            <Button
+              v-if="!readOnly"
+              type="submit"
+              :disabled="pending"
+              >{{ submitLabel }}</Button
+            >
           </div>
         </div>
       </Form>

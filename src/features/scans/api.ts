@@ -1,7 +1,9 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { http } from "#/shared/api/http";
-import { previewBody, buildImportForm } from "./importForm";
-import type { ImportEntry } from "./importForm";
+import { queryOptions } from '@tanstack/vue-query';
+
+import { http } from '#/shared/api/http';
+
+import { previewBody, buildImportForm } from './importForm';
+import type { ImportEntry } from './importForm';
 import type {
   FrameComparison,
   ImportPreviewItem,
@@ -9,15 +11,15 @@ import type {
   NumberingMode,
   OnConflict,
   Scan,
-} from "./types";
+} from './types';
 
 /** Scans hang under a processing job: `["scans", jobId, ...]`. */
 export const scanKeys = {
-  all: ["scans"] as const,
+  all: ['scans'] as const,
   job: (jobId: string) => [...scanKeys.all, jobId] as const,
   compare: (jobId: string, frameNumber: number) =>
-    [...scanKeys.job(jobId), "compare", frameNumber] as const,
-  file: (scanId: string) => [...scanKeys.all, "file", scanId] as const,
+    [...scanKeys.job(jobId), 'compare', frameNumber] as const,
+  file: (scanId: string) => [...scanKeys.all, 'file', scanId] as const,
 };
 
 interface ApiScan extends Scan {
@@ -41,7 +43,7 @@ export const scanQueries = {
     queryOptions({
       queryKey: scanKeys.compare(jobId, frameNumber),
       queryFn: async (): Promise<FrameComparison> => {
-        const { data } = await http.get<Omit<FrameComparison, "scans"> & { scans: ApiScan[] }>(
+        const { data } = await http.get<Omit<FrameComparison, 'scans'> & { scans: ApiScan[] }>(
           `/processing/${jobId}/frames/${frameNumber}/compare`,
         );
         return {
@@ -60,7 +62,7 @@ export const scanQueries = {
       queryFn: async (): Promise<Blob> =>
         (
           await http.get<Blob>(`/scans/${scanId}/file`, {
-            responseType: "blob",
+            responseType: 'blob',
             params: { v: Date.now() },
           })
         ).data,
@@ -88,10 +90,10 @@ export const importScans = async (variables: {
   onConflict: OnConflict;
   entries: readonly ImportEntry[];
 }): Promise<ImportResult> => {
-  const { data } = await http.post<Omit<ImportResult, "imported"> & { imported: ApiScan[] }>(
+  const { data } = await http.post<Omit<ImportResult, 'imported'> & { imported: ApiScan[] }>(
     `/processing/${variables.jobId}/scans`,
     buildImportForm(variables.scannerId, variables.onConflict, variables.entries),
-    { headers: { "Content-Type": "multipart/form-data" } },
+    { headers: { 'Content-Type': 'multipart/form-data' } },
   );
   return { ...data, imported: data.imported.map(toScan) };
 };

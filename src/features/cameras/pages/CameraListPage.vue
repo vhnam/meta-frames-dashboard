@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { cameraName } from "../format";
-import { useCameraList, useSetCameraActive } from "../queries";
-import type { CameraRow } from "../types";
-import { Link, useRouter } from "@tanstack/vue-router";
-import { h, ref } from "vue";
-import DataTable from "#/shared/components/DataTable.vue";
-import type { DataTableColumn } from "#/shared/components/dataTable";
-import AddButton from "#/shared/components/AddButton.vue";
-import PageHeader from "#/shared/components/PageHeader.vue";
-import { PRIMARY_LINK, stackCell, tagCell } from "#/shared/components/tableCells";
-import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import CameraFormDialog from "../components/CameraFormDialog.vue";
-import { Switch } from "#/shared/ui/switch";
+import { Link, useRouter } from '@tanstack/vue-router';
+import { h, ref } from 'vue';
+
+import AddButton from '#/shared/components/AddButton.vue';
+import type { DataTableColumn } from '#/shared/components/dataTable';
+import DataTable from '#/shared/components/DataTable.vue';
+import PageHeader from '#/shared/components/PageHeader.vue';
+import QueryBoundary from '#/shared/components/QueryBoundary.vue';
+import { PRIMARY_LINK, stackCell, tagCell } from '#/shared/components/tableCells';
+import { Switch } from '#/shared/ui/switch';
+
+import CameraFormDialog from '../components/CameraFormDialog.vue';
+import { cameraName } from '../format';
+import { useCameraList, useSetCameraActive } from '../queries';
+import type { CameraRow } from '../types';
 
 // every camera, inactive ones dimmed; the Active column filters them
 const cameras = useCameraList(true);
@@ -26,12 +28,12 @@ function show(id?: string) {
 
 const router = useRouter();
 const openCamera = (row: CameraRow) =>
-  router.navigate({ to: "/app/cameras/$cameraId", params: { cameraId: row.camera.id } });
+  router.navigate({ to: '/app/cameras/$cameraId', params: { cameraId: row.camera.id } });
 
 const columns: DataTableColumn<CameraRow>[] = [
   {
-    id: "camera",
-    header: "Camera",
+    id: 'camera',
+    header: 'Camera',
     accessorFn: ({ camera }) => `${cameraName(camera)} ${camera.description}`,
     cell: ({
       row: {
@@ -41,34 +43,34 @@ const columns: DataTableColumn<CameraRow>[] = [
       stackCell(
         h(
           Link,
-          { to: "/app/cameras/$cameraId", params: { cameraId: camera.id }, class: PRIMARY_LINK },
+          { to: '/app/cameras/$cameraId', params: { cameraId: camera.id }, class: PRIMARY_LINK },
           () => cameraName(camera),
         ),
       ),
   },
   {
-    id: "mount",
+    id: 'mount',
     enableSorting: false,
-    meta: { filter: { label: "Mount", placeholder: "All mounts" } },
-    header: "Mount",
-    accessorFn: ({ camera }) => (camera.fixedLens ? "Fixed lens" : camera.mount),
-    filterFn: "equalsString",
+    meta: { filter: { label: 'Mount', placeholder: 'All mounts' } },
+    header: 'Mount',
+    accessorFn: ({ camera }) => (camera.fixedLens ? 'Fixed lens' : camera.mount),
+    filterFn: 'equalsString',
     cell: ({
       row: {
         original: { camera },
       },
-    }) => tagCell(camera.fixedLens ? "Fixed lens" : camera.mount || "—"),
+    }) => tagCell(camera.fixedLens ? 'Fixed lens' : camera.mount || '—'),
   },
   {
-    id: "status",
+    id: 'status',
     enableSorting: false,
     enableGlobalFilter: false,
     meta: {
-      filter: { label: "Status", placeholder: "Any status", options: ["Active", "Inactive"] },
+      filter: { label: 'Status', placeholder: 'Any status', options: ['Active', 'Inactive'] },
     },
-    header: "Active",
-    accessorFn: ({ camera }) => (camera.active ? "Active" : "Inactive"),
-    filterFn: "equalsString",
+    header: 'Active',
+    accessorFn: ({ camera }) => (camera.active ? 'Active' : 'Inactive'),
+    filterFn: 'equalsString',
     cell: ({
       row: {
         original: { camera },
@@ -76,8 +78,8 @@ const columns: DataTableColumn<CameraRow>[] = [
     }) =>
       h(Switch, {
         modelValue: camera.active,
-        "aria-label": camera.active ? "Deactivate camera" : "Activate camera",
-        "onUpdate:modelValue": (active: boolean) =>
+        'aria-label': camera.active ? 'Deactivate camera' : 'Activate camera',
+        'onUpdate:modelValue': (active: boolean) =>
           setActive.mutate({ id: camera.id, active: active }),
       }),
   },
@@ -85,12 +87,18 @@ const columns: DataTableColumn<CameraRow>[] = [
 </script>
 
 <template>
-  <PageHeader title="Cameras" description="Your camera bodies and what is loaded in them.">
+  <PageHeader
+    title="Cameras"
+    description="Your camera bodies and what is loaded in them."
+  >
     <template #actions>
       <AddButton @click="show()">Add camera</AddButton>
     </template>
   </PageHeader>
-  <QueryBoundary :query="cameras" :is-empty="() => false">
+  <QueryBoundary
+    :query="cameras"
+    :is-empty="() => false"
+  >
     <template #default="{ data }">
       <DataTable
         empty-title="No cameras"
@@ -106,5 +114,8 @@ const columns: DataTableColumn<CameraRow>[] = [
       />
     </template>
   </QueryBoundary>
-  <CameraFormDialog v-model:open="formOpen" :camera-id="editing" />
+  <CameraFormDialog
+    v-model:open="formOpen"
+    :camera-id="editing"
+  />
 </template>

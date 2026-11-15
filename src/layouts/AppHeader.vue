@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { IconArrowLeft } from "@tabler/icons-vue";
+import { IconArrowLeft } from '@tabler/icons-vue';
+import { Link, useRouterState } from '@tanstack/vue-router';
+import { computed, watch } from 'vue';
+
+import { rememberList } from '#/shared/lib/listSearch';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-} from "#/shared/ui/breadcrumb";
-import { Link, useRouterState } from "@tanstack/vue-router";
-import { computed, watch } from "vue";
-import { rememberList } from "#/shared/lib/listSearch";
-import { isListingPath, titleForPath } from "./nav";
-import { backToListing } from "./listBack";
-import { Separator } from "#/shared/ui/separator";
-import { SidebarTrigger } from "#/shared/ui/sidebar";
-import AlertsButton from "./AlertsButton.vue";
-import ThemeMenu from "./ThemeMenu.vue";
+} from '#/shared/ui/breadcrumb';
+import { Separator } from '#/shared/ui/separator';
+import { SidebarTrigger } from '#/shared/ui/sidebar';
+
+import AlertsButton from './AlertsButton.vue';
+import { backToListing } from './listBack';
+import { isListingPath, titleForPath } from './nav';
+import ThemeMenu from './ThemeMenu.vue';
 
 const location = useRouterState({ select: (state) => state.location });
 const title = computed(() => titleForPath(location.value.pathname));
@@ -32,14 +34,20 @@ watch(
 
 <template>
   <header
-    class="bg-sidebar sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b px-4 md:px-8"
+    class="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b bg-sidebar px-4 md:px-8"
   >
     <SidebarTrigger class="-ml-1" />
-    <Separator orientation="vertical" class="data-[orientation=vertical]:h-4 rotate-12" />
+    <Separator
+      orientation="vertical"
+      class="rotate-12 data-[orientation=vertical]:h-4"
+    />
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink v-if="back" as-child>
+          <BreadcrumbLink
+            v-if="back"
+            as-child
+          >
             <Link
               :to="back.to as '/'"
               :search="back.search"
@@ -47,11 +55,18 @@ watch(
               class="inline-flex h-11 items-center gap-1.5"
               :aria-label="`Back to ${title}`"
             >
-              <IconArrowLeft class="size-4" aria-hidden="true" />
+              <IconArrowLeft
+                class="size-4"
+                aria-hidden="true"
+              />
               {{ title }}
             </Link>
           </BreadcrumbLink>
-          <BreadcrumbPage v-else class="text-sm">{{ title }}</BreadcrumbPage>
+          <BreadcrumbPage
+            v-else
+            class="text-sm"
+            >{{ title }}</BreadcrumbPage
+          >
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

@@ -1,47 +1,49 @@
 // @vitest-environment happy-dom
-import { VueQueryPlugin } from "@tanstack/vue-query";
-import { mount } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { queryClient } from "#/shared/api/client";
-import { installFakeServer, server } from "#/test/fakeServer";
-import { tableOf } from "#/test/tableOf";
-import DataTable from "#/shared/components/DataTable.vue";
-import LensListPage from "./LensListPage.vue";
+import { VueQueryPlugin } from '@tanstack/vue-query';
+import { mount } from '@vue/test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+
+import { queryClient } from '#/shared/api/client';
+import DataTable from '#/shared/components/DataTable.vue';
+import { installFakeServer, server } from '#/test/fakeServer';
+import { tableOf } from '#/test/tableOf';
+
+import LensListPage from './LensListPage.vue';
 
 installFakeServer();
 
-vi.mock("vue-sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
-const Link = { name: "Link", template: "<a><slot /></a>" };
+const Link = { name: 'Link', template: '<a><slot /></a>' };
 
 beforeEach(() => {
   server.reset();
   queryClient.clear();
 });
 
-describe("LensListPage mount filter", () => {
-  it("offers Built-in and filters to built-in lenses", async () => {
+describe('LensListPage mount filter', () => {
+  it('offers Built-in and filters to built-in lenses', async () => {
     server.addCamera({ hasFixedLens: true });
     server.addLens();
     const wrapper = mount(LensListPage, {
       global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Link } },
     });
-    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(2));
+    await vi.waitFor(() => expect(wrapper.findAll('tbody tr')).toHaveLength(2));
     const table = tableOf(wrapper.findComponent(DataTable));
-    const mountColumn = table.getColumn("mount")!;
-    expect([...mountColumn.getFacetedUniqueValues().keys()]).toContain("Built-in");
-    mountColumn.setFilterValue("Built-in");
-    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
-    expect(wrapper.find("tbody").text()).toContain("Built-in");
+    const mountColumn = table.getColumn('mount')!;
+    expect([...mountColumn.getFacetedUniqueValues().keys()]).toContain('Built-in');
+    mountColumn.setFilterValue('Built-in');
+    await vi.waitFor(() => expect(wrapper.findAll('tbody tr')).toHaveLength(1));
+    expect(wrapper.find('tbody').text()).toContain('Built-in');
   });
 
-  it("hides Built-in when no fixed-lens camera exists", async () => {
+  it('hides Built-in when no fixed-lens camera exists', async () => {
     server.addLens();
     const wrapper = mount(LensListPage, {
       global: { plugins: [[VueQueryPlugin, { queryClient }]], stubs: { Link } },
     });
-    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(1));
+    await vi.waitFor(() => expect(wrapper.findAll('tbody tr')).toHaveLength(1));
     const table = tableOf(wrapper.findComponent(DataTable));
-    expect([...table.getColumn("mount")!.getFacetedUniqueValues().keys()]).toEqual(["FD"]);
+    expect([...table.getColumn('mount')!.getFacetedUniqueValues().keys()]).toEqual(['FD']);
   });
 });

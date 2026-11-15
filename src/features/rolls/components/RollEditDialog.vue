@@ -1,24 +1,26 @@
 <script setup lang="ts">
-import { stockName, useStockList } from "#/features/film-stocks";
-import { isRollChanged, rollQueries } from "../api";
-import { rollChanges } from "../format";
-import { useUpdateRoll } from "../queries";
-import { RollSchema } from "../schema";
-import { FORMATS, MONTH_OPTIONS } from "../types";
-import type { Roll, RollRow } from "../types";
-import { getInput, reset, setInput, useForm } from "@formisch/vue";
-import { useQueryClient } from "@tanstack/vue-query";
-import type * as v from "valibot";
-import { computed, ref, shallowRef, watch } from "vue";
-import { Button } from "#/shared/ui/button";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import QuickPicks from "#/shared/components/QuickPicks.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import { useQueryClient } from '@tanstack/vue-query';
+import type * as v from 'valibot';
+import { computed, ref, shallowRef, watch } from 'vue';
+
+import { stockName, useStockList } from '#/features/film-stocks';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import QuickPicks from '#/shared/components/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { Button } from '#/shared/ui/button';
+
+import { isRollChanged, rollQueries } from '../api';
+import { rollChanges } from '../format';
+import { useUpdateRoll } from '../queries';
+import { RollSchema } from '../schema';
+import { FORMATS, MONTH_OPTIONS } from '../types';
+import type { Roll, RollRow } from '../types';
 
 const props = defineProps<{ row?: RollRow }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const stocks = useStockList();
 const update = useUpdateRoll();
@@ -66,7 +68,7 @@ const formatOptions = FORMATS.map((format) => ({ value: format, label: format })
 const EXPOSURE_PICKS = [12, 24, 36];
 
 const stockLabel = (stockId: string) =>
-  stockOptions.value.find((option) => option.value === stockId)?.label ?? "Unknown stock";
+  stockOptions.value.find((option) => option.value === stockId)?.label ?? 'Unknown stock';
 const changes = computed(() =>
   base.value && latest.value ? rollChanges(base.value.roll, latest.value, stockLabel) : [],
 );
@@ -132,15 +134,18 @@ function useLatest() {
     <section
       v-if="latest !== undefined"
       role="alert"
-      class="border-destructive/40 bg-destructive/5 grid gap-4 rounded-md border p-4"
+      class="grid gap-4 rounded-md border border-destructive/40 bg-destructive/5 p-4"
     >
       <template v-if="latest">
         <p class="text-sm">
           This roll was changed after you opened it, so nothing was saved. Your edits are still in
           the form. Compare, then choose what to keep.
         </p>
-        <table v-if="changes.length" class="w-full text-sm">
-          <thead class="text-muted-foreground text-left text-xs">
+        <table
+          v-if="changes.length"
+          class="w-full text-sm"
+        >
+          <thead class="text-left text-xs text-muted-foreground">
             <tr>
               <th class="py-1 pr-3 font-medium">Field</th>
               <th class="py-1 pr-3 font-medium">When you opened it</th>
@@ -148,7 +153,11 @@ function useLatest() {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="change in changes" :key="change.label" class="border-t">
+            <tr
+              v-for="change in changes"
+              :key="change.label"
+              class="border-t"
+            >
               <td class="py-1 pr-3">{{ change.label }}</td>
               <td class="py-1 pr-3">{{ change.before }}</td>
               <td class="py-1 font-medium">{{ change.now }}</td>
@@ -156,13 +165,31 @@ function useLatest() {
           </tbody>
         </table>
         <div class="flex flex-wrap gap-3">
-          <Button type="button" variant="outline" @click="useLatest">Use the current values</Button>
-          <Button type="button" @click="keepMine">Keep my edits</Button>
+          <Button
+            type="button"
+            variant="outline"
+            @click="useLatest"
+            >Use the current values</Button
+          >
+          <Button
+            type="button"
+            @click="keepMine"
+            >Keep my edits</Button
+          >
         </div>
       </template>
-      <p v-else class="text-sm">This roll was deleted after you opened it, so nothing was saved.</p>
+      <p
+        v-else
+        class="text-sm"
+      >
+        This roll was deleted after you opened it, so nothing was saved.
+      </p>
     </section>
-    <FormSection no="01" title="Film" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Film"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <FormSelect
@@ -204,7 +231,11 @@ function useLatest() {
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Purchase" note="Shipping excluded">
+    <FormSection
+      no="02"
+      title="Purchase"
+      note="Shipping excluded"
+    >
       <FormInput
         :of="form"
         :path="['price']"
@@ -218,7 +249,11 @@ function useLatest() {
       />
     </FormSection>
 
-    <FormSection no="03" title="Expiry" note="As printed on the box">
+    <FormSection
+      no="03"
+      title="Expiry"
+      note="As printed on the box"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"

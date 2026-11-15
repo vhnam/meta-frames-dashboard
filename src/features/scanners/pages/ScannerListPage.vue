@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { useScannerList } from "../queries";
-import { SCANNER_KIND_LABELS } from "../types";
-import type { Scanner } from "../types";
-import { ref } from "vue";
-import DataTable from "#/shared/components/DataTable.vue";
-import type { DataTableColumn } from "#/shared/components/dataTable";
-import AddButton from "#/shared/components/AddButton.vue";
-import PageHeader from "#/shared/components/PageHeader.vue";
-import { mutedCell, primaryText, stackCell, tagCell } from "#/shared/components/tableCells";
-import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import ScannerFormDialog from "../components/ScannerFormDialog.vue";
-import { plainText } from "#/shared/lib/format";
+import { ref } from 'vue';
+
+import AddButton from '#/shared/components/AddButton.vue';
+import type { DataTableColumn } from '#/shared/components/dataTable';
+import DataTable from '#/shared/components/DataTable.vue';
+import PageHeader from '#/shared/components/PageHeader.vue';
+import QueryBoundary from '#/shared/components/QueryBoundary.vue';
+import { mutedCell, primaryText, stackCell, tagCell } from '#/shared/components/tableCells';
+import { plainText } from '#/shared/lib/format';
+
+import ScannerFormDialog from '../components/ScannerFormDialog.vue';
+import { useScannerList } from '../queries';
+import { SCANNER_KIND_LABELS } from '../types';
+import type { Scanner } from '../types';
 
 const scanners = useScannerList();
 const open = ref(false);
@@ -20,28 +22,28 @@ function show(id?: string) {
   open.value = true;
 }
 
-const kindLabel = (scanner: Scanner) => (scanner.kind ? SCANNER_KIND_LABELS[scanner.kind] : "");
+const kindLabel = (scanner: Scanner) => (scanner.kind ? SCANNER_KIND_LABELS[scanner.kind] : '');
 
 const columns: DataTableColumn<Scanner>[] = [
   {
-    id: "name",
-    header: "Scanner",
+    id: 'name',
+    header: 'Scanner',
     accessorFn: (scanner) => scanner.name,
     cell: ({ row }) =>
       stackCell(primaryText(row.original.name), plainText(row.original.notes) || null),
   },
   {
-    id: "kind",
-    header: "Kind",
+    id: 'kind',
+    header: 'Kind',
     accessorFn: kindLabel,
     cell: ({ row }) => mutedCell(kindLabel(row.original)),
   },
   {
-    id: "source",
-    header: "Source",
-    accessorFn: (scanner) => (scanner.builtIn ? "Built-in" : "Yours"),
+    id: 'source',
+    header: 'Source',
+    accessorFn: (scanner) => (scanner.builtIn ? 'Built-in' : 'Yours'),
     cell: ({ row }) =>
-      row.original.builtIn ? tagCell("Built-in", "text-muted-foreground") : tagCell("Yours"),
+      row.original.builtIn ? tagCell('Built-in', 'text-muted-foreground') : tagCell('Yours'),
   },
 ];
 </script>
@@ -53,7 +55,10 @@ const columns: DataTableColumn<Scanner>[] = [
   >
     <template #actions><AddButton @click="show()">Add scanner</AddButton></template>
   </PageHeader>
-  <QueryBoundary :query="scanners" :is-empty="() => false">
+  <QueryBoundary
+    :query="scanners"
+    :is-empty="() => false"
+  >
     <template #default="{ data }">
       <DataTable
         empty-title="No scanners"
@@ -70,5 +75,8 @@ const columns: DataTableColumn<Scanner>[] = [
       />
     </template>
   </QueryBoundary>
-  <ScannerFormDialog v-model:open="open" :scanner-id="editing" />
+  <ScannerFormDialog
+    v-model:open="open"
+    :scanner-id="editing"
+  />
 </template>

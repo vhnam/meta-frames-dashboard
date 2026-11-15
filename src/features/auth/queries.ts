@@ -1,6 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
-import { useRouter } from "@tanstack/vue-router";
-import { notify } from "#/shared/lib/toast";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
+import { useRouter } from '@tanstack/vue-router';
+
+import { notify } from '#/shared/lib/toast';
+
 import {
   authKeys,
   authQueries,
@@ -9,8 +11,8 @@ import {
   register,
   resetPassword,
   startRecovery,
-} from "./api";
-import type { User } from "./types";
+} from './api';
+import type { User } from './types';
 
 export const useCurrentUser = () => useQuery(authQueries.me());
 
@@ -41,9 +43,9 @@ export const useLogout = () => {
     mutationFn: logout,
     onSuccess: async () => {
       qc.setQueryData(authKeys.me(), null);
-      await router.navigate({ to: "/auth/login" });
+      await router.navigate({ to: '/auth/login' });
       qc.clear();
-      notify.success("You have been logged out");
+      notify.success('You have been logged out');
     },
   });
 };

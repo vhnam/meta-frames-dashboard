@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "#/shared/ui/button";
+import { Button } from '#/shared/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,11 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "#/shared/ui/dialog";
+} from '#/shared/ui/dialog';
 
 defineProps<{ title: string; description?: string; submitLabel?: string; wide?: boolean }>();
 const emit = defineEmits<{ submit: [] }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 </script>
 
 <template>
@@ -26,11 +26,19 @@ const open = defineModel<boolean>("open", { required: true });
           {{ description ?? title }}
         </DialogDescription>
       </DialogHeader>
-      <form class="grid gap-4" @submit.prevent="emit('submit')">
+      <form
+        class="grid gap-4"
+        @submit.prevent="emit('submit')"
+      >
         <slot />
         <DialogFooter>
-          <Button type="button" variant="outline" @click="open = false">Cancel</Button>
-          <Button type="submit">{{ submitLabel ?? "Save" }}</Button>
+          <Button
+            type="button"
+            variant="outline"
+            @click="open = false"
+            >Cancel</Button
+          >
+          <Button type="submit">{{ submitLabel ?? 'Save' }}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

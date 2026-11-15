@@ -1,31 +1,33 @@
 <script setup lang="ts">
-import { useMarkDeveloped } from "../queries";
-import { MarkDevelopedSchema } from "../schema";
-import type { RollPlan } from "../types";
-import { reset, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { watch } from "vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { attempt } from "#/shared/lib/ui";
+import { reset, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { watch } from 'vue';
+
+import FormInput from '#/shared/components/FormInput.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+
+import { useMarkDeveloped } from '../queries';
+import { MarkDevelopedSchema } from '../schema';
+import type { RollPlan } from '../types';
 
 const props = defineProps<{
   rollId: string;
   /** Starts the choice of what comes next. */
-  target: RollPlan["target"];
+  target: RollPlan['target'];
   /** The earliest the film can be developed: the job's sent date, or the finish date. */
   min?: string | null;
 }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const markDeveloped = useMarkDeveloped();
 const form = useForm({ schema: MarkDevelopedSchema });
-const today = () => new Date().toLocaleDateString("en-CA");
+const today = () => new Date().toLocaleDateString('en-CA');
 const targetOptions = [
-  { value: "developed", label: "Nothing, develop only" },
-  { value: "scanned", label: "Scan it" },
+  { value: 'developed', label: 'Nothing, develop only' },
+  { value: 'scanned', label: 'Scan it' },
 ];
 
 watch(open, (isOpen) => {
@@ -56,7 +58,11 @@ async function submit(output: v.InferOutput<typeof MarkDevelopedSchema>) {
     :pending="markDeveloped.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Developed" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Developed"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from "vue";
-import { cn } from "#/shared/lib/utils";
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '#/shared/lib/utils';
 
 const props = defineProps<{
-  class?: HTMLAttributes["class"];
+  class?: HTMLAttributes['class'];
 }>();
 </script>
 
@@ -12,7 +13,7 @@ const props = defineProps<{
     data-slot="alert-description"
     :class="
       cn(
-        'text-muted-foreground text-sm text-balance md:text-pretty [&_p:not(:last-child)]:mb-4 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground',
+        'text-sm text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4',
         props.class,
       )
     "

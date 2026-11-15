@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { IconAlertCircle, IconCircleCheck } from "@tabler/icons-vue";
-import { Alert, AlertDescription } from "#/shared/ui/alert";
+import { IconAlertCircle, IconCircleCheck } from '@tabler/icons-vue';
 
-defineProps<{ tone?: "error" | "success" }>();
+import { Alert, AlertDescription } from '#/shared/ui/alert';
+
+defineProps<{ tone?: 'error' | 'success' }>();
 </script>
 
 <template>
@@ -14,7 +15,11 @@ defineProps<{ tone?: "error" | "success" }>();
     <IconCircleCheck aria-hidden="true" />
     <AlertDescription class="text-current"><slot /></AlertDescription>
   </Alert>
-  <Alert v-else variant="destructive" class="border-destructive/25 bg-destructive/10">
+  <Alert
+    v-else
+    variant="destructive"
+    class="border-destructive/25 bg-destructive/10"
+  >
     <IconAlertCircle aria-hidden="true" />
     <AlertDescription><slot /></AlertDescription>
   </Alert>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { IconMapOff } from "@tabler/icons-vue";
+import { IconMapOff } from '@tabler/icons-vue';
+
 import {
   Empty,
   EmptyContent,
@@ -7,7 +8,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "#/shared/ui/empty";
+} from '#/shared/ui/empty';
 
 /** The 404 body. The default slot holds the way back, e.g. a Link styled as a Button. */
 withDefaults(defineProps<{ description?: string }>(), {
@@ -21,7 +22,7 @@ withDefaults(defineProps<{ description?: string }>(), {
       <EmptyMedia variant="icon">
         <IconMapOff aria-hidden="true" />
       </EmptyMedia>
-      <p class="text-primary font-heading text-xs font-semibold tracking-[0.16em] uppercase">
+      <p class="font-heading text-xs font-semibold tracking-[0.16em] text-primary uppercase">
         Error 404
       </p>
       <EmptyTitle>

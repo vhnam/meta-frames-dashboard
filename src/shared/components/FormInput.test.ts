@@ -1,17 +1,18 @@
 // @vitest-environment happy-dom
-import { Form, useForm } from "@formisch/vue";
-import { mount } from "@vue/test-utils";
-import * as v from "valibot";
-import { describe, expect, it } from "vite-plus/test";
-import { defineComponent, h, nextTick } from "vue";
-import FormInput from "./FormInput.vue";
+import { Form, useForm } from '@formisch/vue';
+import { mount } from '@vue/test-utils';
+import * as v from 'valibot';
+import { describe, expect, it } from 'vite-plus/test';
+import { defineComponent, h, nextTick } from 'vue';
+
+import FormInput from './FormInput.vue';
 
 const FormSchema = v.object({
   stockId: v.string(),
   format: v.string(),
   exposures: v.number(),
-  quantity: v.pipe(v.number("Enter a number."), v.minValue(1, "Quantity must be at least 1.")),
-  price: v.optional(v.pipe(v.number("Enter a number."), v.minValue(0, "Price must be 0 or more."))),
+  quantity: v.pipe(v.number('Enter a number.'), v.minValue(1, 'Quantity must be at least 1.')),
+  price: v.optional(v.pipe(v.number('Enter a number.'), v.minValue(0, 'Price must be 0 or more.'))),
 });
 
 function setup(onSubmit: (output: unknown) => void) {
@@ -19,16 +20,16 @@ function setup(onSubmit: (output: unknown) => void) {
     setup() {
       const form = useForm({
         schema: FormSchema,
-        initialInput: { stockId: "s1", format: "135", exposures: 36, quantity: 1 },
+        initialInput: { stockId: 's1', format: '135', exposures: 36, quantity: 1 },
       });
       return () =>
         h(Form, { of: form, onSubmit }, () => [
-          h(FormInput, { of: form, path: ["quantity"], label: "Quantity", type: "number" }),
+          h(FormInput, { of: form, path: ['quantity'], label: 'Quantity', type: 'number' }),
           h(FormInput, {
             of: form,
-            path: ["price"],
-            label: "Price",
-            type: "number",
+            path: ['price'],
+            label: 'Price',
+            type: 'number',
             optional: true,
           }),
         ]);
@@ -41,25 +42,25 @@ const flush = async () => {
   await nextTick();
 };
 
-describe("FormInput + Formisch", () => {
-  it("shows (optional) in emphasis and submits decoded numbers", async () => {
+describe('FormInput + Formisch', () => {
+  it('shows (optional) in emphasis and submits decoded numbers', async () => {
     let out: unknown;
     const wrapper = setup((output) => (out = output));
-    expect(wrapper.find("em").text()).toBe("(optional)");
-    const [qty] = wrapper.findAll("input");
-    await qty.setValue("3");
-    await wrapper.find("form").trigger("submit");
+    expect(wrapper.find('em').text()).toBe('(optional)');
+    const [qty] = wrapper.findAll('input');
+    await qty.setValue('3');
+    await wrapper.find('form').trigger('submit');
     await flush();
-    expect(out).toMatchObject({ stockId: "s1", quantity: 3 });
+    expect(out).toMatchObject({ stockId: 's1', quantity: 3 });
   });
 
-  it("shows validation error and blocks submit", async () => {
+  it('shows validation error and blocks submit', async () => {
     let out: unknown;
     const wrapper = setup((output) => (out = output));
-    await wrapper.findAll("input")[0].setValue("0");
-    await wrapper.find("form").trigger("submit");
+    await wrapper.findAll('input')[0].setValue('0');
+    await wrapper.find('form').trigger('submit');
     await flush();
     expect(out).toBeUndefined();
-    expect(wrapper.text()).toContain("Quantity must be at least 1.");
+    expect(wrapper.text()).toContain('Quantity must be at least 1.');
   });
 });

@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import { cameraName, useCameraList } from "#/features/cameras";
-import { useLoadRoll } from "../queries";
-import { LoadRollSchema } from "../schema";
-import type { RollRow } from "../types";
-import { getInput, reset, setInput, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, watch } from "vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import QuickPicks from "#/shared/components/QuickPicks.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { attempt } from "#/shared/lib/ui";
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, watch } from 'vue';
+
+import { cameraName, useCameraList } from '#/features/cameras';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import QuickPicks from '#/shared/components/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+
+import { useLoadRoll } from '../queries';
+import { LoadRollSchema } from '../schema';
+import type { RollRow } from '../types';
 
 const props = defineProps<{ row?: RollRow }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const cameras = useCameraList();
 const load = useLoadRoll();
 const form = useForm({ schema: LoadRollSchema });
 
 watch(open, (isOpen) => {
-  if (isOpen) reset(form, { initialInput: { cameraId: "" } });
+  if (isOpen) reset(form, { initialInput: { cameraId: '' } });
 });
 
 const cameraOptions = computed(() =>
@@ -31,7 +33,7 @@ const cameraOptions = computed(() =>
 );
 
 /** The stock's box speeds: a range's two ends, or a single ISO. The list endpoint has neither. */
-const boxSpeeds = computed(() => props.row?.boxIso.split("-").filter(Boolean).map(Number) ?? []);
+const boxSpeeds = computed(() => props.row?.boxIso.split('-').filter(Boolean).map(Number) ?? []);
 /** A range's two ends, or pull one stop, box speed, push one and two stops. */
 const isoPicks = computed(() => {
   const [box, high] = boxSpeeds.value;
@@ -57,17 +59,25 @@ async function submit(output: v.InferOutput<typeof LoadRollSchema>) {
     :pending="load.isPending.value"
     @submit="submit"
   >
-    <FormSection v-if="row" no="01" title="Roll">
-      <div class="border-primary/15 bg-primary/5 rounded-lg border p-5">
+    <FormSection
+      v-if="row"
+      no="01"
+      title="Roll"
+    >
+      <div class="rounded-lg border border-primary/15 bg-primary/5 p-5">
         <div class="font-heading text-lg font-semibold">{{ row.stockName }}</div>
-        <div class="text-muted-foreground text-sm">
+        <div class="text-sm text-muted-foreground">
           {{ row.roll.format }} · {{ row.roll.exposures }} exp
           <template v-if="row.boxIso"> · ISO {{ row.boxIso }}</template>
         </div>
       </div>
     </FormSection>
 
-    <FormSection :no="row ? '02' : '01'" title="Camera" note="* Required attributes">
+    <FormSection
+      :no="row ? '02' : '01'"
+      title="Camera"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormSelect
           :of="form"
@@ -78,11 +88,21 @@ async function submit(output: v.InferOutput<typeof LoadRollSchema>) {
           hint="A camera that already has a roll loaded is not listed."
           :options="cameraOptions"
         />
-        <FormInput :of="form" :path="['startedAt']" label="Date loaded" optional type="date" />
+        <FormInput
+          :of="form"
+          :path="['startedAt']"
+          label="Date loaded"
+          optional
+          type="date"
+        />
       </div>
     </FormSection>
 
-    <FormSection :no="row ? '03' : '02'" title="Exposure" note="Push or pull">
+    <FormSection
+      :no="row ? '03' : '02'"
+      title="Exposure"
+      note="Push or pull"
+    >
       <FormInput
         :of="form"
         :path="['shotIso']"
@@ -99,7 +119,10 @@ async function submit(output: v.InferOutput<typeof LoadRollSchema>) {
             : 'Leave blank to shoot at box speed, or enter a different value to push or pull.'
         "
       >
-        <template v-if="isoPicks.length" #aside>
+        <template
+          v-if="isoPicks.length"
+          #aside
+        >
           <QuickPicks
             :values="isoPicks"
             :current="getInput(form, { path: ['shotIso'] })"

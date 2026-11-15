@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { useDeleteLens, useLensList, useSaveLens } from "../queries";
-import { useKnownBrands, useKnownMounts } from "#/features/cameras/known";
-import { LensSchema } from "../schema";
-import { getInput, reset, setInput, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, watch } from "vue";
-import FormCombobox from "#/shared/components/FormCombobox.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormRichText from "#/shared/components/FormRichText.vue";
-import QuickPicks from "#/shared/components/QuickPicks.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { Button } from "#/shared/ui/button";
-import { ask, attempt } from "#/shared/lib/ui";
+import { getInput, reset, setInput, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, watch } from 'vue';
+
+import { useKnownBrands, useKnownMounts } from '#/features/cameras/known';
+import FormCombobox from '#/shared/components/FormCombobox.vue';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormRichText from '#/shared/components/FormRichText.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import QuickPicks from '#/shared/components/QuickPicks.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { ask, attempt } from '#/shared/lib/ui';
+import { Button } from '#/shared/ui/button';
+
+import { useDeleteLens, useLensList, useSaveLens } from '../queries';
+import { LensSchema } from '../schema';
 
 const props = defineProps<{ lensId?: string }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ saved: [id: string] }>();
 
 const lenses = useLensList();
@@ -29,7 +31,7 @@ const editing = computed(() => !!props.lensId);
 const FOCAL_PICKS = [24, 35, 50];
 const APERTURE_PICKS = [1.4, 2, 2.8];
 const mounts = useKnownMounts();
-const brands = useKnownBrands("lens");
+const brands = useKnownBrands('lens');
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
@@ -37,12 +39,12 @@ watch(open, (isOpen) => {
   reset(form, {
     initialInput: {
       builtIn: !!lens?.builtInCameraId,
-      brand: lens?.brand ?? "",
-      model: lens?.model ?? "",
-      mount: lens?.mount ?? "",
+      brand: lens?.brand ?? '',
+      model: lens?.model ?? '',
+      mount: lens?.mount ?? '',
       focalLength: lens?.focalLength,
       maxAperture: lens?.maxAperture,
-      description: lens?.description ?? "",
+      description: lens?.description ?? '',
     },
   });
 });
@@ -56,18 +58,18 @@ async function submit(output: v.InferOutput<typeof LensSchema>) {
     maxAperture: output.maxAperture,
     description: output.description,
   };
-  let id = props.lensId ?? "";
+  let id = props.lensId ?? '';
   const ok = await attempt(
     save.mutateAsync({ id: props.lensId, input }).then((saved) => (id = saved)),
   );
   if (ok) {
     open.value = false;
-    emit("saved", id);
+    emit('saved', id);
   }
 }
 
 async function doDelete() {
-  if (!props.lensId || !(await ask("Delete this lens?"))) return;
+  if (!props.lensId || !(await ask('Delete this lens?'))) return;
   if (await attempt(remove.mutateAsync(props.lensId))) open.value = false;
 }
 </script>
@@ -87,7 +89,11 @@ async function doDelete() {
     :pending="save.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Lens" :note="builtIn() ? 'Built-in lens' : '* Required attributes'">
+    <FormSection
+      no="01"
+      title="Lens"
+      :note="builtIn() ? 'Built-in lens' : '* Required attributes'"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormCombobox
           :of="form"
@@ -100,7 +106,7 @@ async function doDelete() {
           placeholder="Choose or type a brand"
         >
           <template #aside>
-            <span class="text-muted-foreground text-xs">e.g. Nikon, Voigtländer</span>
+            <span class="text-xs text-muted-foreground">e.g. Nikon, Voigtländer</span>
           </template>
         </FormCombobox>
         <FormInput
@@ -112,10 +118,13 @@ async function doDelete() {
           placeholder="e.g. Nikkor-S"
         >
           <template #aside>
-            <span class="text-muted-foreground text-xs">e.g. Nikkor-S, Summicron</span>
+            <span class="text-xs text-muted-foreground">e.g. Nikkor-S, Summicron</span>
           </template>
         </FormInput>
-        <div v-if="!builtIn()" class="sm:col-span-2">
+        <div
+          v-if="!builtIn()"
+          class="sm:col-span-2"
+        >
           <FormCombobox
             :of="form"
             :path="['mount']"
@@ -127,14 +136,18 @@ async function doDelete() {
             placeholder="Choose or type a mount"
           >
             <template #aside>
-              <span class="text-muted-foreground text-xs">e.g. Canon FD, Nikon F, Leica M</span>
+              <span class="text-xs text-muted-foreground">e.g. Canon FD, Nikon F, Leica M</span>
             </template>
           </FormCombobox>
         </div>
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Optics" note="Prime lenses only">
+    <FormSection
+      no="02"
+      title="Optics"
+      note="Prime lenses only"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"
@@ -179,7 +192,10 @@ async function doDelete() {
       </div>
     </FormSection>
 
-    <FormSection no="03" title="Notes">
+    <FormSection
+      no="03"
+      title="Notes"
+    >
       <FormRichText
         :of="form"
         :path="['description']"
@@ -188,13 +204,16 @@ async function doDelete() {
         placeholder="Rendering, flare, focus throw, condition…"
       >
         <template #aside>
-          <span class="text-muted-foreground text-xs">Markdown shortcuts work</span>
+          <span class="text-xs text-muted-foreground">Markdown shortcuts work</span>
         </template>
       </FormRichText>
     </FormSection>
 
     <!-- a built-in lens goes with its camera, so it has no Delete -->
-    <template v-if="editing && !builtIn()" #footer-start>
+    <template
+      v-if="editing && !builtIn()"
+      #footer-start
+    >
       <Button
         type="button"
         variant="ghost"

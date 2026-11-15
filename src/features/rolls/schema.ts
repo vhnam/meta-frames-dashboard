@@ -1,79 +1,81 @@
-import * as v from "valibot";
-import { integer, picklist, required } from "#/shared/lib/schema";
-import { PROCESSES } from "#/features/film-stocks/types";
-import { FORMATS, PROCESSING_TYPES } from "./types";
+import * as v from 'valibot';
 
-const expiryYear = v.optional(integer(1900, "Enter a valid year."));
+import { PROCESSES } from '#/features/film-stocks/types';
+import { integer, picklist, required } from '#/shared/lib/schema';
+
+import { FORMATS, PROCESSING_TYPES } from './types';
+
+const expiryYear = v.optional(integer(1900, 'Enter a valid year.'));
 const expiryMonth = v.optional(
   v.pipe(
     v.number(),
-    v.integer("Must be a whole number."),
-    v.minValue(1, "Month is 1-12."),
-    v.maxValue(12, "Month is 1-12."),
+    v.integer('Must be a whole number.'),
+    v.minValue(1, 'Month is 1-12.'),
+    v.maxValue(12, 'Month is 1-12.'),
   ),
 );
 const price = v.optional(
-  v.pipe(v.number("Enter a number."), v.minValue(0, "Price must be 0 or more.")),
+  v.pipe(v.number('Enter a number.'), v.minValue(0, 'Price must be 0 or more.')),
 );
 
 export const AddRollsSchema = v.pipe(
   v.object({
-    stockId: required("Select a film stock."),
+    stockId: required('Select a film stock.'),
     format: picklist(FORMATS),
-    exposures: integer(1, "Exposures must be at least 1."),
-    quantity: integer(1, "Quantity must be at least 1."),
+    exposures: integer(1, 'Exposures must be at least 1.'),
+    quantity: integer(1, 'Quantity must be at least 1.'),
     price,
     expiryYear,
     expiryMonth,
   }),
   v.forward(
     v.partialCheck(
-      [["expiryYear"], ["expiryMonth"]],
+      [['expiryYear'], ['expiryMonth']],
       (input) => input.expiryMonth == null || input.expiryYear != null,
-      "Month requires a year.",
+      'Month requires a year.',
     ),
-    ["expiryMonth"],
+    ['expiryMonth'],
   ),
 );
 
 /** Roll fields the API stores: stock, format, exposures, price and expiry. */
 export const RollSchema = v.pipe(
   v.object({
-    stockId: required("Select a film stock."),
+    stockId: required('Select a film stock.'),
     format: picklist(FORMATS),
-    exposures: integer(1, "Exposures must be at least 1."),
+    exposures: integer(1, 'Exposures must be at least 1.'),
     price,
     expiryYear,
     expiryMonth,
   }),
   v.forward(
     v.partialCheck(
-      [["expiryYear"], ["expiryMonth"]],
+      [['expiryYear'], ['expiryMonth']],
       (input) => input.expiryMonth == null || input.expiryYear != null,
-      "Month requires a year.",
+      'Month requires a year.',
     ),
-    ["expiryMonth"],
+    ['expiryMonth'],
   ),
 );
 
 export const LoadRollSchema = v.object({
-  cameraId: required("Select a camera."),
+  cameraId: required('Select a camera.'),
   startedAt: v.optional(v.string()),
-  shotIso: v.optional(integer(1, "ISO must be at least 1.")),
+  shotIso: v.optional(integer(1, 'ISO must be at least 1.')),
 });
 
 /** A finish date is required, not in the future and not before the roll was loaded. */
 export const finishRollSchema = (loadedOn: () => string | null | undefined) =>
   v.object({
     finishedAt: v.pipe(
-      required("Select the date the roll was finished."),
+      required('Select the date the roll was finished.'),
       v.check(
-        (date) => date <= new Date().toLocaleDateString("en-CA"),
-        "The finish date cannot be in the future.",
+        (date) => date <= new Date().toLocaleDateString('en-CA'),
+        'The finish date cannot be in the future.',
       ),
       v.check(
-        (date) => date >= (loadedOn() ?? ""),
-        "The finish date cannot be before the roll was loaded.",
+        (date) => date >= (loadedOn() ?? ''),
+        'The finish date cannot be before the roll was loaded.',
       ),
     ),
   });
@@ -95,12 +97,12 @@ export const SendToLabSchema = v.object({
 
 /** "Hand to lab": a lab, and a handover day that is not in the future. */
 export const HandOverSchema = v.object({
-  labId: required("Select a lab."),
+  labId: required('Select a lab.'),
   handedAt: v.pipe(
-    required("Select the date the rolls were handed over."),
+    required('Select the date the rolls were handed over.'),
     v.check(
-      (date) => date <= new Date().toLocaleDateString("en-CA"),
-      "The handover date cannot be in the future.",
+      (date) => date <= new Date().toLocaleDateString('en-CA'),
+      'The handover date cannot be in the future.',
     ),
   ),
   notes: v.optional(v.string()),
@@ -110,20 +112,20 @@ export const HandOverSchema = v.object({
 const pastDate = (missing: string, future: string) =>
   v.pipe(
     required(missing),
-    v.check((date) => date <= new Date().toLocaleDateString("en-CA"), future),
+    v.check((date) => date <= new Date().toLocaleDateString('en-CA'), future),
   );
 
 export const MarkDevelopedSchema = v.object({
   developedAt: pastDate(
-    "Select the date the film was developed.",
-    "The developed date cannot be in the future.",
+    'Select the date the film was developed.',
+    'The developed date cannot be in the future.',
   ),
-  target: picklist(["developed", "scanned"] as const),
+  target: picklist(['developed', 'scanned'] as const),
 });
 
 export const ReturnNegativesSchema = v.object({
   returnedAt: pastDate(
-    "Select the date the negatives came back.",
-    "The return date cannot be in the future.",
+    'Select the date the negatives came back.',
+    'The return date cannot be in the future.',
   ),
 });

@@ -1,7 +1,8 @@
-import { formatDate, formatVnd, plainText } from "#/shared/lib/format";
-import type { Roll } from "./types";
+import { formatDate, formatVnd, plainText } from '#/shared/lib/format';
 
-type Expiry = Pick<Roll, "expiryYear" | "expiryMonth">;
+import type { Roll } from './types';
+
+type Expiry = Pick<Roll, 'expiryYear' | 'expiryMonth'>;
 
 export function expiryDate(roll: Expiry): Date | null {
   if (!roll.expiryYear) return null;
@@ -17,16 +18,16 @@ export const isExpired = (roll: Expiry, now = new Date()) => {
 /** Months ahead that count as "expiring soon". */
 export const EXPIRY_SOON_MONTHS = 6;
 
-export type ExpiryState = "expired" | "soon" | "later" | "undated";
+export type ExpiryState = 'expired' | 'soon' | 'later' | 'undated';
 
 /** Where a roll's expiry falls: past, within `EXPIRY_SOON_MONTHS`, later, or unknown. */
 export function expiryState(roll: Expiry, now = new Date()): ExpiryState {
   const date = expiryDate(roll);
-  if (!date) return "undated";
-  if (date < now) return "expired";
+  if (!date) return 'undated';
+  if (date < now) return 'expired';
   const horizon = new Date(now);
   horizon.setMonth(horizon.getMonth() + EXPIRY_SOON_MONTHS);
-  return date <= horizon ? "soon" : "later";
+  return date <= horizon ? 'soon' : 'later';
 }
 
 /** Sorts by expiry, soonest first; rolls without a date go last. */
@@ -36,18 +37,18 @@ export const byExpiry = (left: Expiry, right: Expiry) =>
 export const formatExpiry = (roll: Expiry) =>
   roll.expiryYear
     ? roll.expiryMonth
-      ? `${String(roll.expiryMonth).padStart(2, "0")}/${roll.expiryYear}`
+      ? `${String(roll.expiryMonth).padStart(2, '0')}/${roll.expiryYear}`
       : String(roll.expiryYear)
-    : "—";
+    : '—';
 
-const months = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+const months = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
 /** "Expired 2 months ago", "Expires this month" or "Expires in 3 months"; null when undated. */
 export function expiryFromNow(roll: Expiry, now = new Date()): string | null {
   if (!roll.expiryYear) return null;
   const diff =
     (roll.expiryYear - now.getFullYear()) * 12 + (roll.expiryMonth ?? 12) - (now.getMonth() + 1);
-  return `${isExpired(roll, now) ? "Expired" : "Expires"} ${months.format(diff, "month")}`;
+  return `${isExpired(roll, now) ? 'Expired' : 'Expires'} ${months.format(diff, 'month')}`;
 }
 
 export interface RollChange {
@@ -69,16 +70,16 @@ export function rollChanges(
   stockLabel: (stockId: string) => string,
 ): RollChange[] {
   const fields: [string, (roll: Roll) => string][] = [
-    ["Film stock", (roll) => stockLabel(roll.stockId)],
-    ["Format", (roll) => roll.format],
-    ["Exposures", (roll) => String(roll.exposures)],
-    ["Unit price", (roll) => formatVnd(roll.price)],
-    ["Expiry", (roll) => formatExpiry(roll)],
-    ["Status", (roll) => roll.status],
-    ["Shot ISO", (roll) => (roll.shotIso === null ? "Box speed" : String(roll.shotIso))],
-    ["Started", (roll) => formatDate(roll.startDate)],
-    ["Finished", (roll) => formatDate(roll.finishDate)],
-    ["Notes", (roll) => plainText(roll.description) || "—"],
+    ['Film stock', (roll) => stockLabel(roll.stockId)],
+    ['Format', (roll) => roll.format],
+    ['Exposures', (roll) => String(roll.exposures)],
+    ['Unit price', (roll) => formatVnd(roll.price)],
+    ['Expiry', (roll) => formatExpiry(roll)],
+    ['Status', (roll) => roll.status],
+    ['Shot ISO', (roll) => (roll.shotIso === null ? 'Box speed' : String(roll.shotIso))],
+    ['Started', (roll) => formatDate(roll.startDate)],
+    ['Finished', (roll) => formatDate(roll.finishDate)],
+    ['Notes', (roll) => plainText(roll.description) || '—'],
   ];
   return fields.flatMap(([label, show]) =>
     show(before) === show(now) ? [] : [{ label, before: show(before), now: show(now) }],

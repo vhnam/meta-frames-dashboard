@@ -1,9 +1,41 @@
 <script setup lang="ts">
-import { useStockList, type FilmStock, type FilmType } from "#/features/film-stocks";
-import { useRollList } from "../queries";
-import { ROLL_STAGES } from "../types";
-import type { RollListRow, RollRow, RollStage } from "../types";
-import { expiryFromNow, formatExpiry, isExpired } from "../format";
+import { IconArrowLeft, IconFilter, IconTruckDelivery } from '@tabler/icons-vue';
+import { Link, useRouter } from '@tanstack/vue-router';
+import { computed, h, ref, shallowRef, watch } from 'vue';
+
+import { useStockList, type FilmStock, type FilmType } from '#/features/film-stocks';
+import AddButton from '#/shared/components/AddButton.vue';
+import type { DataTableColumn } from '#/shared/components/dataTable';
+import DataTable from '#/shared/components/DataTable.vue';
+import PageHeader from '#/shared/components/PageHeader.vue';
+import QueryBoundary from '#/shared/components/QueryBoundary.vue';
+import { PRIMARY_LINK, numberCell, stackCell, tagCell } from '#/shared/components/tableCells';
+import { plainText, formatDate } from '#/shared/lib/format';
+import { notify } from '#/shared/lib/toast';
+import { cn } from '#/shared/lib/utils';
+import { Badge } from '#/shared/ui/badge';
+import { Button } from '#/shared/ui/button';
+import { Checkbox } from '#/shared/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '#/shared/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/shared/ui/tabs';
+
+import AddRollsDialog from '../components/AddRollsDialog.vue';
+import HandOverDialog from '../components/HandOverDialog.vue';
+import InStockGroups from '../components/InStockGroups.vue';
+import InStockToolbar from '../components/InStockToolbar.vue';
+import RollStageBadge, { STAGE_LABELS } from '../components/RollStageBadge.vue';
+import { expiryFromNow, formatExpiry, isExpired } from '../format';
+import { useRollList } from '../queries';
 import {
   HAND_OVER_TABS,
   LIST_FILTER_KEYS,
@@ -20,44 +52,14 @@ import {
   type ActorFilter,
   type ExpiryFilter,
   type RollListSearch,
-} from "../rollList";
-import { Link, useRouter } from "@tanstack/vue-router";
-import { IconArrowLeft, IconFilter, IconTruckDelivery } from "@tabler/icons-vue";
-import { computed, h, ref, shallowRef, watch } from "vue";
-import DataTable from "#/shared/components/DataTable.vue";
-import type { DataTableColumn } from "#/shared/components/dataTable";
-import AddButton from "#/shared/components/AddButton.vue";
-import PageHeader from "#/shared/components/PageHeader.vue";
-import { PRIMARY_LINK, numberCell, stackCell, tagCell } from "#/shared/components/tableCells";
-import QueryBoundary from "#/shared/components/QueryBoundary.vue";
-import RollStageBadge, { STAGE_LABELS } from "../components/RollStageBadge.vue";
-import AddRollsDialog from "../components/AddRollsDialog.vue";
-import HandOverDialog from "../components/HandOverDialog.vue";
-import InStockGroups from "../components/InStockGroups.vue";
-import InStockToolbar from "../components/InStockToolbar.vue";
-import { cn } from "#/shared/lib/utils";
-import { Badge } from "#/shared/ui/badge";
-import { Button } from "#/shared/ui/button";
-import { Checkbox } from "#/shared/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "#/shared/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/shared/ui/tabs";
-import { plainText, formatDate } from "#/shared/lib/format";
-import { notify } from "#/shared/lib/toast";
+} from '../rollList';
+import { ROLL_STAGES } from '../types';
+import type { RollListRow, RollRow, RollStage } from '../types';
 
-type RollTab = "all" | RollStage;
+type RollTab = 'all' | RollStage;
 /** "All" first, then every stage in lifecycle order. */
 const TABS: { value: RollTab; label: string }[] = [
-  { value: "all", label: "All" },
+  { value: 'all', label: 'All' },
   ...ROLL_STAGES.map((stage) => ({ value: stage, label: STAGE_LABELS[stage] })),
 ];
 
@@ -77,13 +79,13 @@ const router = useRouter({ warn: false });
 function go(next: RollListSearch, replace = false) {
   state.value = next;
   void router?.navigate({
-    to: "/app/rolls",
+    to: '/app/rolls',
     search: (prev: { pageSize?: number }) => ({ ...next, pageSize: prev.pageSize }),
     replace,
   });
 }
 
-const tab = computed<RollTab>(() => state.value.tab ?? "all");
+const tab = computed<RollTab>(() => state.value.tab ?? 'all');
 /** The shared filters stay with the new tab; the in-stock ones do not. */
 const listFilters = computed(
   () =>
@@ -92,48 +94,48 @@ const listFilters = computed(
     ) as RollListSearch,
 );
 const setTab = (value: unknown) =>
-  go(value === "all" ? listFilters.value : { ...listFilters.value, tab: value as RollStage });
+  go(value === 'all' ? listFilters.value : { ...listFilters.value, tab: value as RollStage });
 
-const FLAG_FILTERS: { key: "atLab" | "needsScan" | "noPlan"; label: string }[] = [
-  { key: "atLab", label: "Negatives at lab" },
-  { key: "needsScan", label: "Needs scan" },
-  { key: "noPlan", label: "No plan" },
+const FLAG_FILTERS: { key: 'atLab' | 'needsScan' | 'noPlan'; label: string }[] = [
+  { key: 'atLab', label: 'Negatives at lab' },
+  { key: 'needsScan', label: 'Needs scan' },
+  { key: 'noPlan', label: 'No plan' },
 ];
-const ACTOR_FILTER_KEYS: { key: "developBy" | "scanBy"; label: string }[] = [
-  { key: "developBy", label: "Developed by" },
-  { key: "scanBy", label: "Scanned by" },
+const ACTOR_FILTER_KEYS: { key: 'developBy' | 'scanBy'; label: string }[] = [
+  { key: 'developBy', label: 'Developed by' },
+  { key: 'scanBy', label: 'Scanned by' },
 ];
-const ACTOR_OPTIONS: { value: ActorFilter | "any"; label: string }[] = [
-  { value: "any", label: "Anyone" },
-  { value: "self", label: "Myself" },
-  { value: "lab", label: "A lab" },
-  { value: "unset", label: "Not decided" },
+const ACTOR_OPTIONS: { value: ActorFilter | 'any'; label: string }[] = [
+  { value: 'any', label: 'Anyone' },
+  { value: 'self', label: 'Myself' },
+  { value: 'lab', label: 'A lab' },
+  { value: 'unset', label: 'Not decided' },
 ];
 const activeFilterCount = computed(() => Object.keys(listFilters.value).length);
 function setFilter(key: (typeof LIST_FILTER_KEYS)[number], value: unknown) {
   const { [key]: _old, ...rest } = state.value;
-  const on = value !== undefined && value !== false && value !== "any";
+  const on = value !== undefined && value !== false && value !== 'any';
   go(on ? { ...rest, [key]: value === true ? true : value } : rest, true);
 }
 /** The Filters button counts and clears Expiry too while In stock shows it. */
 const shownFilterCount = computed(
-  () => activeFilterCount.value + (tab.value === "in_stock" && state.value.expiry ? 1 : 0),
+  () => activeFilterCount.value + (tab.value === 'in_stock' && state.value.expiry ? 1 : 0),
 );
 const clearFilters = () => {
   const { expiry: _expiry, ...rest } = withoutListFilters(state.value);
   go(rest, true);
 };
-const EXPIRY_OPTIONS: { value: ExpiryFilter | "all"; label: string }[] = [
-  { value: "all", label: "Any" },
-  { value: "expired", label: "Expired" },
-  { value: "soon", label: "Expiring soon" },
-  { value: "alert", label: "Expired or expiring soon" },
-  { value: "undated", label: "No expiry date" },
+const EXPIRY_OPTIONS: { value: ExpiryFilter | 'all'; label: string }[] = [
+  { value: 'all', label: 'Any' },
+  { value: 'expired', label: 'Expired' },
+  { value: 'soon', label: 'Expiring soon' },
+  { value: 'alert', label: 'Expired or expiring soon' },
+  { value: 'undated', label: 'No expiry date' },
 ];
 
 const setExpiry = (value: unknown) => {
   const { expiry: _old, ...rest } = state.value;
-  go(value === "all" ? rest : { ...rest, expiry: value as ExpiryFilter }, true);
+  go(value === 'all' ? rest : { ...rest, expiry: value as ExpiryFilter }, true);
 };
 const setGrouped = (grouped: boolean) => go(groupedSearch(state.value, grouped));
 const openGroup = (stockId: string) => go({ ...state.value, stock: stockId });
@@ -202,20 +204,20 @@ const pickedRows = computed(() =>
 );
 const handOverOpen = ref(false);
 const PICK_HINT: Partial<Record<RollStage, string>> = {
-  processing: "Only rolls waiting for a scan can be handed to a lab.",
-  completed: "Only rolls marked Needs scan can be handed to a lab.",
+  processing: 'Only rolls waiting for a scan can be handed to a lab.',
+  completed: 'Only rolls marked Needs scan can be handed to a lab.',
 };
 /** Why a row cannot be picked, or that only the lab holding its negatives can take it. */
 const pickHint = (row: RollListRow) =>
   !pickable(row)
     ? PICK_HINT[row.stage]
     : row.negativesAtLab
-      ? "Negatives are at a lab: only that lab can take this roll."
+      ? 'Negatives are at a lab: only that lab can take this roll.'
       : undefined;
 // the group table's Type, Process and ISO filters apply to an open group too, such as a bookmark
 // whose stock no longer matches them
 const openGroupRows = computed(() =>
-  matchesStockFilters(stockById.value.get(state.value.stock ?? ""), state.value)
+  matchesStockFilters(stockById.value.get(state.value.stock ?? ''), state.value)
     ? activeRows.value.filter((row) => row.roll.stockId === state.value.stock)
     : [],
 );
@@ -227,37 +229,37 @@ const groups = computed(() =>
 );
 
 const TYPE_TEXT: Record<FilmType, string> = {
-  color: "Color Negative",
-  bw: "B&W Negative",
-  slide: "Color Slide",
+  color: 'Color Negative',
+  bw: 'B&W Negative',
+  slide: 'Color Slide',
 };
 function stockMeta(row: RollRow, st: FilmStock | undefined) {
   const iso = row.roll.shotIso ?? st?.boxIso;
   return [st && TYPE_TEXT[st.type], `${row.roll.exposures} Exp`, iso && `ISO ${iso}`]
     .filter(Boolean)
-    .join(" · ");
+    .join(' · ');
 }
 
 const FORMAT_SIZE: Record<string, string> = {
-  "135": "35mm",
-  "120": "6cm",
-  "110": "16mm",
-  "4x5": "sheet",
+  '135': '35mm',
+  '120': '6cm',
+  '110': '16mm',
+  '4x5': 'sheet',
 };
 const formatLabel = (format: string) =>
   FORMAT_SIZE[format] ? `${format} / ${FORMAT_SIZE[format]}` : format;
 
 const tabCountClass = (count: number) =>
   count === 0
-    ? "text-muted-foreground/70 text-[0.7rem]"
-    : "bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold";
+    ? 'text-muted-foreground/70 text-[0.7rem]'
+    : 'bg-secondary text-foreground rounded-full px-1.5 text-xs font-semibold';
 
 const openRoll = (row: RollRow) =>
-  router?.navigate({ to: "/app/rolls/$rollId", params: { rollId: row.roll.id } });
+  router?.navigate({ to: '/app/rolls/$rollId', params: { rollId: row.roll.id } });
 
 const expiryColumn: DataTableColumn<RollListRow> = {
-  id: "expiry",
-  header: "Expiry",
+  id: 'expiry',
+  header: 'Expiry',
   // rows come sorted by expiry (undated last); a text sort would put "—" and years in the wrong place
   enableSorting: false,
   enableGlobalFilter: false,
@@ -266,48 +268,48 @@ const expiryColumn: DataTableColumn<RollListRow> = {
 };
 
 const pickColumn: DataTableColumn<RollListRow> = {
-  id: "pick",
-  header: "",
+  id: 'pick',
+  header: '',
   enableSorting: false,
   enableGlobalFilter: false,
   // the whole cell is the pick target: the label fills it and forwards a click to the checkbox,
   // and DataTable ignores row clicks inside a label, so a near miss never opens the roll
-  meta: { class: "relative w-12 min-w-12 p-0 first:p-0" },
+  meta: { class: 'relative w-12 min-w-12 p-0 first:p-0' },
   cell: ({ row: { original: row } }) =>
     h(
-      "label",
+      'label',
       {
         title: pickHint(row),
         class: cn(
-          "absolute inset-0 flex items-center justify-center",
-          pickable(row) ? "cursor-pointer" : "cursor-not-allowed",
+          'absolute inset-0 flex items-center justify-center',
+          pickable(row) ? 'cursor-pointer' : 'cursor-not-allowed',
         ),
       },
       h(Checkbox, {
         modelValue: picked.value.has(row.roll.id) && pickable(row),
         disabled: !pickable(row),
-        "aria-label": [`Pick ${row.stockName} roll for Hand to lab`, pickHint(row)]
+        'aria-label': [`Pick ${row.stockName} roll for Hand to lab`, pickHint(row)]
           .filter(Boolean)
-          .join(". "),
-        "onUpdate:modelValue": (on: boolean | "indeterminate") => togglePick(row, on === true),
+          .join('. '),
+        'onUpdate:modelValue': (on: boolean | 'indeterminate') => togglePick(row, on === true),
       }),
     ),
 };
 /** Picked rows get the orange tint, so the batch is easy to check before Hand to lab. */
 const pickedRowClass = (row: RollListRow) =>
-  picked.value.has(row.roll.id) && pickable(row) ? "bg-primary/10 hover:bg-primary/15" : undefined;
+  picked.value.has(row.roll.id) && pickable(row) ? 'bg-primary/10 hover:bg-primary/15' : undefined;
 
 const columns: DataTableColumn<RollListRow>[] = [
   {
-    id: "stock",
-    header: "Stock",
+    id: 'stock',
+    header: 'Stock',
     accessorFn: (row) => row.stockName,
     cell: ({ row: { original: row } }) => {
       const st = stockById.value.get(row.roll.stockId);
       return stackCell(
         h(
           Link,
-          { to: "/app/rolls/$rollId", params: { rollId: row.roll.id }, class: PRIMARY_LINK },
+          { to: '/app/rolls/$rollId', params: { rollId: row.roll.id }, class: PRIMARY_LINK },
           () => row.stockName,
         ),
         stockMeta(row, st),
@@ -315,49 +317,49 @@ const columns: DataTableColumn<RollListRow>[] = [
     },
   },
   {
-    id: "format",
+    id: 'format',
     enableSorting: false,
-    header: "Format",
+    header: 'Format',
     accessorFn: (row) => row.roll.format,
-    filterFn: "equalsString",
+    filterFn: 'equalsString',
     enableGlobalFilter: false,
-    meta: { filter: { label: "Format", placeholder: "All formats", format: formatLabel } },
+    meta: { filter: { label: 'Format', placeholder: 'All formats', format: formatLabel } },
     cell: ({ row: { original: row } }) => tagCell(formatLabel(row.roll.format)),
   },
   {
-    id: "camera",
-    header: "Camera",
-    accessorFn: (row) => row.cameraName ?? "—",
+    id: 'camera',
+    header: 'Camera',
+    accessorFn: (row) => row.cameraName ?? '—',
     cell: ({ row: { original: row } }) =>
       stackCell(
         h(
-          "span",
-          { class: row.cameraName ? "font-medium" : "text-muted-foreground" },
-          row.cameraName ?? "—",
+          'span',
+          { class: row.cameraName ? 'font-medium' : 'text-muted-foreground' },
+          row.cameraName ?? '—',
         ),
         plainText(row.roll.description),
       ),
   },
   {
-    id: "started",
-    header: "Started",
+    id: 'started',
+    header: 'Started',
     // ISO dates sort as text; the cell shows dd/mm/yyyy
-    accessorFn: (row) => row.roll.startDate ?? "",
+    accessorFn: (row) => row.roll.startDate ?? '',
     enableGlobalFilter: false,
     cell: ({ row: { original: row } }) => numberCell(formatDate(row.roll.startDate)),
   },
   {
-    id: "status",
+    id: 'status',
     enableSorting: false,
-    header: "Status",
+    header: 'Status',
     accessorFn: (row) => STAGE_LABELS[row.stage],
     enableGlobalFilter: false,
     // one badge for the roll's stage; Expired is about the stock, not the stage
     cell: ({ row: { original: row } }) =>
-      h("div", { class: "flex flex-wrap items-center gap-2" }, [
+      h('div', { class: 'flex flex-wrap items-center gap-2' }, [
         h(RollStageBadge, { stage: row.stage, detail: row.stageDetail }),
-        row.stage === "in_stock" && isExpired(row.roll)
-          ? h(Badge, { variant: "destructive" }, () => "Expired")
+        row.stage === 'in_stock' && isExpired(row.roll)
+          ? h(Badge, { variant: 'destructive' }, () => 'Expired')
           : null,
       ]),
   },
@@ -365,33 +367,43 @@ const columns: DataTableColumn<RollListRow>[] = [
 
 // in stock rolls have no camera or start date yet; expiry is what matters
 const inStockColumns = columns
-  .filter((column) => column.id !== "camera" && column.id !== "started")
+  .filter((column) => column.id !== 'camera' && column.id !== 'started')
   .toSpliced(2, 0, expiryColumn);
 const pickColumns = [pickColumn, ...columns];
 const columnsFor = (tabValue: RollTab) =>
-  tabValue === "in_stock" ? inStockColumns : showsPicking(tabValue) ? pickColumns : columns;
+  tabValue === 'in_stock' ? inStockColumns : showsPicking(tabValue) ? pickColumns : columns;
 
 const emptyText = (tabValue: RollTab) =>
   activeFilterCount.value
-    ? "No rolls match these filters."
-    : tabValue === "all"
-      ? "No rolls yet. Add rolls to get started."
-      : tabValue === "in_stock" && state.value.expiry
-        ? "No rolls in stock match this expiry filter."
+    ? 'No rolls match these filters.'
+    : tabValue === 'all'
+      ? 'No rolls yet. Add rolls to get started.'
+      : tabValue === 'in_stock' && state.value.expiry
+        ? 'No rolls in stock match this expiry filter.'
         : `No rolls ${STAGE_LABELS[tabValue].toLowerCase()}.`;
 </script>
 
 <template>
-  <PageHeader title="Rolls" description="Every physical roll and where it is in its lifecycle.">
+  <PageHeader
+    title="Rolls"
+    description="Every physical roll and where it is in its lifecycle."
+  >
     <template #actions>
       <AddButton @click="addOpen = true">Add rolls</AddButton>
     </template>
   </PageHeader>
 
-  <QueryBoundary :query="rolls" :is-empty="() => false">
+  <QueryBoundary
+    :query="rolls"
+    :is-empty="() => false"
+  >
     <template #default>
-      <Tabs :model-value="tab" class="gap-4" @update:model-value="setTab">
-        <div class="bg-muted flex min-w-0 items-center gap-2 rounded-lg border p-1.5">
+      <Tabs
+        :model-value="tab"
+        class="gap-4"
+        @update:model-value="setTab"
+      >
+        <div class="flex min-w-0 items-center gap-2 rounded-lg border bg-muted p-1.5">
           <TabsList
             class="h-auto min-w-0 flex-1 justify-start gap-1 overflow-x-auto bg-transparent p-0"
           >
@@ -399,7 +411,7 @@ const emptyText = (tabValue: RollTab) =>
               v-for="tabItem in TABS"
               :key="tabItem.value"
               :value="tabItem.value"
-              class="text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-foreground h-10 flex-none gap-2.5 px-4 data-[state=active]:font-semibold"
+              class="h-10 flex-none gap-2.5 px-4 text-muted-foreground data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:font-semibold data-[state=active]:text-foreground"
             >
               {{ tabItem.label }}
               <span :class="cn('tabular-nums', tabCountClass(counts[tabItem.value]))">
@@ -421,10 +433,17 @@ const emptyText = (tabValue: RollTab) =>
               >
                 <IconFilter aria-hidden="true" />
                 Filters
-                <span v-if="shownFilterCount" class="tabular-nums">({{ shownFilterCount }})</span>
+                <span
+                  v-if="shownFilterCount"
+                  class="tabular-nums"
+                  >({{ shownFilterCount }})</span
+                >
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" class="w-56">
+            <DropdownMenuContent
+              align="end"
+              class="w-56"
+            >
               <DropdownMenuCheckboxItem
                 v-for="filter in FLAG_FILTERS"
                 :key="filter.key"
@@ -434,7 +453,10 @@ const emptyText = (tabValue: RollTab) =>
               >
                 {{ filter.label }}
               </DropdownMenuCheckboxItem>
-              <template v-for="filter in ACTOR_FILTER_KEYS" :key="filter.key">
+              <template
+                v-for="filter in ACTOR_FILTER_KEYS"
+                :key="filter.key"
+              >
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{{ filter.label }}</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
@@ -476,7 +498,11 @@ const emptyText = (tabValue: RollTab) =>
           </DropdownMenu>
         </div>
         <!-- one DataTable per tab: each keeps its own pager, reset when the tab changes -->
-        <TabsContent v-for="tabItem in TABS" :key="tabItem.value" :value="tabItem.value">
+        <TabsContent
+          v-for="tabItem in TABS"
+          :key="tabItem.value"
+          :value="tabItem.value"
+        >
           <!-- the stock list gives Type, Process and ISO: show its loading and error state, not groups
                with empty filters. Mounted once it loads, so the rows arrive once and the restored
                page stays. -->
@@ -488,11 +514,15 @@ const emptyText = (tabValue: RollTab) =>
           >
             <template v-if="state.stock">
               <div class="mb-4 flex flex-wrap items-center gap-3">
-                <Button variant="ghost" size="sm" @click="closeGroup">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="closeGroup"
+                >
                   <IconArrowLeft aria-hidden="true" /> All stocks
                 </Button>
                 <h2 class="font-heading text-lg font-semibold">
-                  {{ groupByStock(openGroupRows).map(groupSummary)[0] ?? "No matching rolls" }}
+                  {{ groupByStock(openGroupRows).map(groupSummary)[0] ?? 'No matching rolls' }}
                 </h2>
               </div>
               <DataTable
@@ -507,7 +537,10 @@ const emptyText = (tabValue: RollTab) =>
                 :row-label="(row) => `Open ${row.stockName} roll`"
               >
                 <template #actions>
-                  <InStockToolbar :grouped="state.group === 'stock'" @update:grouped="setGrouped" />
+                  <InStockToolbar
+                    :grouped="state.group === 'stock'"
+                    @update:grouped="setGrouped"
+                  />
                 </template>
               </DataTable>
             </template>
@@ -520,7 +553,10 @@ const emptyText = (tabValue: RollTab) =>
               @open="openGroup"
             >
               <template #actions>
-                <InStockToolbar :grouped="state.group === 'stock'" @update:grouped="setGrouped" />
+                <InStockToolbar
+                  :grouped="state.group === 'stock'"
+                  @update:grouped="setGrouped"
+                />
               </template>
             </InStockGroups>
           </QueryBoundary>
@@ -539,7 +575,10 @@ const emptyText = (tabValue: RollTab) =>
             :on-select="openRoll"
             :row-label="(row) => `Open ${row.stockName} roll`"
           >
-            <template v-if="showsPicking(tabItem.value)" #actions>
+            <template
+              v-if="showsPicking(tabItem.value)"
+              #actions
+            >
               <Button
                 type="button"
                 class="relative h-11 shrink-0"
@@ -556,15 +595,21 @@ const emptyText = (tabValue: RollTab) =>
                 <!-- the count floats on the corner (like the alerts bell), so picking never resizes the button or the search -->
                 <span
                   v-if="pickedRows.length"
-                  class="bg-card text-primary ring-primary absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[0.7rem] font-semibold tabular-nums ring-2"
+                  class="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-card px-1 text-[0.7rem] font-semibold text-primary tabular-nums ring-2 ring-primary"
                   aria-hidden="true"
                 >
-                  {{ pickedRows.length > 99 ? "99+" : pickedRows.length }}
+                  {{ pickedRows.length > 99 ? '99+' : pickedRows.length }}
                 </span>
               </Button>
             </template>
-            <template v-else-if="tabItem.value === 'in_stock'" #actions>
-              <InStockToolbar :grouped="state.group === 'stock'" @update:grouped="setGrouped" />
+            <template
+              v-else-if="tabItem.value === 'in_stock'"
+              #actions
+            >
+              <InStockToolbar
+                :grouped="state.group === 'stock'"
+                @update:grouped="setGrouped"
+              />
             </template>
           </DataTable>
         </TabsContent>
@@ -572,5 +617,9 @@ const emptyText = (tabValue: RollTab) =>
     </template>
   </QueryBoundary>
   <AddRollsDialog v-model:open="addOpen" />
-  <HandOverDialog v-model:open="handOverOpen" :rows="pickedRows" @handed="picked = new Set()" />
+  <HandOverDialog
+    v-model:open="handOverOpen"
+    :rows="pickedRows"
+    @handed="picked = new Set()"
+  />
 </template>

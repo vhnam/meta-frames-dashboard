@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { Markdown } from "@tiptap/markdown";
-import { Placeholder } from "@tiptap/extensions";
-import StarterKit from "@tiptap/starter-kit";
-import { EditorContent, useEditor } from "@tiptap/vue-3";
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
@@ -15,9 +11,14 @@ import {
   IconList,
   IconListNumbers,
   IconStrikethrough,
-} from "@tabler/icons-vue";
-import { type Component, watch } from "vue";
-import { cn } from "#/shared/lib/utils";
+} from '@tabler/icons-vue';
+import { Placeholder } from '@tiptap/extensions';
+import { Markdown } from '@tiptap/markdown';
+import StarterKit from '@tiptap/starter-kit';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
+import { type Component, watch } from 'vue';
+
+import { cn } from '#/shared/lib/utils';
 
 /** A WYSIWYG editor that reads and writes Markdown, so plain-text notes stay valid. */
 const props = defineProps<{
@@ -27,36 +28,36 @@ const props = defineProps<{
   /** Put the cursor at the end as soon as the editor mounts. */
   autofocus?: boolean;
 }>();
-const model = defineModel<string>({ default: "" });
+const model = defineModel<string>({ default: '' });
 
 const editor = useEditor({
   content: model.value,
-  contentType: "markdown",
+  contentType: 'markdown',
   editable: !props.disabled,
-  autofocus: props.autofocus ? "end" : false,
+  autofocus: props.autofocus ? 'end' : false,
   extensions: [
     // Underline has no Markdown syntax; links are kept but open only from the detail page.
     StarterKit.configure({ underline: false, link: { openOnClick: false } }),
     Markdown,
-    Placeholder.configure({ placeholder: () => props.placeholder ?? "" }),
+    Placeholder.configure({ placeholder: () => props.placeholder ?? '' }),
   ],
   editorProps: {
     attributes: {
       ...(props.id ? { id: props.id } : {}),
-      "data-slot": "rich-text-input",
-      class: "rich-text font-heading min-h-24 px-3.5 py-2.5 leading-relaxed outline-none",
+      'data-slot': 'rich-text-input',
+      class: 'rich-text font-heading min-h-24 px-3.5 py-2.5 leading-relaxed outline-none',
     },
   },
   onUpdate: ({ editor }) => {
-    model.value = editor.isEmpty ? "" : editor.getMarkdown();
+    model.value = editor.isEmpty ? '' : editor.getMarkdown();
   },
 });
 
 // Outside changes (a form reset) replace the content; our own updates are skipped.
 watch(model, (value) => {
   const instance = editor.value;
-  if (!instance || value === (instance.isEmpty ? "" : instance.getMarkdown())) return;
-  instance.commands.setContent(value, { contentType: "markdown", emitUpdate: false });
+  if (!instance || value === (instance.isEmpty ? '' : instance.getMarkdown())) return;
+  instance.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
 });
 watch(
   () => props.disabled,
@@ -75,71 +76,71 @@ const chain = () => editor.value!.chain().focus();
 const groups: Tool[][] = [
   [
     {
-      label: "Bold",
+      label: 'Bold',
       icon: IconBold,
       run: () => chain().toggleBold().run(),
-      active: () => editor.value!.isActive("bold"),
+      active: () => editor.value!.isActive('bold'),
     },
     {
-      label: "Italic",
+      label: 'Italic',
       icon: IconItalic,
       run: () => chain().toggleItalic().run(),
-      active: () => editor.value!.isActive("italic"),
+      active: () => editor.value!.isActive('italic'),
     },
     {
-      label: "Strikethrough",
+      label: 'Strikethrough',
       icon: IconStrikethrough,
       run: () => chain().toggleStrike().run(),
-      active: () => editor.value!.isActive("strike"),
+      active: () => editor.value!.isActive('strike'),
     },
     {
-      label: "Inline code",
+      label: 'Inline code',
       icon: IconCode,
       run: () => chain().toggleCode().run(),
-      active: () => editor.value!.isActive("code"),
+      active: () => editor.value!.isActive('code'),
     },
   ],
   [
     {
-      label: "Heading",
+      label: 'Heading',
       icon: IconH2,
       run: () => chain().toggleHeading({ level: 2 }).run(),
-      active: () => editor.value!.isActive("heading", { level: 2 }),
+      active: () => editor.value!.isActive('heading', { level: 2 }),
     },
     {
-      label: "Subheading",
+      label: 'Subheading',
       icon: IconH3,
       run: () => chain().toggleHeading({ level: 3 }).run(),
-      active: () => editor.value!.isActive("heading", { level: 3 }),
+      active: () => editor.value!.isActive('heading', { level: 3 }),
     },
     {
-      label: "Bulleted list",
+      label: 'Bulleted list',
       icon: IconList,
       run: () => chain().toggleBulletList().run(),
-      active: () => editor.value!.isActive("bulletList"),
+      active: () => editor.value!.isActive('bulletList'),
     },
     {
-      label: "Numbered list",
+      label: 'Numbered list',
       icon: IconListNumbers,
       run: () => chain().toggleOrderedList().run(),
-      active: () => editor.value!.isActive("orderedList"),
+      active: () => editor.value!.isActive('orderedList'),
     },
     {
-      label: "Quote",
+      label: 'Quote',
       icon: IconBlockquote,
       run: () => chain().toggleBlockquote().run(),
-      active: () => editor.value!.isActive("blockquote"),
+      active: () => editor.value!.isActive('blockquote'),
     },
   ],
   [
     {
-      label: "Undo",
+      label: 'Undo',
       icon: IconArrowBackUp,
       run: () => chain().undo().run(),
       enabled: () => editor.value!.can().undo(),
     },
     {
-      label: "Redo",
+      label: 'Redo',
       icon: IconArrowForwardUp,
       run: () => chain().redo().run(),
       enabled: () => editor.value!.can().redo(),
@@ -152,16 +153,23 @@ const groups: Tool[][] = [
   <div
     data-slot="rich-text"
     :data-disabled="disabled || undefined"
-    class="border-input focus-within:border-ring focus-within:ring-ring/50 dark:bg-input/30 overflow-hidden rounded-md border bg-transparent text-base shadow-xs transition-[color,box-shadow] focus-within:ring-3 data-[disabled]:opacity-50"
+    class="overflow-hidden rounded-md border border-input bg-transparent text-base shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[disabled]:opacity-50 dark:bg-input/30"
   >
     <div
       v-if="editor && !disabled"
-      class="bg-secondary/60 flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1"
+      class="flex flex-wrap items-center gap-0.5 border-b bg-secondary/60 px-1.5 py-1"
       role="toolbar"
       aria-label="Formatting"
     >
-      <template v-for="(group, i) in groups" :key="i">
-        <span v-if="i" class="bg-border mx-1 h-5 w-px" aria-hidden="true" />
+      <template
+        v-for="(group, i) in groups"
+        :key="i"
+      >
+        <span
+          v-if="i"
+          class="mx-1 h-5 w-px bg-border"
+          aria-hidden="true"
+        />
         <button
           v-for="tool in group"
           :key="tool.label"
@@ -172,14 +180,18 @@ const groups: Tool[][] = [
           :disabled="tool.enabled ? !tool.enabled() : false"
           :class="
             cn(
-              'text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-ring/50 flex size-8 items-center justify-center rounded-sm outline-none focus-visible:ring-3 disabled:pointer-events-none disabled:opacity-40',
+              'flex size-8 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40',
               tool.active?.() &&
                 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary',
             )
           "
           @click="tool.run()"
         >
-          <component :is="tool.icon" class="size-4" aria-hidden="true" />
+          <component
+            :is="tool.icon"
+            class="size-4"
+            aria-hidden="true"
+          />
         </button>
       </template>
     </div>

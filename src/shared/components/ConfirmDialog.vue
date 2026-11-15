@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { IconTrash } from "@tabler/icons-vue";
-import { computed, ref, watch } from "vue";
-import { pendingAsk } from "#/shared/lib/ui";
+import { IconTrash } from '@tabler/icons-vue';
+import { computed, ref, watch } from 'vue';
+
+import { pendingAsk } from '#/shared/lib/ui';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -11,11 +12,11 @@ import {
   AlertDialogHeader,
   AlertDialogMedia,
   AlertDialogTitle,
-} from "#/shared/ui/alert-dialog";
-import { Button } from "#/shared/ui/button";
+} from '#/shared/ui/alert-dialog';
+import { Button } from '#/shared/ui/button';
 
 // keeps the title while the dialog animates out
-const message = ref("");
+const message = ref('');
 watch(pendingAsk, (pending) => pending && (message.value = pending.message));
 
 function settle(ok: boolean) {
@@ -43,7 +44,11 @@ const open = computed({
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
         <!-- a plain Button: AlertDialogAction closes the dialog before its own @click runs -->
-        <Button variant="destructive" @click="settle(true)">Delete</Button>
+        <Button
+          variant="destructive"
+          @click="settle(true)"
+          >Delete</Button
+        >
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

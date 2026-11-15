@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { googleSignInUrl } from "../api";
+import { googleSignInUrl } from '../api';
 
 const props = defineProps<{ redirect: string }>();
 </script>
@@ -9,9 +9,13 @@ const props = defineProps<{ redirect: string }>();
     <!-- a full-page navigation, not fetch: Google redirects the browser back through the API -->
     <a
       :href="googleSignInUrl(props.redirect)"
-      class="bg-secondary/60 hover:bg-secondary focus-visible:ring-ring/50 flex h-12 items-center justify-center gap-3 rounded-md border text-sm font-semibold tracking-[0.12em] uppercase shadow-xs transition-colors outline-none focus-visible:ring-3"
+      class="flex h-12 items-center justify-center gap-3 rounded-md border bg-secondary/60 text-sm font-semibold tracking-[0.12em] uppercase shadow-xs transition-colors outline-none hover:bg-secondary focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <svg viewBox="0 0 48 48" class="size-5" aria-hidden="true">
+      <svg
+        viewBox="0 0 48 48"
+        class="size-5"
+        aria-hidden="true"
+      >
         <path
           fill="#FFC107"
           d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
@@ -32,9 +36,9 @@ const props = defineProps<{ redirect: string }>();
       Continue with Google
     </a>
     <div
-      class="text-muted-foreground after:border-border relative text-center text-xs font-semibold tracking-[0.16em] uppercase after:absolute after:inset-x-0 after:top-1/2 after:z-0 after:border-t"
+      class="relative text-center text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase after:absolute after:inset-x-0 after:top-1/2 after:z-0 after:border-t after:border-border"
     >
-      <span class="bg-card relative z-10 px-4">or with email</span>
+      <span class="relative z-10 bg-card px-4">or with email</span>
     </div>
   </div>
 </template>

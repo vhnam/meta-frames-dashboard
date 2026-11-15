@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card, CardContent } from "#/shared/ui/card";
+import { Card, CardContent } from '#/shared/ui/card';
 </script>
 
 <template>

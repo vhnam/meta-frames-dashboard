@@ -1,15 +1,17 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { isAxiosError } from "axios";
-import { http } from "#/shared/api/http";
-import { toLens } from "#/features/lenses/api";
-import type { ApiLens } from "#/features/lenses/api";
-import type { BuiltInLensInput, Camera, CameraDetail, CameraInput, CameraRow } from "./types";
+import { queryOptions } from '@tanstack/vue-query';
+import { isAxiosError } from 'axios';
+
+import { toLens } from '#/features/lenses/api';
+import type { ApiLens } from '#/features/lenses/api';
+import { http } from '#/shared/api/http';
+
+import type { BuiltInLensInput, Camera, CameraDetail, CameraInput, CameraRow } from './types';
 
 export const cameraKeys = {
-  all: ["cameras"] as const,
-  lists: () => [...cameraKeys.all, "list"] as const,
+  all: ['cameras'] as const,
+  lists: () => [...cameraKeys.all, 'list'] as const,
   list: (filters: { includeInactive: boolean }) => [...cameraKeys.lists(), filters] as const,
-  details: () => [...cameraKeys.all, "detail"] as const,
+  details: () => [...cameraKeys.all, 'detail'] as const,
   detail: (id: string) => [...cameraKeys.details(), id] as const,
 };
 
@@ -35,8 +37,8 @@ export const toCamera = (camera: ApiCamera): Camera => ({
   id: camera.id,
   brand: camera.brand,
   model: camera.model,
-  mount: camera.mount ?? "",
-  description: camera.description ?? "",
+  mount: camera.mount ?? '',
+  description: camera.description ?? '',
   fixedLens: camera.hasFixedLens,
   active: camera.isActive,
 });
@@ -57,7 +59,7 @@ export const cameraQueries = {
     queryOptions({
       queryKey: cameraKeys.list(filters),
       queryFn: async (): Promise<CameraRow[]> => {
-        const { data } = await http.get<ApiCamera[]>("/cameras", {
+        const { data } = await http.get<ApiCamera[]>('/cameras', {
           params: { activeOnly: !filters.includeInactive },
         });
         return data.map((camera) => ({
@@ -106,7 +108,7 @@ export const saveCamera = async (variables: {
     await http.put(`/cameras/${variables.id}`, body);
     return variables.id;
   }
-  return (await http.post<ApiCamera>("/cameras", body)).data.id;
+  return (await http.post<ApiCamera>('/cameras', body)).data.id;
 };
 
 export const setCameraActive = async (variables: { id: string; active: boolean }) => {

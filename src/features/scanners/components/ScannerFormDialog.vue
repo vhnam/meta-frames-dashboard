@@ -1,23 +1,25 @@
 <script setup lang="ts">
-import { useDeleteScanner, useSaveScanner, useScannerKinds, useScannerList } from "../queries";
-import { completeSettings, optionsForKind } from "../format";
-import { ScannerSchema } from "../schema";
-import { SCANNER_KINDS, SCANNER_KIND_LABELS } from "../types";
-import type { ScanSettings } from "../types";
-import ScanSettingsFields from "./ScanSettingsFields.vue";
-import { getInput, reset, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormRichText from "#/shared/components/FormRichText.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { Button } from "#/shared/ui/button";
-import { ask, attempt } from "#/shared/lib/ui";
+import { getInput, reset, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import FormInput from '#/shared/components/FormInput.vue';
+import FormRichText from '#/shared/components/FormRichText.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { ask, attempt } from '#/shared/lib/ui';
+import { Button } from '#/shared/ui/button';
+
+import { completeSettings, optionsForKind } from '../format';
+import { useDeleteScanner, useSaveScanner, useScannerKinds, useScannerList } from '../queries';
+import { ScannerSchema } from '../schema';
+import { SCANNER_KINDS, SCANNER_KIND_LABELS } from '../types';
+import type { ScanSettings } from '../types';
+import ScanSettingsFields from './ScanSettingsFields.vue';
 
 const props = defineProps<{ scannerId?: string }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ saved: [id: string] }>();
 
 const scanners = useScannerList();
@@ -31,13 +33,13 @@ const builtIn = computed(
   () => !!scanners.data.value?.find((entry) => entry.id === props.scannerId)?.builtIn,
 );
 const title = computed(() =>
-  builtIn.value ? "Built-in Scanner" : editing.value ? "Edit Scanner" : "Add Scanner",
+  builtIn.value ? 'Built-in Scanner' : editing.value ? 'Edit Scanner' : 'Add Scanner',
 );
 const description = computed(() =>
   builtIn.value
-    ? "A lab scanner shared by every account. It cannot be changed; its orders start from these settings"
+    ? 'A lab scanner shared by every account. It cannot be changed; its orders start from these settings'
     : editing.value
-      ? "Update this scanner. Its scans and orders follow the new name"
+      ? 'Update this scanner. Its scans and orders follow the new name'
       : "A scanner of your own: a lab's Noritsu or Frontier, a flatbed, or a camera rig",
 );
 watch(open, (isOpen) => {
@@ -45,17 +47,17 @@ watch(open, (isOpen) => {
   const scanner = scanners.data.value?.find((entry) => entry.id === props.scannerId);
   reset(form, {
     initialInput: {
-      brand: scanner?.brand ?? "",
-      model: scanner?.model ?? "",
-      kind: scanner?.kind ?? "",
-      notes: scanner?.notes ?? "",
+      brand: scanner?.brand ?? '',
+      model: scanner?.model ?? '',
+      kind: scanner?.kind ?? '',
+      notes: scanner?.notes ?? '',
     },
   });
   defaultSettings.value = scanner?.defaultSettings ?? {};
 });
 
 /** Options of the kind picked in the form; the default settings follow it. */
-const kind = computed(() => getInput(form, { path: ["kind"] }) || null);
+const kind = computed(() => getInput(form, { path: ['kind'] }) || null);
 const options = computed(() => optionsForKind(kinds.data.value, kind.value));
 const defaultSettings = ref<ScanSettings>({});
 watch(
@@ -70,7 +72,7 @@ const kindOptions = SCANNER_KINDS.map((kind) => ({
 }));
 
 async function submit(output: v.InferOutput<typeof ScannerSchema>) {
-  let id = props.scannerId ?? "";
+  let id = props.scannerId ?? '';
   const ok = await attempt(
     save
       .mutateAsync({
@@ -83,12 +85,12 @@ async function submit(output: v.InferOutput<typeof ScannerSchema>) {
   );
   if (ok) {
     open.value = false;
-    emit("saved", id);
+    emit('saved', id);
   }
 }
 
 async function doDelete() {
-  if (!props.scannerId || !(await ask("Delete this scanner?"))) return;
+  if (!props.scannerId || !(await ask('Delete this scanner?'))) return;
   if (await attempt(remove.mutateAsync(props.scannerId))) open.value = false;
 }
 </script>
@@ -105,7 +107,11 @@ async function doDelete() {
     :read-only="builtIn"
     @submit="submit"
   >
-    <FormSection no="01" title="Scanner" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Scanner"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormInput
           :of="form"
@@ -136,7 +142,11 @@ async function doDelete() {
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Default scan settings" note="Each new order starts from these">
+    <FormSection
+      no="02"
+      title="Default scan settings"
+      note="Each new order starts from these"
+    >
       <ScanSettingsFields
         v-model="defaultSettings"
         :options="options"
@@ -145,7 +155,10 @@ async function doDelete() {
       />
     </FormSection>
 
-    <FormSection no="03" title="Notes">
+    <FormSection
+      no="03"
+      title="Notes"
+    >
       <FormRichText
         :of="form"
         :path="['notes']"
@@ -155,12 +168,15 @@ async function doDelete() {
         placeholder="Light source, film holder, conversion software…"
       >
         <template #aside>
-          <span class="text-muted-foreground text-xs">Markdown shortcuts work</span>
+          <span class="text-xs text-muted-foreground">Markdown shortcuts work</span>
         </template>
       </FormRichText>
     </FormSection>
 
-    <template v-if="editing && !builtIn" #footer-start>
+    <template
+      v-if="editing && !builtIn"
+      #footer-start
+    >
       <Button
         type="button"
         variant="ghost"

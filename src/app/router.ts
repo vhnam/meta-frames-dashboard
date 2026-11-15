@@ -1,33 +1,34 @@
-import { createRoute, createRouter, redirect } from "@tanstack/vue-router";
-import { appRoute } from "#/layouts/appRoute";
-import { rootRoute } from "#/layouts/rootRoute";
-import { queryClient } from "#/shared/api/client";
-import { setUnauthorizedHandler } from "#/shared/api/http";
-import { auditRoutes } from "#/features/audit/routes";
-import { authKeys } from "#/features/auth";
-import { authRoutes } from "#/features/auth/routes";
-import { camerasRoutes } from "#/features/cameras/routes";
-import { filmStocksRoutes } from "#/features/film-stocks/routes";
-import { labOrdersRoutes } from "#/features/lab-orders/routes";
-import { labsRoutes } from "#/features/labs/routes";
-import { lensesRoutes } from "#/features/lenses/routes";
-import { rollsRoutes } from "#/features/rolls/routes";
-import { scannersRoutes } from "#/features/scanners/routes";
+import { createRoute, createRouter, redirect } from '@tanstack/vue-router';
+
+import { auditRoutes } from '#/features/audit/routes';
+import { authKeys } from '#/features/auth';
+import { authRoutes } from '#/features/auth/routes';
+import { camerasRoutes } from '#/features/cameras/routes';
+import { filmStocksRoutes } from '#/features/film-stocks/routes';
+import { labOrdersRoutes } from '#/features/lab-orders/routes';
+import { labsRoutes } from '#/features/labs/routes';
+import { lensesRoutes } from '#/features/lenses/routes';
+import { rollsRoutes } from '#/features/rolls/routes';
+import { scannersRoutes } from '#/features/scanners/routes';
+import { appRoute } from '#/layouts/appRoute';
+import { rootRoute } from '#/layouts/rootRoute';
+import { queryClient } from '#/shared/api/client';
+import { setUnauthorizedHandler } from '#/shared/api/http';
 
 // `/` is kept for public pages (landing, about, ...); until then it opens the app.
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/",
+  path: '/',
   beforeLoad: () => {
-    throw redirect({ to: "/app" });
+    throw redirect({ to: '/app' });
   },
 });
 
 const appIndexRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/",
+  path: '/',
   beforeLoad: () => {
-    throw redirect({ to: "/app/rolls" });
+    throw redirect({ to: '/app/rolls' });
   },
 });
 
@@ -54,13 +55,13 @@ export const router = createRouter({ routeTree });
 setUnauthorizedHandler(() => {
   queryClient.setQueryData(authKeys.me(), null);
   const { pathname, href } = router.state.location;
-  const leave = pathname.startsWith("/app")
-    ? router.navigate({ to: "/auth/login", search: { redirect: href } })
+  const leave = pathname.startsWith('/app')
+    ? router.navigate({ to: '/auth/login', search: { redirect: href } })
     : Promise.resolve();
   void leave.then(() => queryClient.clear());
 });
 
-declare module "@tanstack/vue-router" {
+declare module '@tanstack/vue-router' {
   interface Register {
     router: typeof router;
   }

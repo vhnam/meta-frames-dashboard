@@ -1,8 +1,9 @@
 <script setup lang="ts" generic="TSchema extends FormSchema">
-import { Form } from "@formisch/vue";
-import type { FormSchema, FormStore } from "@formisch/vue";
-import type * as v from "valibot";
-import { Button } from "#/shared/ui/button";
+import { Form } from '@formisch/vue';
+import type { FormSchema, FormStore } from '@formisch/vue';
+import type * as v from 'valibot';
+
+import { Button } from '#/shared/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "#/shared/ui/dialog";
+} from '#/shared/ui/dialog';
 
 defineProps<{
   form: FormStore<TSchema>;
@@ -20,7 +21,7 @@ defineProps<{
   wide?: boolean;
 }>();
 const emit = defineEmits<{ submit: [output: v.InferOutput<TSchema>] }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 </script>
 
 <template>
@@ -35,13 +36,27 @@ const open = defineModel<boolean>("open", { required: true });
           {{ description ?? title }}
         </DialogDescription>
       </DialogHeader>
-      <Form :of="form" class="grid gap-4" @submit="(output) => emit('submit', output)">
+      <Form
+        :of="form"
+        class="grid gap-4"
+        @submit="(output) => emit('submit', output)"
+      >
         <slot />
         <DialogFooter>
           <!-- left side of the footer, e.g. Delete when editing -->
-          <div v-if="$slots['footer-start']" class="sm:mr-auto"><slot name="footer-start" /></div>
-          <Button type="button" variant="outline" @click="open = false">Cancel</Button>
-          <Button type="submit">{{ submitLabel ?? "Save" }}</Button>
+          <div
+            v-if="$slots['footer-start']"
+            class="sm:mr-auto"
+          >
+            <slot name="footer-start" />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            @click="open = false"
+            >Cancel</Button
+          >
+          <Button type="submit">{{ submitLabel ?? 'Save' }}</Button>
         </DialogFooter>
       </Form>
     </DialogContent>

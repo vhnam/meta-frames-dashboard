@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import type { Lens } from "#/features/lenses";
-import { useSetRollLenses } from "../queries";
-import { useForm } from "@formisch/vue";
-import * as v from "valibot";
-import { ref, watch } from "vue";
-import { Checkbox } from "#/shared/ui/checkbox";
-import FormSection from "#/shared/components/FormSection.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { attempt } from "#/shared/lib/ui";
+import { useForm } from '@formisch/vue';
+import * as v from 'valibot';
+import { ref, watch } from 'vue';
+
+import type { Lens } from '#/features/lenses';
+import FormSection from '#/shared/components/FormSection.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { attempt } from '#/shared/lib/ui';
+import { Checkbox } from '#/shared/ui/checkbox';
+
+import { useSetRollLenses } from '../queries';
 
 const props = defineProps<{
   rollId: string;
@@ -17,7 +19,7 @@ const props = defineProps<{
   /** Lenses currently used on the roll. */
   selectedIds: string[];
 }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const setLenses = useSetRollLenses();
 // The dialog needs a form for its shell; the ticked lenses live beside it, as in LabFormDialog.
@@ -52,26 +54,36 @@ async function submit() {
     :pending="setLenses.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Lenses" :note="`${selected.length} selected`">
-      <p v-if="!candidates.length" class="text-muted-foreground text-sm">
+    <FormSection
+      no="01"
+      title="Lenses"
+      :note="`${selected.length} selected`"
+    >
+      <p
+        v-if="!candidates.length"
+        class="text-sm text-muted-foreground"
+      >
         The camera has no lenses yet. Link lenses to it first.
       </p>
-      <fieldset v-else class="grid min-w-0 gap-2">
+      <fieldset
+        v-else
+        class="grid min-w-0 gap-2"
+      >
         <legend class="sr-only">Lenses</legend>
         <label
           v-for="lens in candidates"
           :key="lens.id"
-          class="dark:bg-input/30 flex min-h-11 min-w-0 cursor-pointer items-center gap-3 rounded-md border bg-white px-3 py-2 text-sm"
+          class="flex min-h-11 min-w-0 cursor-pointer items-center gap-3 rounded-md border bg-white px-3 py-2 text-sm dark:bg-input/30"
         >
           <Checkbox
             :model-value="selected.includes(lens.id)"
             @update:model-value="(on) => toggle(lens.id, on === true)"
           />
           <span class="grid min-w-0">
-            <span class="font-heading truncate text-base">
-              {{ [lens.brand, lens.model].filter(Boolean).join(" ") }}
+            <span class="truncate font-heading text-base">
+              {{ [lens.brand, lens.model].filter(Boolean).join(' ') }}
             </span>
-            <span class="text-muted-foreground text-xs">{{ lens.mount }} mount</span>
+            <span class="text-xs text-muted-foreground">{{ lens.mount }} mount</span>
           </span>
         </label>
       </fieldset>

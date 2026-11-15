@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { Link, useRouterState } from "@tanstack/vue-router";
-import { computed } from "vue";
-import { useRollList } from "#/features/rolls";
+import { Link, useRouterState } from '@tanstack/vue-router';
+import { computed } from 'vue';
+
+import { useRollList } from '#/features/rolls';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "#/shared/ui/dropdown-menu";
+} from '#/shared/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -26,48 +27,56 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
-} from "#/shared/ui/sidebar";
-import { navSections } from "./nav";
-import NavUser from "./NavUser.vue";
+} from '#/shared/ui/sidebar';
+
+import { navSections } from './nav';
+import NavUser from './NavUser.vue';
 
 const pathname = useRouterState({ select: (state) => state.location.pathname });
 const isActive = computed(
-  () => (to: string) => pathname.value === to || pathname.value.startsWith(to + "/"),
+  () => (to: string) => pathname.value === to || pathname.value.startsWith(to + '/'),
 );
 
 // the icon rail hides sub-menus, so an item with children opens them in a dropdown instead
 const { state, isMobile } = useSidebar();
-const collapsed = computed(() => state.value === "collapsed" && !isMobile.value);
+const collapsed = computed(() => state.value === 'collapsed' && !isMobile.value);
 
 // counts shown next to a nav item
 const rolls = useRollList({});
 const counts = computed<Record<string, number | undefined>>(() => ({
-  "/app/rolls": rolls.data.value?.length,
+  '/app/rolls': rolls.data.value?.length,
 }));
 
 const itemClass =
-  "h-10 gap-3 border border-transparent px-3 text-sm [&>svg]:size-5 [&>svg]:text-muted-foreground " +
-  "data-[active=true]:border-sidebar-border data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium " +
-  "data-[active=true]:shadow-xs data-[active=true]:[&>svg]:text-primary " +
+  'h-10 gap-3 border border-transparent px-3 text-sm [&>svg]:size-5 [&>svg]:text-muted-foreground ' +
+  'data-[active=true]:border-sidebar-border data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium ' +
+  'data-[active=true]:shadow-xs data-[active=true]:[&>svg]:text-primary ' +
   // collapsed: a 40px square centred on the icon (the default 32px clips a 20px icon)
-  "group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2.5! group-data-[collapsible=icon]:[&>span]:hidden";
+  'group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2.5! group-data-[collapsible=icon]:[&>span]:hidden';
 </script>
 
 <template>
   <Sidebar collapsible="icon">
-    <SidebarHeader class="border-sidebar-border h-14 justify-center border-b px-3">
+    <SidebarHeader class="h-14 justify-center border-b border-sidebar-border px-3">
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
             size="lg"
-            class="hover:bg-transparent group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center"
+            class="group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center hover:bg-transparent"
             as-child
           >
-            <Link to="/app" aria-label="Meta Frames dashboard">
-              <img src="/logo.png" alt="" class="size-8 shrink-0 rounded-md shadow-sm" />
+            <Link
+              to="/app"
+              aria-label="Meta Frames dashboard"
+            >
+              <img
+                src="/logo.png"
+                alt=""
+                class="size-8 shrink-0 rounded-md shadow-sm"
+              />
               <div class="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                <span class="font-heading truncate text-[0.95rem] font-bold">Meta Frames</span>
-                <span class="text-primary text-xs font-semibold tracking-[0.12em] uppercase">
+                <span class="truncate font-heading text-[0.95rem] font-bold">Meta Frames</span>
+                <span class="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
                   Film tracker
                 </span>
               </div>
@@ -78,16 +87,25 @@ const itemClass =
     </SidebarHeader>
 
     <SidebarContent class="gap-2 px-1 py-3 group-data-[collapsible=icon]:gap-0">
-      <SidebarGroup v-for="section in navSections" :key="section.label">
+      <SidebarGroup
+        v-for="section in navSections"
+        :key="section.label"
+      >
         <SidebarGroupLabel
-          class="text-foreground/80 justify-between text-[0.7rem] font-semibold tracking-[0.14em] uppercase"
+          class="justify-between text-[0.7rem] font-semibold tracking-[0.14em] text-foreground/80 uppercase"
         >
           {{ section.label }}
-          <span class="bg-border size-1 rounded-full" aria-hidden="true" />
+          <span
+            class="size-1 rounded-full bg-border"
+            aria-hidden="true"
+          />
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu class="gap-1">
-            <SidebarMenuItem v-for="item in section.items" :key="item.title">
+            <SidebarMenuItem
+              v-for="item in section.items"
+              :key="item.title"
+            >
               <DropdownMenu v-if="item.children && collapsed">
                 <DropdownMenuTrigger as-child>
                   <SidebarMenuButton
@@ -99,12 +117,21 @@ const itemClass =
                     <span>{{ item.title }}</span>
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" align="start" :side-offset="8" class="min-w-40">
+                <DropdownMenuContent
+                  side="right"
+                  align="start"
+                  :side-offset="8"
+                  class="min-w-40"
+                >
                   <DropdownMenuLabel>{{ item.title }}</DropdownMenuLabel>
-                  <DropdownMenuItem v-for="child in item.children" :key="child.title" as-child>
+                  <DropdownMenuItem
+                    v-for="child in item.children"
+                    :key="child.title"
+                    as-child
+                  >
                     <Link
                       :to="child.to as '/'"
-                      :class="isActive(child.to) ? 'text-primary font-medium' : undefined"
+                      :class="isActive(child.to) ? 'font-medium text-primary' : undefined"
                     >
                       <component :is="child.icon" />
                       {{ child.title }}
@@ -119,26 +146,38 @@ const itemClass =
                 :class="itemClass"
                 as-child
               >
-                <Link v-if="!item.children" :to="item.to as '/'">
+                <Link
+                  v-if="!item.children"
+                  :to="item.to as '/'"
+                >
                   <component :is="item.icon" />
                   <span>{{ item.title }}</span>
                 </Link>
-                <span v-else class="cursor-default">
+                <span
+                  v-else
+                  class="cursor-default"
+                >
                   <component :is="item.icon" />
                   <span>{{ item.title }}</span>
                 </span>
               </SidebarMenuButton>
               <SidebarMenuBadge
                 v-if="counts[item.to] != null && !item.children"
-                class="bg-card top-1/2! right-2.5 -translate-y-1/2 border tabular-nums"
+                class="top-1/2! right-2.5 -translate-y-1/2 border bg-card tabular-nums"
               >
                 {{ counts[item.to] }}
               </SidebarMenuBadge>
-              <SidebarMenuSub v-if="item.children" class="ml-5 gap-0.5 py-1">
-                <SidebarMenuSubItem v-for="child in item.children" :key="child.title">
+              <SidebarMenuSub
+                v-if="item.children"
+                class="ml-5 gap-0.5 py-1"
+              >
+                <SidebarMenuSubItem
+                  v-for="child in item.children"
+                  :key="child.title"
+                >
                   <SidebarMenuSubButton
                     :is-active="isActive(child.to)"
-                    class="data-[active=true]:text-primary h-9 gap-3 text-sm data-[active=true]:font-medium"
+                    class="h-9 gap-3 text-sm data-[active=true]:font-medium data-[active=true]:text-primary"
                     as-child
                   >
                     <Link :to="child.to as '/'">
@@ -156,7 +195,7 @@ const itemClass =
         </SidebarGroupContent>
       </SidebarGroup>
     </SidebarContent>
-    <SidebarFooter class="border-sidebar-border border-t p-3">
+    <SidebarFooter class="border-t border-sidebar-border p-3">
       <NavUser />
     </SidebarFooter>
     <SidebarRail />

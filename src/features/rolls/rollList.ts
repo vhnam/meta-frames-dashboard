@@ -1,18 +1,19 @@
-import { FILM_TYPE_LABELS, type FilmStock } from "#/features/film-stocks/types";
-import { byExpiry, expiryState, formatExpiry } from "./format";
-import { FORMATS, ROLL_STAGES } from "./types";
-import type { ProcessingType, Roll, RollListRow, RollRow, RollStage, StepActor } from "./types";
+import { FILM_TYPE_LABELS, type FilmStock } from '#/features/film-stocks/types';
+
+import { byExpiry, expiryState, formatExpiry } from './format';
+import { FORMATS, ROLL_STAGES } from './types';
+import type { ProcessingType, Roll, RollListRow, RollRow, RollStage, StepActor } from './types';
 
 /** In-stock expiry filter; `alert` is "expired or expiring soon", as the alerts bell counts. */
-export const EXPIRY_FILTERS = ["expired", "soon", "alert", "undated"] as const;
+export const EXPIRY_FILTERS = ['expired', 'soon', 'alert', 'undated'] as const;
 export type ExpiryFilter = (typeof EXPIRY_FILTERS)[number];
 
 /** Plan filter on who does a step; `unset` is "not decided yet". */
-export const ACTOR_FILTERS = ["self", "lab", "unset"] as const;
+export const ACTOR_FILTERS = ['self', 'lab', 'unset'] as const;
 export type ActorFilter = (typeof ACTOR_FILTERS)[number];
 
 /** Filters that apply on every tab, and so stay when the tab changes. */
-export const LIST_FILTER_KEYS = ["atLab", "needsScan", "noPlan", "developBy", "scanBy"] as const;
+export const LIST_FILTER_KEYS = ['atLab', 'needsScan', 'noPlan', 'developBy', 'scanBy'] as const;
 
 /** Rolls page state carried on the URL. Defaults are left off. */
 export interface RollListSearch {
@@ -27,7 +28,7 @@ export interface RollListSearch {
   scanBy?: ActorFilter;
   /** "In stock" tab from here on. */
   expiry?: ExpiryFilter;
-  group?: "stock";
+  group?: 'stock';
   /** The open stock group. */
   stock?: string;
   /** Group table column filters. */
@@ -38,35 +39,35 @@ export interface RollListSearch {
 }
 
 const text = (value: unknown) =>
-  typeof value === "string" || typeof value === "number" ? String(value) || undefined : undefined;
+  typeof value === 'string' || typeof value === 'number' ? String(value) || undefined : undefined;
 
 export function parseRollListSearch(search: Record<string, unknown>): RollListSearch {
   const tab = ROLL_STAGES.find((stage) => stage === search.tab);
   const out: RollListSearch = {};
   if (tab) out.tab = tab;
-  for (const key of ["atLab", "needsScan", "noPlan"] as const)
-    if (search[key] === true || search[key] === "true") out[key] = true;
-  for (const key of ["developBy", "scanBy"] as const) {
+  for (const key of ['atLab', 'needsScan', 'noPlan'] as const)
+    if (search[key] === true || search[key] === 'true') out[key] = true;
+  for (const key of ['developBy', 'scanBy'] as const) {
     const actor = ACTOR_FILTERS.find((filter) => filter === search[key]);
     if (actor) out[key] = actor;
   }
-  if (tab !== "in_stock") return out;
+  if (tab !== 'in_stock') return out;
   const expiry = EXPIRY_FILTERS.find((filter) => filter === search.expiry);
   if (expiry) out.expiry = expiry;
-  if (search.group === "stock") out.group = "stock";
-  for (const key of ["stock", "type", "process", "iso"] as const) {
+  if (search.group === 'stock') out.group = 'stock';
+  for (const key of ['stock', 'type', 'process', 'iso'] as const) {
     const value = text(search[key]);
     if (value) out[key] = value;
   }
   return out;
 }
 
-type ExpiryFields = Pick<Roll, "expiryYear" | "expiryMonth">;
+type ExpiryFields = Pick<Roll, 'expiryYear' | 'expiryMonth'>;
 
 export function matchesExpiry(roll: ExpiryFields, filter: ExpiryFilter | undefined, now?: Date) {
   if (!filter) return true;
   const state = expiryState(roll, now);
-  return filter === "alert" ? state === "expired" || state === "soon" : state === filter;
+  return filter === 'alert' ? state === 'expired' || state === 'soon' : state === filter;
 }
 
 /** The search without the shared filters; the tab and the in-stock filters stay. */
@@ -83,14 +84,14 @@ export function groupedSearch(search: RollListSearch, grouped: boolean): RollLis
   ) as RollListSearch;
   return {
     ...shared,
-    tab: "in_stock",
+    tab: 'in_stock',
     expiry: search.expiry,
-    group: grouped ? "stock" : undefined,
+    group: grouped ? 'stock' : undefined,
   };
 }
 
 const matchesActor = (actor: StepActor | null, filter: ActorFilter | undefined) =>
-  !filter || (filter === "unset" ? actor === null : actor === filter);
+  !filter || (filter === 'unset' ? actor === null : actor === filter);
 
 /** The filters every tab shares (not the in-stock expiry filter). */
 export const matchesListFilters = (row: RollListRow, search: RollListSearch) =>
@@ -102,8 +103,8 @@ export const matchesListFilters = (row: RollListRow, search: RollListSearch) =>
 
 /** Rolls per tab under the shared filters; the stage tabs add up to "all". */
 export function countByTab(rows: RollListRow[], search: RollListSearch) {
-  const counts = Object.fromEntries(["all", ...ROLL_STAGES].map((tab) => [tab, 0])) as Record<
-    "all" | RollStage,
+  const counts = Object.fromEntries(['all', ...ROLL_STAGES].map((tab) => [tab, 0])) as Record<
+    'all' | RollStage,
     number
   >;
   for (const row of rows) {
@@ -123,25 +124,25 @@ export function rollsInView(
   const filtered = rows.filter((row) => matchesListFilters(row, search));
   if (!search.tab) return filtered;
   const inTab = filtered.filter((row) => row.stage === search.tab);
-  if (search.tab !== "in_stock") return inTab;
+  if (search.tab !== 'in_stock') return inTab;
   return inTab
     .filter((row) => matchesExpiry(row.roll, search.expiry, now))
     .sort((left, right) => byExpiry(left.roll, right.roll));
 }
 
-type StockFilterKey = "type" | "process" | "iso";
+type StockFilterKey = 'type' | 'process' | 'iso';
 
 /** What the group table's Type, Process and ISO filters compare, per stock. */
 export const STOCK_FILTER_VALUES: Record<StockFilterKey, (stock: FilmStock | undefined) => string> =
   {
-    type: (stock) => (stock ? FILM_TYPE_LABELS[stock.type] : ""),
-    process: (stock) => stock?.process ?? "",
-    iso: (stock) => stock?.boxIso ?? "",
+    type: (stock) => (stock ? FILM_TYPE_LABELS[stock.type] : ''),
+    process: (stock) => stock?.process ?? '',
+    iso: (stock) => stock?.boxIso ?? '',
   };
 
 /** The match the group table's column filters make (`equalsString`, which ignores case). */
 export const matchesStockFilters = (stock: FilmStock | undefined, search: RollListSearch) =>
-  (["type", "process", "iso"] as const).every((key) => {
+  (['type', 'process', 'iso'] as const).every((key) => {
     const filter = search[key];
     return !filter || STOCK_FILTER_VALUES[key](stock).toLowerCase() === filter.toLowerCase();
   });
@@ -190,10 +191,10 @@ export const formatCounts = (group: StockGroup) =>
 export const groupSummary = (group: StockGroup) =>
   [group.stockName, ...formatCounts(group), group.soonest && formatExpiry(group.soonest)]
     .filter(Boolean)
-    .join(" · ");
+    .join(' · ');
 
 /** Tabs where rolls can be picked for "Hand to lab". */
-export const HAND_OVER_TABS: readonly RollStage[] = ["done_shooting", "processing", "completed"];
+export const HAND_OVER_TABS: readonly RollStage[] = ['done_shooting', 'processing', 'completed'];
 
 /**
  * Whether a row of a tab can be picked for "Hand to lab": a finished roll, a processing roll
@@ -201,9 +202,9 @@ export const HAND_OVER_TABS: readonly RollStage[] = ["done_shooting", "processin
  */
 export function canHandOver(row: RollListRow, tab: RollStage | undefined): boolean {
   if (row.stage !== tab) return false;
-  if (tab === "done_shooting") return true;
-  if (tab === "processing") return row.stageDetail?.startsWith("waiting_") ?? false;
-  if (tab === "completed") return row.needsScan;
+  if (tab === 'done_shooting') return true;
+  if (tab === 'processing') return row.stageDetail?.startsWith('waiting_') ?? false;
+  if (tab === 'completed') return row.needsScan;
   return false;
 }
 
@@ -221,12 +222,12 @@ export function togglePicked(picked: ReadonlySet<string>, id: string, on: boolea
 
 /** Jobs a picked roll can go for: a finished roll is developed first, any other is scanned. */
 export const handOverTypes = (row: RollListRow): ProcessingType[] =>
-  row.stage === "done_shooting" ? ["develop_scan", "develop"] : ["scan"];
+  row.stage === 'done_shooting' ? ['develop_scan', 'develop'] : ['scan'];
 
 /** The job a picked roll starts with: develop only when the plan says so or scans at home. */
 export const handOverType = (row: RollListRow): ProcessingType =>
-  row.stage !== "done_shooting"
-    ? "scan"
-    : row.plan.target === "developed" || row.plan.scanBy === "self"
-      ? "develop"
-      : "develop_scan";
+  row.stage !== 'done_shooting'
+    ? 'scan'
+    : row.plan.target === 'developed' || row.plan.scanBy === 'self'
+      ? 'develop'
+      : 'develop_scan';

@@ -1,8 +1,10 @@
-import { keepPreviousData, useQuery } from "@tanstack/vue-query";
-import { toValue, type MaybeRefOrGetter } from "vue";
-import { patchQueries, useApiMutation } from "#/shared/api/mutation";
-import { lensKeys } from "#/features/lenses";
-import { rollKeys } from "#/features/rolls";
+import { keepPreviousData, useQuery } from '@tanstack/vue-query';
+import { toValue, type MaybeRefOrGetter } from 'vue';
+
+import { lensKeys } from '#/features/lenses';
+import { rollKeys } from '#/features/rolls';
+import { patchQueries, useApiMutation } from '#/shared/api/mutation';
+
 import {
   cameraKeys,
   cameraQueries,
@@ -10,8 +12,8 @@ import {
   saveCamera,
   setCameraActive,
   setCameraLenses,
-} from "./api";
-import type { Camera, CameraDetail, CameraRow } from "./types";
+} from './api';
+import type { Camera, CameraDetail, CameraRow } from './types';
 
 export const useCameraList = (includeInactive: MaybeRefOrGetter<boolean> = false) =>
   useQuery(() => ({
@@ -21,7 +23,7 @@ export const useCameraList = (includeInactive: MaybeRefOrGetter<boolean> = false
 
 export const useCameraDetail = (id: MaybeRefOrGetter<string | undefined>) =>
   useQuery(() => ({
-    ...cameraQueries.detail(toValue(id) ?? ""),
+    ...cameraQueries.detail(toValue(id) ?? ''),
     enabled: !!toValue(id),
   }));
 
@@ -30,7 +32,7 @@ export const useSaveCamera = () =>
     fn: saveCamera,
     // a fixed-lens camera also creates / renames its built-in lens; roll rows and details show both
     invalidates: () => [cameraKeys.all, lensKeys.all, rollKeys.lists(), rollKeys.details()],
-    success: (variables) => (variables.id ? "Camera updated" : "Camera added"),
+    success: (variables) => (variables.id ? 'Camera updated' : 'Camera added'),
   });
 
 /** Optimistic: the switch flips immediately and rolls back if the rule rejects it. */
@@ -65,7 +67,7 @@ export const useDeleteCamera = () =>
   useApiMutation({
     fn: deleteCamera,
     invalidates: () => [cameraKeys.all, lensKeys.all],
-    success: "Camera deleted",
+    success: 'Camera deleted',
   });
 
 export const useSetCameraLenses = () =>
@@ -73,5 +75,5 @@ export const useSetCameraLenses = () =>
     fn: setCameraLenses,
     // roll details cache the camera's lenses for "Manage lenses"
     invalidates: (variables) => [cameraKeys.detail(variables.cameraId), rollKeys.details()],
-    success: "Lenses updated",
+    success: 'Lenses updated',
   });

@@ -1,14 +1,16 @@
-import { createRoute, redirect } from "@tanstack/vue-router";
-import { h, type VNode } from "vue";
-import { rootRoute } from "#/layouts/rootRoute";
-import AuthLayout from "./AuthLayout.vue";
-import LoginPage from "./pages/LoginPage.vue";
-import RecoverPage from "./pages/RecoverPage.vue";
-import RegisterPage from "./pages/RegisterPage.vue";
-import ResetPasswordPage from "./pages/ResetPasswordPage.vue";
-import { currentUser, safeRedirect } from "./session";
+import { createRoute, redirect } from '@tanstack/vue-router';
+import { h, type VNode } from 'vue';
 
-const text = (value: unknown) => (typeof value === "string" && value ? value : undefined);
+import { rootRoute } from '#/layouts/rootRoute';
+
+import AuthLayout from './AuthLayout.vue';
+import LoginPage from './pages/LoginPage.vue';
+import RecoverPage from './pages/RecoverPage.vue';
+import RegisterPage from './pages/RegisterPage.vue';
+import ResetPasswordPage from './pages/ResetPasswordPage.vue';
+import { currentUser, safeRedirect } from './session';
+
+const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
 
 /** Login, register and recovery are for visitors: a signed-in user goes on to the app. */
 async function guestOnly({ search }: { search: { redirect?: string } }) {
@@ -18,15 +20,15 @@ async function guestOnly({ search }: { search: { redirect?: string } }) {
 
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/auth",
+  path: '/auth',
   component: AuthLayout,
 });
 
 const authIndexRoute = createRoute({
   getParentRoute: () => authRoute,
-  path: "/",
+  path: '/',
   beforeLoad: () => {
-    throw redirect({ to: "/auth/login" });
+    throw redirect({ to: '/auth/login' });
   },
 });
 
@@ -36,7 +38,7 @@ function LoginRoute(): VNode {
 
 const loginRoute = createRoute({
   getParentRoute: () => authRoute,
-  path: "login",
+  path: 'login',
   validateSearch: (search: Record<string, unknown>): { redirect?: string; error?: string } => ({
     redirect: text(search.redirect),
     error: text(search.error),
@@ -51,7 +53,7 @@ function RegisterRoute(): VNode {
 
 const registerRoute = createRoute({
   getParentRoute: () => authRoute,
-  path: "register",
+  path: 'register',
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
     redirect: text(search.redirect),
   }),
@@ -61,7 +63,7 @@ const registerRoute = createRoute({
 
 const recoverRoute = createRoute({
   getParentRoute: () => authRoute,
-  path: "recover",
+  path: 'recover',
   beforeLoad: () => guestOnly({ search: {} }),
   component: RecoverPage,
 });
@@ -72,7 +74,7 @@ function ResetPasswordRoute(): VNode {
 
 const resetPasswordRoute = createRoute({
   getParentRoute: () => authRoute,
-  path: "recover/end",
+  path: 'recover/end',
   validateSearch: (search: Record<string, unknown>): { token?: string } => ({
     token: text(search.token),
   }),
@@ -83,7 +85,7 @@ const resetPasswordRoute = createRoute({
 // `{APP_URL}/recover/end?token=...` (recovery email): forward both, query and all.
 const legacyLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/login",
+  path: '/login',
   beforeLoad: ({ location }) => {
     throw redirect({ href: `/auth/login${location.searchStr}` });
   },
@@ -91,7 +93,7 @@ const legacyLoginRoute = createRoute({
 
 const legacyResetRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/recover/end",
+  path: '/recover/end',
   beforeLoad: ({ location }) => {
     throw redirect({ href: `/auth/recover/end${location.searchStr}` });
   },

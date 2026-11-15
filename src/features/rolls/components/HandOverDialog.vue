@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { useLabList } from "#/features/labs";
+import { getInput, reset, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import { useLabList } from '#/features/labs';
 import {
   NORITSU_HS1800,
   startingSettings,
   useScannerKinds,
   useScannerList,
-} from "#/features/scanners";
-import { handOverType, handOverTypes } from "../rollList";
-import { useHandOverRolls } from "../queries";
-import { HandOverSchema } from "../schema";
-import { PROCESSING_TYPE_LABELS, producesScans } from "../types";
-import type { ProcessingType, RollListRow, ScanOrder } from "../types";
-import { getInput, reset, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
-import ScanOrderPicker from "./ScanOrderPicker.vue";
-import FormInput from "#/shared/components/FormInput.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import Select from "#/shared/components/Select.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { attempt } from "#/shared/lib/ui";
+} from '#/features/scanners';
+import FormInput from '#/shared/components/FormInput.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import Select from '#/shared/components/Select.vue';
+import { attempt } from '#/shared/lib/ui';
+
+import { useHandOverRolls } from '../queries';
+import { handOverType, handOverTypes } from '../rollList';
+import { HandOverSchema } from '../schema';
+import { PROCESSING_TYPE_LABELS, producesScans } from '../types';
+import type { ProcessingType, RollListRow, ScanOrder } from '../types';
+import ScanOrderPicker from './ScanOrderPicker.vue';
 
 const props = defineProps<{ rows: RollListRow[] }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ handed: [] }>();
 
 const labs = useLabList();
@@ -31,7 +33,7 @@ const scanners = useScannerList();
 const kinds = useScannerKinds();
 const handOver = useHandOverRolls();
 const form = useForm({ schema: HandOverSchema });
-const today = () => new Date().toLocaleDateString("en-CA");
+const today = () => new Date().toLocaleDateString('en-CA');
 
 /**
  * The rolls picked when the dialog opened. Kept as they were: after a failed send the list
@@ -58,13 +60,13 @@ watch(open, (isOpen) => {
   reset(form, { initialInput: { handedAt: today() } });
 });
 
-const labId = computed(() => getInput(form, { path: ["labId"] }));
+const labId = computed(() => getInput(form, { path: ['labId'] }));
 const lab = computed(() => labs.data.value?.find((entry) => entry.id === labId.value));
 const labOptions = computed(() =>
   (labs.data.value ?? []).map((entry) => ({ value: entry.id, label: entry.name })),
 );
 const needsScanners = computed(() =>
-  batch.value.some((row) => producesScans(types.value[row.roll.id] ?? "scan")),
+  batch.value.some((row) => producesScans(types.value[row.roll.id] ?? 'scan')),
 );
 
 /** A lab scans on its default scanner, or the Noritsu when it names none (as Send to Lab does). */
@@ -88,7 +90,7 @@ const typeOptions = (row: RollListRow) =>
 
 async function submit(output: v.InferOutput<typeof HandOverSchema>) {
   if (needsScanners.value && !scanOrders.value.length) {
-    scanError.value = "Pick at least one scanner.";
+    scanError.value = 'Pick at least one scanner.';
     return;
   }
   const input = {
@@ -104,7 +106,7 @@ async function submit(output: v.InferOutput<typeof HandOverSchema>) {
   const ok = await attempt(handOver.mutateAsync({ ...input, idempotencyKey: sent.key }));
   if (!ok) return;
   open.value = false;
-  emit("handed");
+  emit('handed');
 }
 </script>
 
@@ -119,7 +121,11 @@ async function submit(output: v.InferOutput<typeof HandOverSchema>) {
     :pending="handOver.isPending.value"
     @submit="submit"
   >
-    <FormSection no="01" title="Lab" note="* Required attributes">
+    <FormSection
+      no="01"
+      title="Lab"
+      note="* Required attributes"
+    >
       <div class="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <FormSelect
           :of="form"
@@ -137,11 +143,20 @@ async function submit(output: v.InferOutput<typeof HandOverSchema>) {
           type="date"
           :max="today()"
         />
-        <FormInput :of="form" :path="['notes']" label="Notes" optional />
+        <FormInput
+          :of="form"
+          :path="['notes']"
+          label="Notes"
+          optional
+        />
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Rolls" note="One job per roll">
+    <FormSection
+      no="02"
+      title="Rolls"
+      note="One job per roll"
+    >
       <ul class="divide-y rounded-lg border">
         <li
           v-for="row in batch"
@@ -150,7 +165,7 @@ async function submit(output: v.InferOutput<typeof HandOverSchema>) {
         >
           <div>
             <div class="font-medium">{{ row.stockName }}</div>
-            <div class="text-muted-foreground text-xs">
+            <div class="text-xs text-muted-foreground">
               {{ row.roll.format }} · {{ row.roll.exposures }} exp
             </div>
           </div>
@@ -166,7 +181,12 @@ async function submit(output: v.InferOutput<typeof HandOverSchema>) {
       </ul>
     </FormSection>
 
-    <FormSection v-if="needsScanners" no="03" title="Scans" note="For every roll that is scanned">
+    <FormSection
+      v-if="needsScanners"
+      no="03"
+      title="Scans"
+      note="For every roll that is scanned"
+    >
       <ScanOrderPicker
         :model-value="scanOrders"
         :error="scanError"

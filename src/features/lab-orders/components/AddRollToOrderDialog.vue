@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { useLinkableJobs, useSetJobLines } from "../queries";
-import { AddRollToOrderSchema } from "../schema";
-import { roomOnLine } from "../types";
-import type { LabOrder } from "../types";
-import { PROCESSING_TYPE_LABELS } from "#/features/rolls/types";
-import { getInput, reset, useForm } from "@formisch/vue";
-import type * as v from "valibot";
-import { computed, ref, watch } from "vue";
-import EmptyState from "#/shared/components/EmptyState.vue";
-import FormSection from "#/shared/components/FormSection.vue";
-import FormSelect from "#/shared/components/FormSelect.vue";
-import SectionedFormDialog from "#/shared/components/SectionedFormDialog.vue";
-import { formatDate } from "#/shared/lib/format";
-import { attempt } from "#/shared/lib/ui";
-import OrderLinesPicker from "./OrderLinesPicker.vue";
+import { getInput, reset, useForm } from '@formisch/vue';
+import type * as v from 'valibot';
+import { computed, ref, watch } from 'vue';
+
+import { PROCESSING_TYPE_LABELS } from '#/features/rolls/types';
+import EmptyState from '#/shared/components/EmptyState.vue';
+import FormSection from '#/shared/components/FormSection.vue';
+import FormSelect from '#/shared/components/FormSelect.vue';
+import SectionedFormDialog from '#/shared/components/SectionedFormDialog.vue';
+import { formatDate } from '#/shared/lib/format';
+import { attempt } from '#/shared/lib/ui';
+
+import { useLinkableJobs, useSetJobLines } from '../queries';
+import { AddRollToOrderSchema } from '../schema';
+import { roomOnLine } from '../types';
+import type { LabOrder } from '../types';
+import OrderLinesPicker from './OrderLinesPicker.vue';
 
 const props = defineProps<{ order: LabOrder; lineId?: string }>();
-const open = defineModel<boolean>("open", { required: true });
+const open = defineModel<boolean>('open', { required: true });
 
 const jobs = useLinkableJobs(
   () => props.order.id,
@@ -34,7 +36,7 @@ const jobOptions = computed(() =>
   })),
 );
 const noRolls = computed(() => !jobs.isPending.value && !jobOptions.value.length);
-const jobId = computed(() => getInput(form, { path: ["jobId"] }));
+const jobId = computed(() => getInput(form, { path: ['jobId'] }));
 /** Lines the chosen roll is already on: they stay ticked, and count as having room for it. */
 const ownLineIds = computed(
   () => jobs.data.value?.find((job) => job.id === jobId.value)?.lineIds ?? [],
@@ -50,7 +52,7 @@ watch(open, (isOpen) => {
   if (!isOpen) return;
   linesError.value = undefined;
   lineIds.value = startingLines();
-  reset(form, { initialInput: { jobId: "" } });
+  reset(form, { initialInput: { jobId: '' } });
 });
 // choosing a roll keeps what it is on, plus the line this was opened from
 watch(jobId, () => {
@@ -59,7 +61,7 @@ watch(jobId, () => {
 
 async function submit(output: v.InferOutput<typeof AddRollToOrderSchema>) {
   if (!lineIds.value.length) {
-    linesError.value = "Tick at least one line.";
+    linesError.value = 'Tick at least one line.';
     return;
   }
   linesError.value = undefined;
@@ -80,19 +82,29 @@ async function submit(output: v.InferOutput<typeof AddRollToOrderSchema>) {
     :read-only="noRolls"
     @submit="submit"
   >
-    <FormSection no="01" title="Order">
-      <div class="border-primary/15 bg-primary/5 rounded-lg border p-5">
+    <FormSection
+      no="01"
+      title="Order"
+    >
+      <div class="rounded-lg border border-primary/15 bg-primary/5 p-5">
         <div class="font-heading text-lg font-semibold tabular-nums">#{{ order.code }}</div>
-        <div class="text-muted-foreground text-sm">{{ order.labName }}</div>
+        <div class="text-sm text-muted-foreground">{{ order.labName }}</div>
       </div>
     </FormSection>
 
-    <FormSection no="02" title="Roll & lines" :note="noRolls ? undefined : '* Required attributes'">
+    <FormSection
+      no="02"
+      title="Roll & lines"
+      :note="noRolls ? undefined : '* Required attributes'"
+    >
       <EmptyState
         v-if="noRolls"
         :text="`No roll is waiting for an order. Send a roll to ${order.labName} first.`"
       />
-      <div v-else class="grid grid-cols-[minmax(0,1fr)] gap-y-6">
+      <div
+        v-else
+        class="grid grid-cols-[minmax(0,1fr)] gap-y-6"
+      >
         <FormSelect
           :of="form"
           :path="['jobId']"

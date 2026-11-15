@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from "vue";
-import { DialogClose } from "reka-ui";
-import { cn } from "#/shared/lib/utils";
-import { Button } from "#/shared/ui/button";
+import { DialogClose } from 'reka-ui';
+import type { HTMLAttributes } from 'vue';
+
+import { cn } from '#/shared/lib/utils';
+import { Button } from '#/shared/ui/button';
 
 const props = withDefaults(
   defineProps<{
-    class?: HTMLAttributes["class"];
+    class?: HTMLAttributes['class'];
     showCloseButton?: boolean;
   }>(),
   {
@@ -21,7 +22,10 @@ const props = withDefaults(
     :class="cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', props.class)"
   >
     <slot />
-    <DialogClose v-if="showCloseButton" as-child>
+    <DialogClose
+      v-if="showCloseButton"
+      as-child
+    >
       <Button variant="outline"> Close </Button>
     </DialogClose>
   </div>

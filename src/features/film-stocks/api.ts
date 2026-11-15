@@ -1,14 +1,16 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { isAxiosError } from "axios";
-import { http } from "#/shared/api/http";
-import { stockName } from "./format";
-import type { FilmStock, StockDetail, StockInput, StockRow } from "./types";
+import { queryOptions } from '@tanstack/vue-query';
+import { isAxiosError } from 'axios';
+
+import { http } from '#/shared/api/http';
+
+import { stockName } from './format';
+import type { FilmStock, StockDetail, StockInput, StockRow } from './types';
 
 export const stockKeys = {
-  all: ["stocks"] as const,
-  lists: () => [...stockKeys.all, "list"] as const,
+  all: ['stocks'] as const,
+  lists: () => [...stockKeys.all, 'list'] as const,
   list: () => [...stockKeys.lists()] as const,
-  details: () => [...stockKeys.all, "detail"] as const,
+  details: () => [...stockKeys.all, 'detail'] as const,
   detail: (id: string) => [...stockKeys.details(), id] as const,
 };
 
@@ -18,10 +20,10 @@ export interface ApiStock {
   id: string;
   brand: string;
   name: string;
-  type: FilmStock["type"];
+  type: FilmStock['type'];
   boxIso: string;
-  process: FilmStock["process"];
-  packaging: FilmStock["packaging"];
+  process: FilmStock['process'];
+  packaging: FilmStock['packaging'];
   stockOrigin?: string;
   packOrigin?: string;
   description?: string;
@@ -43,9 +45,9 @@ export const toStock = (apiStock: ApiStock): FilmStock => ({
   boxIso: apiStock.boxIso,
   process: apiStock.process,
   packaging: apiStock.packaging,
-  stockOrigin: apiStock.stockOrigin ?? "",
-  packOrigin: apiStock.packOrigin ?? "",
-  description: apiStock.description ?? "",
+  stockOrigin: apiStock.stockOrigin ?? '',
+  packOrigin: apiStock.packOrigin ?? '',
+  description: apiStock.description ?? '',
   baseStockId: apiStock.baseStockId ?? null,
 });
 
@@ -67,7 +69,7 @@ export const stockQueries = {
     queryOptions({
       queryKey: stockKeys.list(),
       queryFn: async (): Promise<StockRow[]> => {
-        const { data } = await http.get<ApiStock[]>("/film-stocks");
+        const { data } = await http.get<ApiStock[]>('/film-stocks');
         const stocks = data.map(toStock);
         const byId = new Map(stocks.map((stock) => [stock.id, stock]));
         return stocks
@@ -104,7 +106,7 @@ export const saveStock = async (variables: { id?: string; input: StockInput }) =
     await http.put(`/film-stocks/${variables.id}`, body);
     return variables.id;
   }
-  return (await http.post<ApiStockDetail>("/film-stocks", body)).data.stock.id;
+  return (await http.post<ApiStockDetail>('/film-stocks', body)).data.stock.id;
 };
 
 export const deleteStock = async (id: string) => {
