@@ -62,6 +62,32 @@ describe('CreatableCombobox', () => {
     wrapper.unmount();
   });
 
+  it('filters when the typed text equals the value picked before', async () => {
+    const wrapper = render('Nikon');
+    const input = wrapper.find('input');
+    await input.setValue('Nik');
+    await input.setValue('Nikon');
+    await flushPromises();
+    const labels = items().map((element) => element.textContent?.trim());
+    expect(labels.some((label) => label?.startsWith('Leica'))).toBe(false);
+    expect(labels).toContain('Nikon F');
+    wrapper.unmount();
+  });
+
+  it('still filters on the next focus after the field was left with typed text', async () => {
+    const wrapper = render();
+    const input = wrapper.find('input');
+    await input.setValue('nik');
+    await input.trigger('blur');
+    await input.trigger('focus');
+    await input.trigger('click');
+    await flushPromises();
+    const labels = items().map((element) => element.textContent?.trim());
+    expect(labels.some((label) => label?.startsWith('Leica'))).toBe(false);
+    expect(labels).toContain('Nikon F');
+    wrapper.unmount();
+  });
+
   it('keeps typed text when the field is left without picking', async () => {
     const wrapper = render('Nikon F');
     const input = wrapper.find('input');
