@@ -12,9 +12,9 @@ import SectionedFormDialog from '#/shared/components/sectioned-form-dialog/Secti
 import { attempt } from '#/shared/lib/ui';
 import { Switch } from '#/shared/ui/switch';
 
-import { useKnownBrands, useKnownMounts } from '../known';
-import { useCameraDetail, useSaveCamera } from '../queries';
-import { CameraSchema } from '../schema';
+import { useKnownBrands, useKnownMounts } from '../../known';
+import { useCameraDetail, useSaveCamera } from '../../queries';
+import { CameraSchema } from '../../schema';
 
 const props = defineProps<{ cameraId?: string }>();
 const open = defineModel<boolean>('open', { required: true });

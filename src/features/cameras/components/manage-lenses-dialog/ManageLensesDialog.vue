@@ -5,7 +5,7 @@ import { useLensList } from '#/features/lenses';
 import PlainDialog from '#/shared/components/plain-dialog/PlainDialog.vue';
 import { attempt } from '#/shared/lib/ui';
 
-import { useCameraDetail, useSetCameraLenses } from '../queries';
+import { useCameraDetail, useSetCameraLenses } from '../../queries';
 
 const props = defineProps<{ cameraId: string }>();
 const open = defineModel<boolean>('open', { required: true });

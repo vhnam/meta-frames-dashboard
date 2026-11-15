@@ -10,7 +10,7 @@ import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { Switch } from '#/shared/ui/switch';
 
-import CameraFormDialog from '../components/CameraFormDialog.vue';
+import CameraFormDialog from '../components/camera-form-dialog/CameraFormDialog.vue';
 import { cameraName } from '../format';
 import { useCameraList, useSetCameraActive } from '../queries';
 import type { CameraRow } from '../types';
