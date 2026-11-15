@@ -9,8 +9,8 @@ import PageHeader from '#/shared/components/page-header/PageHeader.vue';
 import QueryBoundary from '#/shared/components/query-boundary/QueryBoundary.vue';
 import { formatDateTime } from '#/shared/lib/format';
 
-import AuditActionBadge from '../components/AuditActionBadge.vue';
-import AuditLogSheet from '../components/AuditLogSheet.vue';
+import AuditActionBadge from '../components/audit-action-badge/AuditActionBadge.vue';
+import AuditLogSheet from '../components/audit-log-sheet/AuditLogSheet.vue';
 import { useAuditLog } from '../queries';
 import type { AuditEntry } from '../types';
 
