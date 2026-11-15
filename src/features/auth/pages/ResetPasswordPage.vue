@@ -9,10 +9,10 @@ import { errorMessage } from '#/shared/api/client';
 import { notify } from '#/shared/lib/toast';
 import { Button } from '#/shared/ui/button';
 
-import AuthCard from '../components/AuthCard.vue';
-import AuthInput from '../components/AuthInput.vue';
-import AuthSubmit from '../components/AuthSubmit.vue';
-import FormAlert from '../components/FormAlert.vue';
+import AuthCard from '../components/auth-card/AuthCard.vue';
+import AuthInput from '../components/auth-input/AuthInput.vue';
+import AuthSubmit from '../components/auth-submit/AuthSubmit.vue';
+import FormAlert from '../components/form-alert/FormAlert.vue';
 import { useResetPassword } from '../queries';
 import { PASSWORD_HINT, ResetPasswordSchema } from '../schema';
 
