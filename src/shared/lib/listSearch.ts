@@ -1,6 +1,6 @@
-import { PAGE_SIZES } from "#/shared/components/dataTable";
+import { PAGE_SIZES } from '#/shared/components/data-table/dataTable';
 
-const KEY = "meta-frames:list-pages";
+const KEY = 'meta-frames:list-pages';
 
 /** Page and page size carried on the URL. Defaults are left off. */
 export interface ListSearch {
@@ -29,12 +29,12 @@ export function toListSearch(page: number, pageSize: number): ListSearch {
 type StoredSearch = Record<string, unknown>;
 
 function readAll(): Record<string, StoredSearch> {
-  if (typeof sessionStorage === "undefined") return {};
+  if (typeof sessionStorage === 'undefined') return {};
   try {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as Record<string, StoredSearch>;
-    return parsed && typeof parsed === "object" ? parsed : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
   } catch {
     return {};
   }
@@ -45,7 +45,7 @@ function readAll(): Record<string, StoredSearch> {
  * The listing's route still validates it when Back navigates there.
  */
 export function rememberList(path: string, search: StoredSearch) {
-  if (typeof sessionStorage === "undefined") return;
+  if (typeof sessionStorage === 'undefined') return;
   const all = readAll();
   all[path] = search;
   sessionStorage.setItem(KEY, JSON.stringify(all));
@@ -53,5 +53,5 @@ export function rememberList(path: string, search: StoredSearch) {
 
 export function rememberedSearch(path: string): StoredSearch | null {
   const saved = readAll()[path];
-  return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : null;
+  return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : null;
 }

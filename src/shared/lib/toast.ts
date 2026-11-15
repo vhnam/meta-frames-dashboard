@@ -1,7 +1,7 @@
-import { toast } from "vue-sonner";
+import { toast } from 'vue-sonner';
 
 /** The toast dismisses itself when its action is clicked, so there is nothing else to do. */
-const options = { action: { label: "Close", onClick: () => undefined } };
+const options = { action: { label: 'Close', onClick: () => undefined } };
 
 /** Toasts with a Close action, for messages about API calls. */
 export const notify = {

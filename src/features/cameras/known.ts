@@ -1,15 +1,17 @@
-import { computed } from "vue";
-import { useLensList } from "#/features/lenses/queries";
-import type { Lens } from "#/features/lenses/types";
-import type { ComboOption } from "#/shared/components/combobox";
-import { useCameraList } from "./queries";
-import type { Camera } from "./types";
+import { computed } from 'vue';
+
+import { useLensList } from '#/features/lenses/queries';
+import type { Lens } from '#/features/lenses/types';
+import type { ComboOption } from '#/shared/components/creatable-combobox/combobox';
+
+import { useCameraList } from './queries';
+import type { Camera } from './types';
 
 /** Same look, same value: unifies Unicode forms and drops invisible characters and outer spaces. */
 const cleaned = (value: string | undefined) =>
   value
-    ?.normalize("NFKC")
-    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    ?.normalize('NFKC')
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')
     .trim();
 
 /**
@@ -54,13 +56,13 @@ function useKnown(pick: (gear: Camera | Lens) => string | undefined) {
 export const useKnownMounts = () => useKnown((camera) => camera.mount);
 
 /** Every known brand; the count is how many items of the kind being added use it. */
-export function useKnownBrands(kind: "camera" | "lens") {
+export function useKnownBrands(kind: 'camera' | 'lens') {
   const cameras = useCameraList(true);
   const lenses = useLensList();
   return computed(() => {
     const cameraBrands = (cameras.data.value ?? []).map((row) => row.camera.brand);
     const lensBrands = (lenses.data.value ?? []).map((row) => row.lens.brand);
-    return kind === "lens"
+    return kind === 'lens'
       ? countSome(lensBrands, cameraBrands)
       : countSome(cameraBrands, lensBrands);
   });

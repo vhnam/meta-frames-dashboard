@@ -4,9 +4,10 @@ import {
   type QueryClient,
   type QueryFilters,
   type QueryKey,
-} from "@tanstack/vue-query";
-import { auditKeys } from "#/features/audit/api";
-import { notify } from "#/shared/lib/toast";
+} from '@tanstack/vue-query';
+
+import { auditKeys } from '#/features/audit/api';
+import { notify } from '#/shared/lib/toast';
 
 /** Optimistically patches every cached query under `filters`; returns a rollback. */
 export function patchQueries<TData>(
@@ -55,7 +56,7 @@ export function useApiMutation<TVars, TData = void>(spec: MutationSpec<TVars, TD
     },
     onError: (_error, _vars, context) => context?.rollback?.(),
     onSuccess: (data, vars) => {
-      const message = typeof spec.success === "function" ? spec.success(vars, data) : spec.success;
+      const message = typeof spec.success === 'function' ? spec.success(vars, data) : spec.success;
       if (message) notify.success(message);
     },
     onSettled: async (data, _error, vars) => {

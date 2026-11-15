@@ -1,10 +1,11 @@
-import axios, { isAxiosError } from "axios";
-import { env } from "#/shared/lib/env";
+import axios, { isAxiosError } from 'axios';
+
+import { env } from '#/shared/lib/env';
 
 /** Shared axios instance for the Meta-Frame API. Sends the session cookie on every request. */
 export const http = axios.create({
   baseURL: env.VITE_API_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
 
@@ -21,7 +22,7 @@ http.interceptors.response.use(undefined, (error: unknown) => {
     const message = error.response?.data?.message;
     // keep the AxiosError (callers read `response.status`), but show the server's message
     if (message) error.message = message;
-    if (error.response?.status === 401 && !error.config?.url?.startsWith("/auth/")) {
+    if (error.response?.status === 401 && !error.config?.url?.startsWith('/auth/')) {
       onUnauthorized?.();
     }
   }

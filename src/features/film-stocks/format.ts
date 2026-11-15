@@ -1,13 +1,13 @@
-import type { FilmStock, FilmType, Packaging, Process } from "./types";
+import type { FilmStock, FilmType, Packaging, Process } from './types';
 
 const tone = {
-  amber: "border-transparent bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-100",
-  zinc: "border-transparent bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100",
-  sky: "border-transparent bg-sky-100 text-sky-950 dark:bg-sky-950 dark:text-sky-100",
+  amber: 'border-transparent bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-100',
+  zinc: 'border-transparent bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100',
+  sky: 'border-transparent bg-sky-100 text-sky-950 dark:bg-sky-950 dark:text-sky-100',
   violet:
-    "border-transparent bg-violet-100 text-violet-950 dark:bg-violet-950 dark:text-violet-100",
+    'border-transparent bg-violet-100 text-violet-950 dark:bg-violet-950 dark:text-violet-100',
   emerald:
-    "border-transparent bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-100",
+    'border-transparent bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-100',
 } as const;
 
 export const TYPE_TONE: Record<FilmType, string> = {
@@ -17,10 +17,10 @@ export const TYPE_TONE: Record<FilmType, string> = {
 };
 
 export const PROCESS_TONE: Record<Process, string> = {
-  "C-41": tone.amber,
-  "E-6": tone.sky,
+  'C-41': tone.amber,
+  'E-6': tone.sky,
   BW: tone.zinc,
-  "ECN-2": tone.violet,
+  'ECN-2': tone.violet,
 };
 
 export const PACKAGING_TONE: Record<Packaging, string> = {
@@ -31,19 +31,19 @@ export const PACKAGING_TONE: Record<Packaging, string> = {
 
 /** What each process is: "C-41" reads as "Color negative". */
 export const PROCESS_NAMES: Record<Process, string> = {
-  "C-41": "Color negative",
-  "E-6": "Color reversal",
-  BW: "Black & white",
-  "ECN-2": "Motion picture",
+  'C-41': 'Color negative',
+  'E-6': 'Color reversal',
+  BW: 'Black & white',
+  'ECN-2': 'Motion picture',
 };
 
-export const stockName = (stock: Pick<FilmStock, "brand" | "name"> | undefined) =>
-  stock ? `${stock.brand} ${stock.name}` : "—";
+export const stockName = (stock: Pick<FilmStock, 'brand' | 'name'> | undefined) =>
+  stock ? `${stock.brand} ${stock.name}` : '—';
 
-export function stockWarnings(stock: Pick<FilmStock, "type" | "process">): string[] {
+export function stockWarnings(stock: Pick<FilmStock, 'type' | 'process'>): string[] {
   const out: string[] = [];
-  if (stock.type === "bw" && stock.process !== "BW") out.push("B&W film usually uses process BW.");
-  if (stock.type === "slide" && stock.process !== "E-6")
-    out.push("Slide film usually uses process E-6.");
+  if (stock.type === 'bw' && stock.process !== 'BW') out.push('B&W film usually uses process BW.');
+  if (stock.type === 'slide' && stock.process !== 'E-6')
+    out.push('Slide film usually uses process E-6.');
   return out;
 }

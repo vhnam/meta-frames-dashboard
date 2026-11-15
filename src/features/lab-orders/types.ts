@@ -1,4 +1,4 @@
-import type { ProcessingType } from "#/features/rolls/types";
+import type { ProcessingType } from '#/features/rolls/types';
 
 /** A processing job and the roll it works on. */
 export interface LabOrderJob {

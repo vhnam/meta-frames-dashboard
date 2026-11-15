@@ -1,12 +1,14 @@
-import { queryOptions } from "@tanstack/vue-query";
-import { http } from "#/shared/api/http";
-import type { ScanSettings, Scanner, ScannerKind, ScannerKindOptions } from "./types";
+import { queryOptions } from '@tanstack/vue-query';
+
+import { http } from '#/shared/api/http';
+
+import type { ScanSettings, Scanner, ScannerKind, ScannerKindOptions } from './types';
 
 export const scannerKeys = {
-  all: ["scanners"] as const,
-  lists: () => [...scannerKeys.all, "list"] as const,
+  all: ['scanners'] as const,
+  lists: () => [...scannerKeys.all, 'list'] as const,
   list: () => [...scannerKeys.lists()] as const,
-  kinds: () => [...scannerKeys.all, "kinds"] as const,
+  kinds: () => [...scannerKeys.all, 'kinds'] as const,
 };
 
 export interface ApiScanner {
@@ -23,10 +25,10 @@ export interface ApiScanner {
 const toScanner = (apiScanner: ApiScanner): Scanner => ({
   id: apiScanner.id,
   brand: apiScanner.brand,
-  model: apiScanner.model ?? "",
+  model: apiScanner.model ?? '',
   name: apiScanner.name,
   kind: apiScanner.kind ?? null,
-  notes: apiScanner.notes ?? "",
+  notes: apiScanner.notes ?? '',
   defaultSettings: apiScanner.defaultSettings ?? {},
   builtIn: apiScanner.builtIn,
 });
@@ -37,7 +39,7 @@ export const scannerQueries = {
     queryOptions({
       queryKey: scannerKeys.list(),
       queryFn: async (): Promise<Scanner[]> => {
-        const { data } = await http.get<ApiScanner[]>("/scanners");
+        const { data } = await http.get<ApiScanner[]>('/scanners');
         return data.map(toScanner);
       },
     }),
@@ -49,8 +51,8 @@ export const scannerQueries = {
       queryFn: async (): Promise<ScannerKindOptions[]> => {
         const { data } =
           await http.get<
-            { kind?: ScannerKind; label: string; options: ScannerKindOptions["options"] }[]
-          >("/scanner-kinds");
+            { kind?: ScannerKind; label: string; options: ScannerKindOptions['options'] }[]
+          >('/scanner-kinds');
         return data.map((entry) => ({ ...entry, kind: entry.kind ?? null }));
       },
     }),
@@ -77,7 +79,7 @@ export const saveScanner = async (variables: ScannerInput) => {
     await http.put(`/scanners/${variables.id}`, body);
     return variables.id;
   }
-  return (await http.post<ApiScanner>("/scanners", body)).data.id;
+  return (await http.post<ApiScanner>('/scanners', body)).data.id;
 };
 
 export const deleteScanner = async (id: string) => {
