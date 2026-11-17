@@ -22,6 +22,7 @@ export default defineConfig({
   staged: {
     '*.{ts,js,vue,css,json,md,yaml,yml}': 'vp check --fix',
   },
+  test: { include: ['src/**/*.test.ts'] },
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
