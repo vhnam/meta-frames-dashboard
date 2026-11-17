@@ -240,3 +240,40 @@ Lean: -0 lines possible.
 Not checked: CI and Slice 7. No production code was edited.
 
 Verdict: approve
+
+## Slice 7
+
+What this change does: New helpers create a lab, a two-line order, and an eligible processing job. L1 links that job through the order detail UI and checks the exact saved line assignments before and after reload.
+
+No findings.
+
+### Behavior and contract
+
+- The lab request matches `LabInput`. The order supplies the required lab ID, code, timestamp, and items with UUIDs, quantity, and unit price. The job supplies type `develop` and the same lab ID, after loading and finishing its roll.
+- Server `LinkableJobs` permits jobs from the same lab on no order, or only this order. `syncOrderItems` requires owned lines from one order at the job's lab, with remaining capacity. The seeded job has no links and both quantity-one lines are empty. The product name does not impose a processing-type restriction.
+- Fresh API reads at `e2e/lab-orders.spec.ts:52` occur before and after reload. The target line must contain exactly `[jobId]` at line 53. The other line must contain exactly `[]` at line 54. Missing lines also fail these assertions.
+- Wrong-line proof: I temporarily routed the real PUT body to `{ orderItemIds: [firstLineId] }`. The server returned 200. L1 then failed its target-line equality assertion with expected `[jobId]`, received `[]`. This proves it detects an accepted wrong-line link, beyond the executor's empty-ID break. The test was restored afterward.
+- The row filter at line 30 identifies a seeded record by its product name and scopes the Add button to that record. This complies with the authoring policy's record scoping rule. It is not a copy assertion or an unnamed form-control workaround. Fixed decision 8 does not need to cover it.
+- The checkbox assertion checks the intended selection state. The link visibility assertion after reload checks saved roll identity. No assertion targets copy or CSS presentation.
+- The PUT response wait at lines 38–42 is registered before the click at line 43. No fixed sleep or `networkidle` wait was added.
+
+### Report accuracy and scope
+
+- The separate executor statement “no .first()” is inaccurate: line 50 uses `.first()` in the saved-roll link assertion. This permits duplicate links to the same record without operating an arbitrary control. It does not weaken the exact API line checks.
+- The workspace Slice 7 progress entry does not claim “no .first()”. Its file list, hashes, seed description, and line assertions match the reviewed code.
+- Before review, only the allowed fixtures and lab-orders spec differed from the base. No scope violation was present. No production code was edited.
+
+### Verification
+
+- Base: `f21c72a45c66c520f3f468ea4a5831b7dd628060`, branch `chore/setup-playwright`.
+- Reviewed hashes, confirmed again after restoration: fixtures `11aa93a4cee8be10b32e804888ab086bd3a232659cf9f94f37c97ccb158801d2`, lab-orders spec `fb12ac16afa521460f50075727e5708fc33ea5f89fa070427e83b3d0b5fb2aa8`.
+- `vp run e2e -g L1`: 1 passed in 20.9 seconds.
+- `vp run e2e --repeat-each=2`: 12 passed in 29.9 seconds.
+- `vp check`: passed, 440 formatted files and no lint or type errors in 421 files.
+- `vp test run`: passed, 54 files and 215 tests. These checks ran on the reviewed hashes before the temporary wrong-line test edit.
+
+Lean: -0 lines possible.
+
+Not checked: CI. The browser runs used the local sibling server checkout.
+
+Verdict: approve
