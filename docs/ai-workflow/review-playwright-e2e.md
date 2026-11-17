@@ -46,3 +46,35 @@ The fix resolves finding 1. `docker run` and `go build` now run as asynchronous 
 Lean: -0 lines possible.
 
 Verdict: approve
+
+## Slice 2
+
+What this change does: The fixtures create a unique account through an independent API request client. A1 tests the login redirect, session identity after reload, and logout through the real dashboard and API.
+
+### Findings
+
+No [CRITICAL], [WARN], or [NIT] findings for Slice 2.
+
+### Scope and evidence
+
+- Branch: `chore/setup-playwright`. Base and HEAD: `21762619639c07094133002b2c90345e8ae021fd`.
+- Before this review update, Git reported only the two allowed untracked files. No staged or unstaged tracked changes existed.
+- `e2e/fixtures.ts` SHA-256: `a17ded882a644260232e8bbef7bae62fe392b36ba4dda7154dde12ef0601d0be`.
+- `e2e/auth.spec.ts` SHA-256: `debf0f9962fd95c246abb476f5926345b93d39f9a22e4811d4b1293c35b45b7e`.
+- Both hashes remained unchanged after the checks below. The executor's deliberate redirect failure is recorded in the workspace progress entry. I did not repeat that edit.
+
+### Checks
+
+- `vp run e2e -g A1`: 1 passed in 13.3 seconds.
+- `vp run e2e -g A1 --repeat-each=2`: 2 passed in 14.1 seconds. Logs showed distinct account emails for both repetitions.
+- Assertions test the URL, account email, and API authentication results. No assertion tests copy or CSS. Accessible names identify controls only.
+- `e2e/auth.spec.ts:23` registers the `/auth/me` response wait before `page.reload()` at line 26.
+- Neither file uses a fixed sleep or a `networkidle` wait. Registration uses the standalone request cookie jar. The `signedIn` fixture uses the page context's request cookie jar.
+- Failed-run cleanup: `vp run e2e -g A1 --timeout=1` exited 1 with `Test timeout of 1ms exceeded while setting up "context".` The API logged shutdown. No E2E container, temporary directory, or listener on ports 18080 and 4173 remained.
+- Ctrl-C cleanup: interrupted `vp run e2e -g A1 --repeat-each=100` during its third test. The run reported 2 passed and 1 interrupted. No E2E container, temporary directory, or listener on either test port remained.
+- `vp check`: passed, 438 formatted files and no lint or type errors in 419 files.
+- `vp test run`: passed, 54 files and 215 tests.
+
+Lean: -0 lines possible.
+
+Verdict: approve
