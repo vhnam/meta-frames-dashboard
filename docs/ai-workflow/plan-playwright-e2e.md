@@ -38,6 +38,7 @@ Fixed decisions:
 5. Vite gives process environment variables priority over `.env`. The dashboard build therefore uses the test API URL even when a developer `.env` exists. Slice 1 checks this in the built assets.
 6. Test data uses `@example.test` emails with a unique part per test and per retry: `e2e-<testId>-<retry>-<random>@example.test`. One fixed password satisfies the server rules (8+ characters, upper, lower, digit, symbol).
 7. Config values follow the spec: 1 worker, 0 local retries, 1 CI retry, `trace: 'retain-on-first-failure'`, `screenshot: 'only-on-failure'`, HTML report with `open: 'never'`, `failOnFlakyTests` in CI.
+8. Locator fallback (Nam, 2026-11-17, for all remaining slices of this plan): a form control whose label is not linked in the DOM may be located by role plus its placeholder name, or by role plus `filter({ hasText })` inside a dialog. Use this only when role plus accessible name and `getByLabel` do not work. A control that has a usable accessible name must use it. The label fix in `src/` stays out of scope.
 
 ## In scope
 
