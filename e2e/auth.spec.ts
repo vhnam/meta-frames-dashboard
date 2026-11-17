@@ -39,3 +39,38 @@ test('A1: login restores the protected path, the session survives reload, logout
   await expect(page).toHaveURL(/\/auth\/login/);
   expect(new URL(page.url()).searchParams.get('redirect')).toContain(protectedPath);
 });
+
+test('A2: a session ended on the server sends the open page to login, and login restores access', async ({
+  page,
+  signedIn,
+}) => {
+  const protectedPath = '/app/rolls?tab=in_stock';
+  // the page has loaded its data once the rolls list answers: no request is in flight at logout
+  const firstList = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === '/rolls' && response.status() === 200,
+  );
+  await page.goto(protectedPath);
+  await firstList;
+
+  // end the session through the API, with the page's own cookie jar; the page stays open
+  const logout = await page.context().request.post(`${API_URL}/auth/logout`);
+  expect(logout.ok()).toBe(true);
+
+  // a fresh feature request from the open page: client-side navigation to the cameras list
+  const featureResponse = page.waitForResponse((response) => {
+    const { pathname } = new URL(response.url());
+    return response.url().startsWith(API_URL) && !pathname.startsWith('/auth/');
+  });
+  await page.getByRole('link', { name: 'Cameras', exact: true }).click();
+  expect((await featureResponse).status()).toBe(401);
+
+  await expect(page).toHaveURL(/\/auth\/login/);
+  expect(new URL(page.url()).searchParams.get('redirect')).toContain('/app/cameras');
+
+  await page.getByRole('textbox', { name: 'Email' }).fill(signedIn.email);
+  await page.getByLabel('Password', { exact: true }).fill(signedIn.password);
+  await page.getByRole('button', { name: 'Log in' }).click();
+
+  await expect(page).toHaveURL((url) => url.pathname === '/app/cameras');
+  expect((await page.context().request.get(`${API_URL}/auth/me`)).status()).toBe(200);
+});
