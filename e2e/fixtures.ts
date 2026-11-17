@@ -72,6 +72,40 @@ export function seed(page: Page) {
       expect(response.status()).toBe(201);
       return ((await response.json()) as ApiRoll[]).map((roll) => roll.id);
     },
+    async lab(name: string) {
+      const response = await client.post(`${API_URL}/labs`, { data: { name, scannerIds: [] } });
+      expect(response.status()).toBe(201);
+      return (await response.json()).id as string;
+    },
+    /** One order at the lab, with one single-roll line per product. Returns the order id and line ids. */
+    async order(labId: string, code: string, products: string[]) {
+      const id = randomUUID();
+      const items = products.map((product) => ({
+        id: randomUUID(),
+        product,
+        quantity: 1,
+        unitPrice: 100000,
+      }));
+      const response = await client.put(`${API_URL}/lab-orders/${id}`, {
+        data: { labId, code, orderedAt: new Date().toISOString(), items },
+      });
+      expect(response.status()).toBe(201);
+      return { id, lineIds: items.map((item) => item.id) };
+    },
+    /** A develop-only job sent to the lab, on no order. A roll must be shot before it can go to a lab. */
+    async job(rollId: string, labId: string) {
+      const cameraId = await this.camera('E2E Cam', `job-${rollId.slice(0, 8)}`);
+      expect(
+        (await client.put(`${API_URL}/rolls/${rollId}/load`, { data: { cameraId } })).ok(),
+      ).toBe(true);
+      expect((await client.put(`${API_URL}/rolls/${rollId}/finish`, { data: {} })).ok()).toBe(true);
+      const id = randomUUID();
+      const response = await client.put(`${API_URL}/rolls/${rollId}/processing/${id}`, {
+        data: { type: 'develop', labId },
+      });
+      expect(response.status()).toBe(201);
+      return id;
+    },
   };
 }
 
