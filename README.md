@@ -74,6 +74,25 @@ emails link to `{APP_URL}/recover/end` and Google sign-in returns to `{APP_URL}/
 
 Run `vp check` and `vp test` before you commit.
 
+## End-to-end tests
+
+Playwright drives a real browser against the built dashboard and a real API. `vp run e2e` starts
+an isolated stack: a throwaway Postgres container (`postgres:18-alpine`), the API built from the
+server checkout, and `vp preview` on port 4173. It never uses your `.env` or your development
+database.
+
+Prerequisites: Docker running, Go, and the server checkout at `../meta-frames-server` (set
+`E2E_SERVER_DIR` to use another path). Ports 4173 and 18080 must be free. Install the browser once
+with `pnpm exec playwright install chromium`.
+
+```sh
+vp run e2e
+```
+
+The first run pulls the image and builds the server, so it is slower. If a run is killed hard,
+remove the leftover container with
+`docker rm -f $(docker ps -aq --filter label=meta-frames-e2e)`.
+
 ## Project structure
 
 ```
