@@ -144,3 +144,66 @@ Lean: -0 lines possible.
 Not checked: CI and later slices. No production code was edited.
 
 Verdict: approve
+
+## Slice 5
+
+What this change does: A2 ends the session through the page context's API cookie jar. It then triggers a protected feature request from the open page, checks the login redirect, and signs in again.
+
+### [WARN]
+
+1. **Use the navigation link's accessible name** (`e2e/auth.spec.ts:64`)
+   - **Problem:** The test operates a control through `a[href="/app/cameras"]` and `.first()`. The authoring policy requires role and accessible name, or form label.
+   - **Evidence:** `AppSidebar.vue` renders the child navigation item as a link containing its title. `src/layouts/dashboard/nav.ts:34` supplies the title `Cameras`.
+   - **Fix:** Use `page.getByRole('link', { name: 'Cameras', exact: true })`, scoped to the navigation region if necessary.
+   - **Assessment:** The Slice 3 exception covered unnamed controls for that slice. It does not apply here. The record URL selector approved in Slice 3 asserted identity without operating a control.
+
+### Behavior and scope
+
+- `/app/cameras` is a valid interrupted location. The click starts navigation to that protected page, whose feature request encounters the expired session. The spec does not require restoring the page that preceded the interrupted navigation.
+- The test uses the real API without routing or response mocks. Session termination uses `page.context().request`. The browser page remains open.
+- The non-auth response wait at lines 60–63 is registered before the navigation click at line 64. Its predicate excludes `/auth/` responses and requires the test API origin. The response must be 401.
+- The redirect assertion preserves `/app/cameras`. A later login returns to that URL, and an independent `/auth/me` read returns 200.
+- No fixed sleep, `networkidle` wait, copy assertion, or CSS presentation assertion was added. The CSS selector finding concerns how the test operates the link.
+- Before review, only the allowed `e2e/auth.spec.ts` differed from the base. `e2e/fixtures.ts` remained unchanged. No scope violation was present.
+
+### Verification
+
+- Base: `ff4ebdd3739110ec31d4a81929aaf2d57bf15a5d`, branch `chore/setup-playwright`.
+- Reviewed hashes remained unchanged after checks: auth spec `d10746e083c2cc35e98a6c70cc2a34e30359dd8259dacb40e148403905494107`, fixtures `a1ffe96fbb62d7ff82cbc1e5db9f51effbe17fc31c1f1fbde8a1f34c72d628ba`.
+- `vp run e2e -g A2`: 1 passed in 11.7 seconds.
+- `vp run e2e --repeat-each=2`: 8 passed in 20.4 seconds.
+- `vp check`: passed, 439 formatted files and no lint or type errors in 420 files.
+- `vp test run`: passed, 54 files and 215 tests.
+- The executor recorded the deliberate 401-handler failure. I read that evidence and did not repeat the production edit.
+
+Lean: -0 lines possible.
+
+Not checked: CI and later slices. No production code was edited.
+
+Verdict: request changes
+
+## Slice 5, round 2
+
+What this change does: A2 now operates the Cameras navigation link through its role and exact accessible name. The response wait and behavior assertions are unchanged.
+
+No new findings. The Slice 5 WARN is resolved.
+
+- `e2e/auth.spec.ts:64` uses `page.getByRole('link', { name: 'Cameras', exact: true }).click()` without `.first()`. The successful strict locator click confirms a single matching link during A2 alone and both full-suite repetitions.
+- The non-auth response wait remains at lines 60–63, before the click at line 64.
+- The fix adds no sleep, `networkidle` wait, copy assertion, or CSS assertion. The accessible name identifies the control only.
+- Only the allowed auth spec changed as executor work. The existing review document changes are reviewer output. Fixtures remain unchanged.
+
+### Verification
+
+- Base: `ff4ebdd3739110ec31d4a81929aaf2d57bf15a5d`, branch `chore/setup-playwright`.
+- Hashes remained unchanged after checks: auth spec `bc8ca9905698c9df20c4a9ed236b9dc6c7693206a9f8774b77486d27cc8da244`, fixtures `a1ffe96fbb62d7ff82cbc1e5db9f51effbe17fc31c1f1fbde8a1f34c72d628ba`.
+- `vp run e2e -g A2`: 1 passed in 11.6 seconds.
+- `vp run e2e --repeat-each=2`: 8 passed in 20.4 seconds.
+- `vp check`: passed, 439 formatted files and no lint or type errors in 420 files.
+- I read the executor's deliberate 401-handler failure evidence. I did not repeat the production edit.
+
+Lean: -0 lines possible.
+
+Not checked: CI and later slices. No production code was edited.
+
+Verdict: approve
