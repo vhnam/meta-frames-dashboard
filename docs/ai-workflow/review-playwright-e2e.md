@@ -78,3 +78,69 @@ No [CRITICAL], [WARN], or [NIT] findings for Slice 2.
 Lean: -0 lines possible.
 
 Verdict: approve
+
+## Slice 3
+
+What this change does: The seed helpers create stocks, cameras, and rolls through the signed-in account's API client. R1 adds rolls through the UI. R2 loads a roll and checks the saved camera assignment.
+
+### [WARN]
+
+1. **R1 does not check the refreshed inventory** (`e2e/rolls.spec.ts:31`)
+   - **Problem:** Reload is followed only by independent API reads. R1 still passes if the API saves two rolls but the refreshed inventory omits them.
+   - **Requirement:** The R1 spec requires the refreshed inventory to reflect the saved quantity.
+   - **Fix:** After reload, check that the inventory represents both saved roll records. Use record identity or quantity, without assertions on copy or CSS.
+
+2. **Unnamed controls require a plan decision** (`e2e/rolls.spec.ts:18`, `e2e/rolls.spec.ts:20`, `e2e/rolls.spec.ts:60`)
+   - **Problem:** The spec uses selected text and placeholder names instead of associated form labels. The executor confirms the missing accessible names in the progress log.
+   - **Requirement:** The authoring policy requires role and accessible name, or form label. The plan's Out of scope section requires the executor to stop and report controls without usable semantics.
+   - **Assessment:** These locators work, and they are scoped to a dialog. They do not assert presentation. However, the plan does not authorize this fallback for unnamed controls.
+   - **Fix:** Obtain Nam's approval for the fallback, or approve a separate accessibility slice before using label-based locators. Do not expand this slice's production file scope.
+
+### Checks and evidence
+
+- Base: `f99702c`. Before review, only `e2e/fixtures.ts` and `e2e/rolls.spec.ts` differed from the base. No scope violation was present.
+- Reviewed SHA-256 values: fixtures `a1ffe96fbb62d7ff82cbc1e5db9f51effbe17fc31c1f1fbde8a1f34c72d628ba`; rolls spec `325639066fbe6d3effdd7c3f7030fc4eb75acc1ab7e1d9f48f5eb6c46c195517`.
+- `vp run e2e -g R1`: 1 passed. `vp run e2e -g R2`: 1 passed.
+- `vp run e2e`: 3 passed. `vp run e2e --repeat-each=2`: 6 passed.
+- Seed requests succeeded against the real API. They use the authenticated page cookie jar. Bulk seeding uses a fresh `Idempotency-Key`.
+- R1 checks two distinct IDs, stock ID, format 120, 24 exposures, and `in_stock`. R2 checks `in_camera`, the expected camera ID, and the camera link destination after reload.
+- Both response waits precede the triggering button click. Neither test uses a fixed sleep or `networkidle`.
+- R2 accepted-write check: I temporarily seeded a second owned camera and routed the load request to that camera. The request passed the success assertion. The persisted-state assertion failed with the expected and actual camera IDs different, while status remained `in_camera`. This proves the existing assertion catches an accepted wrong assignment. The executor's random-ID check proved rejection only.
+- I restored the spec after that check. Both reviewed hashes matched again. No production file changed.
+- After the deliberate failure, no E2E container, temporary stack directory, or listener on ports 18080 and 4173 remained.
+- `vp check` passed. `vp test run` passed: 54 files and 215 tests. The final format, lint, and type check was repeated after restoration.
+
+Lean: -0 lines possible.
+
+Not checked: CI and later slices. No production code was edited.
+
+Verdict: request changes
+
+## Slice 3, round 2
+
+What this change does: R1 now checks a visible inventory link for every saved roll after reload. The API assertions still require two distinct IDs and the requested stock, format, exposures, and status.
+
+No new findings. WARN 1 is resolved. Nam approved the fallback locators from WARN 2 for this slice.
+
+### Locator assessment
+
+The locator at `e2e/rolls.spec.ts:37` is acceptable. It selects an anchor by its saved record URL. This is a record identity check, without dependence on classes, styling, copy, or element order. The test does not use this selector to operate an unnamed control. Each saved ID must have a visible link. `.first()` permits multiple links to one record without weakening the check for the other record.
+
+The check runs inside the reload branch, after `page.reload()` and a fresh API read. The distinct-ID assertion at line 39 requires both saved rolls. The fix adds no sleep, `networkidle` wait, copy assertion, or CSS presentation assertion.
+
+### Verification
+
+- Base: `f99702c1f1a62cf17f40286fab49b88a8918e378`, branch `chore/setup-playwright`.
+- Reviewed hashes remained unchanged after verification: fixtures `a1ffe96fbb62d7ff82cbc1e5db9f51effbe17fc31c1f1fbde8a1f34c72d628ba`, rolls spec `340ff8ae25ace9bd262dc5807d4c404ca0189314328862568edd3b9be1592906`.
+- The existing review file changes are reviewer output. No new source file outside the allowed slice changed.
+- `vp run e2e -g R1`: 1 passed in 16.8 seconds.
+- `vp run e2e -g R2`: 1 passed in 12.8 seconds.
+- `vp run e2e --repeat-each=2`: 6 passed in 20.2 seconds.
+- `vp check`: passed, 439 formatted files and no lint or type errors in 420 files.
+- The executor recorded a deliberate empty-inventory failure at the new visibility assertion. I read that evidence and did not repeat the production edit.
+
+Lean: -0 lines possible.
+
+Not checked: CI and later slices. No production code was edited.
+
+Verdict: approve

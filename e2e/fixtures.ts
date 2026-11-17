@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { test as base, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 const API_URL = 'http://127.0.0.1:18080';
 const PASSWORD = 'E2e-Passw0rd!';
@@ -35,5 +36,43 @@ export const test = base.extend<Fixtures>({
     await use(account);
   },
 });
+
+export interface ApiRoll {
+  id: string;
+  filmStockId: string;
+  format: number;
+  exposures: number;
+  status: string;
+  cameraId?: string;
+}
+
+/** Seed helpers: they use the page's cookie jar, so the signed-in account owns the data. */
+export function seed(page: Page) {
+  const client = page.context().request;
+  return {
+    async stock(brand: string, name: string) {
+      const response = await client.post(`${API_URL}/film-stocks`, {
+        data: { brand, name, type: 'color', boxIso: '400', process: 'C-41', packaging: 'factory' },
+      });
+      expect(response.status()).toBe(201);
+      return (await response.json()).stock.id as string;
+    },
+    async camera(brand: string, model: string) {
+      const response = await client.post(`${API_URL}/cameras`, {
+        data: { brand, model, mount: 'F', hasFixedLens: false },
+      });
+      expect(response.status()).toBe(201);
+      return (await response.json()).id as string;
+    },
+    async rolls(filmStockId: string, quantity: number) {
+      const response = await client.post(`${API_URL}/rolls/bulk`, {
+        data: { filmStockId, format: 135, exposures: 36, quantity },
+        headers: { 'Idempotency-Key': randomUUID() },
+      });
+      expect(response.status()).toBe(201);
+      return ((await response.json()) as ApiRoll[]).map((roll) => roll.id);
+    },
+  };
+}
 
 export { API_URL, expect };
