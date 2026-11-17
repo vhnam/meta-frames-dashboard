@@ -84,3 +84,67 @@ test('R2: load an in-stock roll into a camera, the assignment persists', async (
   expect(await read()).toMatchObject({ status: 'in_camera', cameraId });
   void signedIn;
 });
+
+test('R3: a stale roll edit is refused, the first edit persists, the second context recovers', async ({
+  page,
+  browser,
+  signedIn,
+}) => {
+  const api = page.context().request;
+  const seeded = seed(page);
+  const stockId = await seeded.stock('E2E Brand', 'R3 Stock');
+  const [rollId] = await seeded.rolls(stockId, 1);
+  const rollUrl = `${API_URL}/rolls/${rollId}`;
+  const read = async () =>
+    (await (await api.get(rollUrl)).json()).roll as ApiRoll & { price?: number };
+
+  // second context: same account, own cookie jar
+  const other = await browser.newContext();
+  try {
+    const login = await other.request.post(`${API_URL}/auth/login`, {
+      data: { email: signedIn.email, password: signedIn.password },
+    });
+    expect(login.ok()).toBe(true);
+    const otherPage = await other.newPage();
+
+    const openEdit = async (target: typeof page) => {
+      await target.goto(`/app/rolls/${rollId}`);
+      await target.getByRole('button', { name: 'Edit roll' }).click();
+      const dialog = target.getByRole('dialog');
+      await expect(dialog.getByRole('spinbutton', { name: 'e.g. 36' })).toHaveValue('36');
+      return dialog;
+    };
+    const waitPut = (target: typeof page) =>
+      target.waitForResponse(
+        (response) => response.url() === rollUrl && response.request().method() === 'PUT',
+      );
+
+    // both contexts read the same version before either saves
+    const first = await openEdit(page);
+    const second = await openEdit(otherPage);
+
+    await first.getByRole('spinbutton', { name: 'e.g. 36' }).fill('24');
+    const firstPut = waitPut(page);
+    await first.getByRole('button', { name: 'Save changes' }).click();
+    expect((await firstPut).ok()).toBe(true);
+    expect(await read()).toMatchObject({ exposures: 24 });
+
+    await second.getByRole('spinbutton', { name: 'e.g. 36' }).fill('12');
+    const stalePut = waitPut(otherPage);
+    await second.getByRole('button', { name: 'Save changes' }).click();
+    expect((await stalePut).status()).toBe(412);
+    // the refused write left the first edit in place
+    expect(await read()).toMatchObject({ exposures: 24 });
+
+    // recover: take the current version, then a new edit goes through
+    await second.getByRole('button', { name: 'Use the current values' }).click();
+    await expect(second.getByRole('spinbutton', { name: 'e.g. 36' })).toHaveValue('24');
+    await second.getByRole('spinbutton', { name: 'e.g. 150000' }).fill('5000');
+    const recoveredPut = waitPut(otherPage);
+    await second.getByRole('button', { name: 'Save changes' }).click();
+    expect((await recoveredPut).ok()).toBe(true);
+    expect(await read()).toMatchObject({ exposures: 24, price: 5000 });
+  } finally {
+    await other.close();
+  }
+});
