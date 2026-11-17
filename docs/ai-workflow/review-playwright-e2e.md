@@ -207,3 +207,36 @@ Lean: -0 lines possible.
 Not checked: CI and later slices. No production code was edited.
 
 Verdict: approve
+
+## Slice 6
+
+What this change does: R3 opens the same roll in two contexts for one account. It verifies that a stale edit fails, preserves the first saved edit, and recovers through the second context's edit form.
+
+No findings.
+
+### Behavior and scope
+
+- Both edit dialogs open before either context saves (`e2e/rolls.spec.ts:123`). No intervening write changes their starting version.
+- The first PUT succeeds and an independent API read returns exposures 24 (`e2e/rolls.spec.ts:129`). The stale second PUT returns 412. A fresh read still returns exposures 24 at line 137.
+- The second context selects the current values through the UI. The form then contains exposures 24 at line 141. Its next save succeeds, and a fresh read confirms exposures 24 and price 5000 at line 146.
+- The second context logs in with the same fixture account at lines 104–105. It has a separate cookie jar. All work after context creation at line 102 is inside the try block, and the finally block closes it at line 148, including on failed assertions.
+- Each PUT response wait is registered before its Save changes click: lines 127–128, 133–134, and 143–144.
+- No fixed sleep or `networkidle` wait appears in the tests. Assertions cover persisted state, HTTP results, record identity, URL, and form data. No assertion targets copy or CSS. The form value assertion verifies recovery to the current saved version.
+- Placeholder locators comply with Nam's Fixed decision 8. The prior inspection of FormInput established the unlinked labels. No new named control is bypassed.
+- Only `e2e/rolls.spec.ts` changed as executor work. The plan's Fixed decision 8 is an authorized parent-agent edit. Fixtures remain unchanged. No scope violation was present.
+
+### Verification
+
+- Base: `bc1b83323d46186855255aa79b5db471f37f1f8e`, branch `chore/setup-playwright`.
+- Hashes remained unchanged after checks: rolls spec `db803400c3f649f10c10a26ce5ff3ea9da67d4dea162d2002d70c5d1b494f281`, fixtures `a1ffe96fbb62d7ff82cbc1e5db9f51effbe17fc31c1f1fbde8a1f34c72d628ba`.
+- `vp run e2e -g R3`: 1 passed in 19.6 seconds.
+- `vp run e2e --repeat-each=2`: 10 passed in 24.2 seconds.
+- `vp check`: passed, 439 formatted files and no lint or type errors in 420 files.
+- `vp test run`: passed, 54 files and 215 tests. `git diff --check` passed.
+- I read the executor's deliberate missing If-Match failure evidence. I did not repeat the production edit.
+
+Lean: -0 lines possible.
+
+Not checked: CI and Slice 7. No production code was edited.
+
+Verdict: approve
