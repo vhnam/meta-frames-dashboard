@@ -9,6 +9,7 @@
     "preview": "vp preview",
     "e2e": "playwright test",
     "scan": "trivy fs .",
+    "secrets": "gitleaks git --redact --no-banner",
     "prepare": "vp config --no-agent"
   },
   "dependencies": {
