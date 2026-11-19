@@ -40,6 +40,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
   pinned in `package.json`).
 - A running Meta-Frame API (default `http://localhost:8080`).
 - [Trivy](https://trivy.dev/) (`brew install trivy`) for `vp run scan` and the pre-push hook.
+- [Gitleaks](https://github.com/gitleaks/gitleaks) (`brew install gitleaks`) for `vp run secrets` and the pre-commit hook.
 
 ### Setup
 
@@ -65,14 +66,15 @@ emails link to `{APP_URL}/recover/end` and Google sign-in returns to `{APP_URL}/
 
 ## Scripts
 
-| Command        | Description                                       |
-| -------------- | ------------------------------------------------- |
-| `vp dev`       | Start the dev server.                             |
-| `vp run build` | Type check with `vue-tsc`, then build to `dist/`. |
-| `vp preview`   | Serve the production build.                       |
-| `vp check`     | Format, lint and type check.                      |
-| `vp test`      | Run the tests (Vitest + happy-dom).               |
-| `vp run scan`  | Trivy scan: vulnerabilities, secrets, misconfigs. |
+| Command          | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| `vp dev`         | Start the dev server.                             |
+| `vp run build`   | Type check with `vue-tsc`, then build to `dist/`. |
+| `vp preview`     | Serve the production build.                       |
+| `vp check`       | Format, lint and type check.                      |
+| `vp test`        | Run the tests (Vitest + happy-dom).               |
+| `vp run scan`    | Trivy scan: vulnerabilities, secrets, misconfigs. |
+| `vp run secrets` | Gitleaks scan: secrets in the full git history.   |
 
 Run `vp check` and `vp test` before you commit.
 
@@ -80,6 +82,9 @@ Run `vp check` and `vp test` before you commit.
 and `vp run scan`. The scan fails on a HIGH or CRITICAL secret or misconfiguration, or a HIGH or CRITICAL vulnerability
 that has a fix; settings are in
 `trivy.yaml`. To accept a finding, add its ID to `.trivyignore` with a comment that says why.
+
+The pre-commit hook runs Gitleaks on the staged changes and blocks the commit when it finds a secret.
+To accept a false positive, add its fingerprint to `.gitleaksignore`.
 
 ## End-to-end tests
 
