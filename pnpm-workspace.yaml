@@ -21,6 +21,9 @@ catalog:
   vite-plus: 1.6.0
 overrides:
   vite@*: "catalog:"
+  # stylus 0.57 pulls css -> source-map-resolve -> decode-uri-component 0.2.2 (CVE-2026-118664).
+  # 0.64 drops that chain. Only postcss-styl (shadcn-vue CLI) pins ^0.57.
+  "stylus@^0.57.0": ^0.64.0
 peerDependencyRules:
   allowAny:
     - vite
