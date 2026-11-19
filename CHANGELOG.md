@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Trivy security scan. `vp run scan` checks `pnpm-lock.yaml` for known vulnerabilities and the repository for secrets and misconfigurations (`trivy.yaml`). The pre-push hook runs it after the tests and the build, and blocks the push on a HIGH or CRITICAL finding.
 - The Brand field of the Add and Edit film stock forms suggests the brands already used on film stocks while you type, one entry per brand whatever its case. Pick one or type a new brand.
 - The Film stock field on Add rolls filters the list as you type. You pick one existing stock.
 - End-to-end tests with Playwright. `vp run e2e` builds the dashboard and runs it in Chromium against a real API and a throwaway Postgres container, then removes both. It never uses your `.env` or your development database. The tests cover sign-in with the login redirect, an expired session, adding rolls, loading a roll into a camera, a conflicting roll edit from two tabs, and linking a processing job to a lab order line. It needs Docker, Go, the server checkout at `../meta-frames-server` (or `E2E_SERVER_DIR`), free ports 4173 and 18080, and `pnpm exec playwright install chromium` once.
@@ -21,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - A suggestion field, such as a camera brand or model, keeps filtering the list when the text you type is the value already shown, and still filters after you leave the field and open it again.
+
+### Security
+
+- `decode-uri-component` 0.2.2 is gone (CVE-2026-118664, denial of service through malformed percent-encoded input). An override moves `stylus` from 0.57 to 0.64, which drops the chain that pulled it in. It was a build-time dependency only.
 
 ## [3.0.0] - 2026-11-15
 

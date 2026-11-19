@@ -1,2 +1,3 @@
-# vue-tsc in `vp run build` catches template type errors that `vp check` misses
-vp test && vp run build
+# vue-tsc in `vp run build` catches template type errors that `vp check` misses.
+# `vp run scan` runs Trivy (trivy.yaml): HIGH or CRITICAL vulnerabilities, secrets and misconfigurations.
+vp test && vp run build && vp run scan
