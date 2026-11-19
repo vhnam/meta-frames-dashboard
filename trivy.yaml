@@ -1,0 +1,26 @@
+# Trivy config, loaded by `trivy fs .` from the repository root.
+severity:
+  - HIGH
+  - CRITICAL
+exit-code: 1
+vulnerability:
+  ignore-unfixed: true
+scan:
+  scanners:
+    - vuln
+    - secret
+    - misconfig
+  # node_modules is skipped: pnpm-lock.yaml gives the dependency list.
+  skip-dirs:
+    - node_modules
+    - dist
+    - test-results
+    - playwright-report
+    - blob-report
+    - playwright/.auth
+    - .gitnexus
+  # Local secret files: gitignored, they hold real values. `.env.*` also skips .env.example.
+  skip-files:
+    - .env
+    - .env.*
+    - google_sign_in.json

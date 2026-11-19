@@ -39,6 +39,7 @@ See [CHANGELOG.md](CHANGELOG.md) for details.
 - [Vite+ CLI](https://viteplus.dev/guide/) (`vp`). It manages Node and pnpm (pnpm 12.9.1 is
   pinned in `package.json`).
 - A running Meta-Frame API (default `http://localhost:8080`).
+- [Trivy](https://trivy.dev/) (`brew install trivy`) for `vp run scan` and the pre-push hook.
 
 ### Setup
 
@@ -71,8 +72,14 @@ emails link to `{APP_URL}/recover/end` and Google sign-in returns to `{APP_URL}/
 | `vp preview`   | Serve the production build.                       |
 | `vp check`     | Format, lint and type check.                      |
 | `vp test`      | Run the tests (Vitest + happy-dom).               |
+| `vp run scan`  | Trivy scan: vulnerabilities, secrets, misconfigs. |
 
 Run `vp check` and `vp test` before you commit.
+
+`vp install` installs the git hooks in `.vite-hooks/`. The pre-push hook runs `vp test`, `vp run build`
+and `vp run scan`. The scan fails on a HIGH or CRITICAL secret or misconfiguration, or a HIGH or CRITICAL vulnerability
+that has a fix; settings are in
+`trivy.yaml`. To accept a finding, add its ID to `.trivyignore` with a comment that says why.
 
 ## End-to-end tests
 
