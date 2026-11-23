@@ -6,7 +6,8 @@ import { Toaster } from '#/shared/ui/sonner';
 </script>
 
 <template>
-  <Outlet />
+  <!-- Toaster first: it subscribes in setup, so a toast from the first page's setup error needs it -->
   <Toaster />
+  <Outlet />
   <ConfirmDialog />
 </template>
