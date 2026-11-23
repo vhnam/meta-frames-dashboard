@@ -27,6 +27,10 @@ const props = defineProps<{
   /** Noun for the add row and empty state, e.g. "mount". */
   noun?: string;
   invalid?: boolean;
+  /** `id` of the text input, so a label can point to it. */
+  inputId?: string;
+  /** `id` of the error text; set as `aria-describedby` of the input. */
+  errorId?: string;
 }>();
 const model = defineModel<string>({ default: '' });
 
@@ -71,10 +75,12 @@ function commit() {
     <ComboboxAnchor class="relative">
       <ComboboxInput
         v-model="term"
+        :id="inputId"
         data-slot="input"
         :display-value="(v: string) => v ?? ''"
         :placeholder="placeholder"
         :aria-invalid="invalid || undefined"
+        :aria-describedby="errorId"
         class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent py-1 pr-10 pl-3 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
         @input="typed = true"
         @blur="commit"
