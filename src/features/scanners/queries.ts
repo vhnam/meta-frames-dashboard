@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query';
 
 import { labKeys } from '#/features/labs';
-import { rollKeys } from '#/features/rolls';
+import { rollKeys } from '#/features/rolls/api';
 import { scanKeys } from '#/features/scans/api';
 import { useApiMutation } from '#/shared/api/mutation';
 

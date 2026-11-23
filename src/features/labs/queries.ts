@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query';
 
 import { labOrderKeys } from '#/features/lab-orders/api';
-import { rollKeys } from '#/features/rolls';
+import { rollKeys } from '#/features/rolls/api';
 import { useApiMutation } from '#/shared/api/mutation';
 
 import { deleteLab, labKeys, labQueries, saveLab } from './api';

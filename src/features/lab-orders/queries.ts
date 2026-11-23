@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { toValue, type MaybeRefOrGetter } from 'vue';
 import { computed } from 'vue';
 
-import { rollKeys } from '#/features/rolls';
+import { rollKeys } from '#/features/rolls/api';
 import { useApiMutation } from '#/shared/api/mutation';
 
 import { deleteLabOrder, labOrderKeys, labOrderQueries, saveLabOrder, setJobLines } from './api';
