@@ -74,6 +74,47 @@ it('passes the new roll ID and requests that record on a same-route navigation',
   });
 });
 
+it.each([
+  {
+    route: '/app/stocks',
+    endpoint: '/film-stocks',
+    page: 'StockDetailPage',
+    param: 'stockId',
+    createRecord: (name: string) => server.addStock({ name }),
+  },
+  {
+    route: '/app/orders',
+    endpoint: '/lab-orders',
+    page: 'LabOrderDetailPage',
+    param: 'orderId',
+    createRecord: (code: string) =>
+      server.saveLabOrder(code, {
+        code,
+        labId: server.addLab().id,
+        orderedAt: '2026-10-07',
+        items: [],
+      }),
+  },
+])(
+  'passes $param and requests the next record on a same-route navigation',
+  async ({ route, endpoint, page, param, createRecord }) => {
+    const first = createRecord('first');
+    const second = createRecord('second');
+    const { router, view } = openRoute(`${route}/${first.id}`);
+    const props = () => view.getComponent({ name: page }).props();
+
+    await vi.waitFor(() => expect(props()).toEqual({ [param]: first.id }));
+    await router.navigate({ href: `${route}/${second.id}` });
+
+    await vi.waitFor(() => {
+      expect(props()).toEqual({ [param]: second.id });
+      expect(server.requests).toContainEqual(
+        expect.objectContaining({ method: 'get', url: `${endpoint}/${second.id}` }),
+      );
+    });
+  },
+);
+
 it('updates roll list search props without passing pager keys to the page', async () => {
   const { router, view } = openRoute('/app/rolls?tab=in_stock&expiry=undated&pageSize=20');
   const props = () => view.getComponent({ name: 'RollListPage' }).props();

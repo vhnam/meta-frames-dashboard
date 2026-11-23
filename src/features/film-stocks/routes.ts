@@ -1,25 +1,23 @@
 import { createRoute } from '@tanstack/vue-router';
-import { h, type VNode } from 'vue';
 
 import { appRoute } from '#/app/appRoute';
-
-import StockDetailPage from './pages/StockDetailPage.vue';
-import StockListPage from './pages/StockListPage.vue';
+import { lazyPage } from '#/app/lazyPage';
 
 const stockListRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'stocks',
-  component: StockListPage,
+  component: lazyPage(() => import('./pages/StockListPage.vue')),
 });
 
-function StockDetailRoute(): VNode {
-  return h(StockDetailPage, { stockId: stockDetailRoute.useParams().value.stockId });
+function stockDetailProps(): () => Record<string, unknown> {
+  const params = stockDetailRoute.useParams();
+  return () => ({ stockId: params.value.stockId });
 }
 
 const stockDetailRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'stocks/$stockId',
-  component: StockDetailRoute,
+  component: lazyPage(() => import('./pages/StockDetailPage.vue'), stockDetailProps),
 });
 
 export const filmStocksRoutes = [stockListRoute, stockDetailRoute];

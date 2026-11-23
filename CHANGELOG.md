@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- The sign-in pages load only their own code; the dashboard shell loads after sign-in. The Rolls, Cameras and Lenses pages load when you open them.
+- The sign-in pages load only their own code; the dashboard shell loads after sign-in. The Rolls, Cameras, Lenses, Film stocks, Lab orders and Audit pages load when you open them.
 
 ### Fixed
 
