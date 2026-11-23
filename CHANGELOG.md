@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - `decode-uri-component` 0.2.2 is gone (CVE-2026-118664, denial of service through malformed percent-encoded input). An override moves `stylus` from 0.57 to 0.64, which drops the chain that pulled it in. It was a build-time dependency only.
+- `zod` below 4.6.6 is gone from the production dependencies (GHSA-mrhx-c7xc-m3w5, memory exhaustion while validating oversized collections). `shadcn-vue`, a CLI, moved to `devDependencies`, and `zod` 4.6.6 is pinned as a dev dependency, which the optional peer of `@t3-oss/env-core` now uses. The app does not import `zod`.
 
 ## [3.0.0] - 2026-11-15
 

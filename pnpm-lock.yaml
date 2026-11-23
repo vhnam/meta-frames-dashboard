@@ -202,7 +202,7 @@ importers:
         version: 1.2.0(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(vue@3.5.45(typescript@6.0.3))
       '@t3-oss/env-core':
         specifier: ^0.13.11
-        version: 0.13.11(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(zod@3.25.76)
+        version: 0.13.11(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(zod@4.6.6)
       '@tabler/icons-vue':
         specifier: ^3.52.0
         version: 3.52.0(vue@3.5.45(typescript@6.0.3))
@@ -248,9 +248,6 @@ importers:
       reka-ui:
         specifier: ^2.11.0
         version: 2.11.0(vue@3.5.45(typescript@6.0.3))
-      shadcn-vue:
-        specifier: ^2.9.0
-        version: 2.9.0(@volar/typescript@2.4.30(typescript@6.0.3))(@vue/language-core@3.3.14)(eslint@10.15.0(jiti@2.7.0))
       tailwind-merge:
         specifier: ^3.7.0
         version: 3.7.0
@@ -285,6 +282,9 @@ importers:
       happy-dom:
         specifier: ^21.0.4
         version: 21.0.4
+      shadcn-vue:
+        specifier: ^2.9.0
+        version: 2.9.0(@volar/typescript@2.4.30(typescript@6.0.3))(@vue/language-core@3.3.14)(eslint@10.15.0(jiti@2.7.0))
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -300,6 +300,9 @@ importers:
       vue-tsc:
         specifier: ^3.3.14
         version: 3.3.14(typescript@6.0.3)
+      zod:
+        specifier: 4.6.6
+        version: 4.6.6
 
 packages:
 
@@ -3540,6 +3543,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
+
 snapshots:
 
   '@adobe/css-tools@4.3.3': {}
@@ -3985,11 +3991,11 @@ snapshots:
 
   '@swc/helpers@0.5.24': {}
 
-  '@t3-oss/env-core@0.13.11(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(zod@3.25.76)':
+  '@t3-oss/env-core@0.13.11(typescript@6.0.3)(valibot@1.5.0(typescript@6.0.3))(zod@4.6.6)':
     optionalDependencies:
       typescript: 6.0.3
       valibot: 1.5.0(typescript@6.0.3)
-      zod: 3.25.76
+      zod: 4.6.6
 
   '@tabler/icons-vue@3.52.0(vue@3.5.45(typescript@6.0.3))':
     dependencies:
@@ -6642,3 +6648,5 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.6.6: {}
