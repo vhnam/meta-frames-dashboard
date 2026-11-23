@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { useId } from 'vue';
+
 import { Label } from '#/shared/ui/label';
 
-defineProps<{
+const props = defineProps<{
   label: string;
   hint?: string;
   optional?: boolean;
@@ -9,12 +11,15 @@ defineProps<{
   required?: boolean;
   error?: string;
 }>();
+
+const id = useId();
+const errorId = `${id}-error`;
 </script>
 
 <template>
   <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-1.5">
     <div class="flex items-center justify-between gap-3">
-      <Label>
+      <Label :for="id">
         {{ label }}
         <span
           v-if="required"
@@ -31,7 +36,10 @@ defineProps<{
       <!-- right side of the label row: an example, quick picks, an action -->
       <slot name="aside" />
     </div>
-    <slot />
+    <slot
+      :id="id"
+      :error-id="props.error ? errorId : undefined"
+    />
     <p
       v-if="hint"
       class="text-xs text-muted-foreground"
@@ -40,6 +48,7 @@ defineProps<{
     </p>
     <p
       v-if="error"
+      :id="errorId"
       class="text-xs text-destructive"
       role="alert"
     >
