@@ -14,12 +14,16 @@ const props = defineProps<{
 
 const id = useId();
 const errorId = `${id}-error`;
+const labelId = `${id}-label`;
 </script>
 
 <template>
   <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-1.5">
     <div class="flex items-center justify-between gap-3">
-      <Label :for="id">
+      <Label
+        :id="labelId"
+        :for="id"
+      >
         {{ label }}
         <span
           v-if="required"
@@ -38,6 +42,7 @@ const errorId = `${id}-error`;
     </div>
     <slot
       :id="id"
+      :label-id="labelId"
       :error-id="props.error ? errorId : undefined"
     />
     <p

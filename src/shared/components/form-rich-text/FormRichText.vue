@@ -39,12 +39,16 @@ defineProps<{
         #aside
         ><slot name="aside"
       /></template>
-      <RichTextEditor
-        :model-value="(field.input as string | undefined) ?? ''"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        @update:model-value="(value) => (field.input = value as never)"
-      />
+      <template #default="{ labelId, errorId }">
+        <RichTextEditor
+          :model-value="(field.input as string | undefined) ?? ''"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :labelled-by="labelId"
+          :described-by="errorId"
+          @update:model-value="(value) => (field.input = value as never)"
+        />
+      </template>
     </FormField>
   </Field>
 </template>

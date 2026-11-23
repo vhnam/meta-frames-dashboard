@@ -26,6 +26,47 @@ const editorOf = async (value: string) => {
 };
 
 describe('RichTextEditor', () => {
+  it('keeps its explicit ID and editable state through description changes', async () => {
+    const describedBy = ref<string>();
+    const disabled = ref(false);
+    const wrapper = mount(() =>
+      h(RichTextEditor, {
+        id: 'order-notes',
+        describedBy: describedBy.value,
+        disabled: disabled.value,
+      }),
+    );
+    try {
+      await flushPromises();
+      const input = wrapper.get('[data-slot="rich-text-input"]');
+      expect(input.attributes('id')).toBe('order-notes');
+      expect(input.attributes('aria-labelledby')).toBeUndefined();
+      expect(input.attributes('aria-describedby')).toBeUndefined();
+
+      describedBy.value = 'order-notes-error';
+      await flushPromises();
+      expect(input.attributes('id')).toBe('order-notes');
+      expect(input.attributes('aria-describedby')).toBe('order-notes-error');
+
+      disabled.value = true;
+      await flushPromises();
+      expect(input.attributes('contenteditable')).toBe('false');
+      expect(input.attributes('aria-describedby')).toBe('order-notes-error');
+
+      describedBy.value = undefined;
+      await flushPromises();
+      expect(input.attributes('id')).toBe('order-notes');
+      expect(input.attributes('aria-describedby')).toBeUndefined();
+      expect(input.attributes('contenteditable')).toBe('false');
+
+      disabled.value = false;
+      await flushPromises();
+      expect(input.attributes('contenteditable')).toBe('true');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('shows Markdown as formatted text', async () => {
     const wrapper = await editorOf('Push **one stop**\n\n- fine grain\n- warm');
     expect(wrapper.find('strong').text()).toBe('one stop');
