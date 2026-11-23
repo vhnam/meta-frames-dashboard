@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A page that fails while it loads (not only while it renders) now shows the error message and is reported once.
+
 ## [3.1.0] - 2026-11-24
 
 ### Added

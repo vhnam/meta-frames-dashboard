@@ -131,7 +131,6 @@ it('shows a setup error from the initial route on the root toaster', async () =>
     routeTree: rootRoute.addChildren([appRoute.addChildren([route])]),
     history: createMemoryHistory({ initialEntries: ['/app/broken'] }),
     defaultErrorComponent: dashboardRouter.options.defaultErrorComponent,
-    defaultOnCatch: dashboardRouter.options.defaultOnCatch,
   });
   const app = mountApp(() => h(RouterProvider, { router }));
 
