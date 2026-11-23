@@ -1,13 +1,8 @@
 import { createRoute, redirect } from '@tanstack/vue-router';
-import { h, type VNode } from 'vue';
 
+import { lazyPage } from '#/app/lazyPage';
 import { rootRoute } from '#/app/rootRoute';
 
-import AuthLayout from './components/auth-layout/AuthLayout.vue';
-import LoginPage from './pages/LoginPage.vue';
-import RecoverPage from './pages/RecoverPage.vue';
-import RegisterPage from './pages/RegisterPage.vue';
-import ResetPasswordPage from './pages/ResetPasswordPage.vue';
 import { currentUser, safeRedirect } from './session';
 
 const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
@@ -21,7 +16,7 @@ async function guestOnly({ search }: { search: { redirect?: string } }) {
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/auth',
-  component: AuthLayout,
+  component: lazyPage(() => import('./components/auth-layout/AuthLayout.vue')),
 });
 
 const authIndexRoute = createRoute({
@@ -32,8 +27,9 @@ const authIndexRoute = createRoute({
   },
 });
 
-function LoginRoute(): VNode {
-  return h(LoginPage, loginRoute.useSearch().value);
+function loginProps(): () => Record<string, unknown> {
+  const search = loginRoute.useSearch();
+  return () => search.value;
 }
 
 const loginRoute = createRoute({
@@ -44,11 +40,12 @@ const loginRoute = createRoute({
     error: text(search.error),
   }),
   beforeLoad: guestOnly,
-  component: LoginRoute,
+  component: lazyPage(() => import('./pages/LoginPage.vue'), loginProps),
 });
 
-function RegisterRoute(): VNode {
-  return h(RegisterPage, { redirect: registerRoute.useSearch().value.redirect });
+function registerProps(): () => Record<string, unknown> {
+  const search = registerRoute.useSearch();
+  return () => ({ redirect: search.value.redirect });
 }
 
 const registerRoute = createRoute({
@@ -58,18 +55,19 @@ const registerRoute = createRoute({
     redirect: text(search.redirect),
   }),
   beforeLoad: guestOnly,
-  component: RegisterRoute,
+  component: lazyPage(() => import('./pages/RegisterPage.vue'), registerProps),
 });
 
 const recoverRoute = createRoute({
   getParentRoute: () => authRoute,
   path: 'recover',
   beforeLoad: () => guestOnly({ search: {} }),
-  component: RecoverPage,
+  component: lazyPage(() => import('./pages/RecoverPage.vue')),
 });
 
-function ResetPasswordRoute(): VNode {
-  return h(ResetPasswordPage, { token: resetPasswordRoute.useSearch().value.token });
+function resetPasswordProps(): () => Record<string, unknown> {
+  const search = resetPasswordRoute.useSearch();
+  return () => ({ token: search.value.token });
 }
 
 const resetPasswordRoute = createRoute({
@@ -78,7 +76,7 @@ const resetPasswordRoute = createRoute({
   validateSearch: (search: Record<string, unknown>): { token?: string } => ({
     token: text(search.token),
   }),
-  component: ResetPasswordRoute,
+  component: lazyPage(() => import('./pages/ResetPasswordPage.vue'), resetPasswordProps),
 });
 
 // The API sends the browser to `{APP_URL}/login?error=...` (Google) and
