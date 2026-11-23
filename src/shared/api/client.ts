@@ -14,7 +14,8 @@ export const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: true,
     },
-    mutations: { retry: 0 },
+    // 'always': offline, a save fails at once instead of waiting and firing on reconnect
+    mutations: { retry: 0, networkMode: 'always' },
   },
   mutationCache: new MutationCache({
     onError: (error, _vars, _context, mutation) => {

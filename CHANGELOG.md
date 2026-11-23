@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Each dashboard page has one main landmark. Screen readers read the sidebar brand link as "Meta Frames Film tracker" when the sidebar is expanded and when it is collapsed.
 - Each dashboard list and detail page has its own browser tab title.
 - Screen readers now read the label of text fields, drop-down fields, searchable drop-down fields and suggestion fields (such as camera brand) and notes fields in forms, and read the field error when the field has focus.
+- Saving a form while offline now ends at once with an error message, keeps what you typed, and does not send the change later.
 
 ### Security
 
