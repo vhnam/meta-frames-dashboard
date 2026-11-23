@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { toValue, type MaybeRefOrGetter } from 'vue';
 
 import { cameraKeys } from '#/features/cameras';
-import { stockKeys } from '#/features/film-stocks';
+import { stockKeys } from '#/features/film-stocks/api';
 import { labOrderKeys } from '#/features/lab-orders/api';
 import { labKeys } from '#/features/labs';
 import { useApiMutation } from '#/shared/api/mutation';

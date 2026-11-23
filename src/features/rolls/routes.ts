@@ -1,32 +1,32 @@
 import { createRoute, redirect } from '@tanstack/vue-router';
-import { h, type VNode } from 'vue';
 
 import { appRoute } from '#/app/appRoute';
+import { lazyPage } from '#/app/lazyPage';
 
-import RollDetailPage from './pages/RollDetailPage.vue';
-import RollListPage from './pages/RollListPage.vue';
 import { parseRollListSearch } from './rollList';
 
-function RollListRoute(): VNode {
+function rollListProps(): () => Record<string, unknown> {
+  const search = rollListRoute.useSearch();
   // only the Rolls keys: the pager's page and pageSize belong to the table
-  return h(RollListPage, { search: parseRollListSearch(rollListRoute.useSearch().value) });
+  return () => ({ search: parseRollListSearch(search.value) });
 }
 
 const rollListRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'rolls',
   validateSearch: parseRollListSearch,
-  component: RollListRoute,
+  component: lazyPage(() => import('./pages/RollListPage.vue'), rollListProps),
 });
 
-function RollDetailRoute(): VNode {
-  return h(RollDetailPage, { rollId: rollDetailRoute.useParams().value.rollId });
+function rollDetailProps(): () => Record<string, unknown> {
+  const params = rollDetailRoute.useParams();
+  return () => ({ rollId: params.value.rollId });
 }
 
 const rollDetailRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'rolls/$rollId',
-  component: RollDetailRoute,
+  component: lazyPage(() => import('./pages/RollDetailPage.vue'), rollDetailProps),
 });
 
 // the old Inventory and Expiry pages now live on Rolls → In stock
