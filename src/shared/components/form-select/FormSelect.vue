@@ -52,6 +52,8 @@ defineProps<{
             :placeholder="placeholder"
             :disabled="disabled"
             :invalid="!!field.errors"
+            :input-id="id"
+            :error-id="errorId"
             @update:model-value="(value) => (field.input = value as never)"
           />
           <Select

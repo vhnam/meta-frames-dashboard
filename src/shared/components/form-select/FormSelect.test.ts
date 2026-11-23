@@ -9,8 +9,8 @@ import FormSelect from './FormSelect.vue';
 
 enableAutoUnmount(afterEach);
 
-it('associates the rendered select trigger with its label and validation error', async () => {
-  const wrapper = mount(
+const mountFormSelect = (searchable = false) =>
+  mount(
     defineComponent({
       setup() {
         const form = useForm({
@@ -24,12 +24,15 @@ it('associates the rendered select trigger with its label and validation error',
               path: ['format'],
               label: 'Format',
               options: [{ value: '135', label: '35 mm' }],
+              searchable,
             }),
           );
       },
     }),
   );
 
+it('associates the rendered select trigger with its label and validation error', async () => {
+  const wrapper = mountFormSelect();
   const trigger = wrapper.get('button[role="combobox"]');
   const id = trigger.attributes('id');
   expect(id).toBeTruthy();
@@ -41,5 +44,23 @@ it('associates the rendered select trigger with its label and validation error',
     const error = wrapper.get('p[role="alert"]');
     expect(error.attributes('id')).toBeTruthy();
     expect(trigger.attributes('aria-describedby')).toBe(error.attributes('id'));
+  });
+});
+
+it('associates the searchable input with its label and validation error', async () => {
+  const wrapper = mountFormSelect(true);
+  const input = wrapper.get('input[role="combobox"]');
+  const id = input.attributes('id');
+  expect(id).toBeTruthy();
+  expect(wrapper.get('label').attributes('for')).toBe(id);
+  expect(input.attributes('aria-describedby')).toBeUndefined();
+  expect(input.attributes('aria-invalid')).toBeUndefined();
+
+  await wrapper.get('form').trigger('submit');
+  await vi.waitFor(() => {
+    const errorId = wrapper.get('p[role="alert"]').attributes('id');
+    expect(errorId).toBeTruthy();
+    expect(input.attributes('aria-describedby')).toBe(errorId);
+    expect(input.attributes('aria-invalid')).toBe('true');
   });
 });
