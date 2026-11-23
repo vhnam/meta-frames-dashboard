@@ -3,6 +3,7 @@ import { createRoute, createRouter, redirect } from '@tanstack/vue-router';
 import { appRoute } from '#/app/appRoute';
 import { rootRoute } from '#/app/rootRoute';
 import RouteError from '#/app/RouteError.vue';
+import RoutePending from '#/app/RoutePending.vue';
 import { auditRoutes } from '#/features/audit/routes';
 import { authKeys } from '#/features/auth';
 import { authRoutes } from '#/features/auth/routes';
@@ -53,6 +54,8 @@ const routeTree = rootRoute.addChildren([
 export const router = createRouter({
   routeTree,
   defaultErrorComponent: RouteError,
+  defaultPendingComponent: RoutePending,
+  defaultPreload: 'intent',
 });
 
 // The session ended on the server (logout elsewhere, password reset): back to login,
