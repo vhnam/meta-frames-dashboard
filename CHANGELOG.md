@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-11-24
+
 ### Added
 
 - Trivy security scan. `vp run scan` checks `pnpm-lock.yaml` for known vulnerabilities and the repository for secrets and misconfigurations (`trivy.yaml`). The pre-push hook runs it after the tests and the build, and blocks the push on a HIGH or CRITICAL finding.
@@ -402,7 +404,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...v2.0.0
