@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The formatter settings moved to `.oxfmtrc.json`, which `vite.config.ts` loads. They set a line width of 100, 2-space indent, single quotes in script code (also in Vue files), trailing commas, one attribute per line in Vue templates, sorted imports and sorted Tailwind classes. Run `vp check --fix` to apply them to existing files.
 - The pnpm version in `devEngines` is now 12.21.0.
 - Internal: the GitNexus rules in `AGENTS.md` use plain wording. The impact check no longer applies to comment, docs, and formatting edits.
+- The sidebar label "Film Stocks" is now "Film stocks", the same as the page title.
 
 ### Fixed
 

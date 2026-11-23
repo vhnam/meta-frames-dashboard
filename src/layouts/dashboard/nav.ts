@@ -40,7 +40,7 @@ export const navSections: NavSection[] = [
   {
     label: 'Film & Lab',
     items: [
-      { title: 'Film Stocks', to: '/app/stocks', icon: IconStack2 },
+      { title: 'Film stocks', to: '/app/stocks', icon: IconStack2 },
       { title: 'Labs', to: '/app/labs', icon: IconFlask },
       { title: 'Orders', to: '/app/orders', icon: IconReceipt },
       { title: 'Scanners', to: '/app/scanners', icon: IconScan },
