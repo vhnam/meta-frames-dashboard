@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - A suggestion field, such as a camera brand or model, keeps filtering the list when the text you type is the value already shown, and still filters after you leave the field and open it again.
+- Each dashboard page has one main landmark. Screen readers read the sidebar brand link as "Meta Frames Film tracker" when the sidebar is expanded and when it is collapsed.
+- Each dashboard list and detail page has its own browser tab title.
 
 ### Security
 
