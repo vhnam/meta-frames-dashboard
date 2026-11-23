@@ -3,7 +3,8 @@ import { IconBell, IconBellOff, IconCalendarX, IconClockHour4 } from '@tabler/ic
 import { Link } from '@tanstack/vue-router';
 import { computed, ref, useTemplateRef } from 'vue';
 
-import { expiryFromNow, useExpiryReport } from '#/features/rolls';
+import { expiryFromNow } from '#/features/rolls/format';
+import { useExpiryReport } from '#/features/rolls/queries';
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -2,7 +2,7 @@
 import { Link, useRouterState } from '@tanstack/vue-router';
 import { computed } from 'vue';
 
-import { useRollList } from '#/features/rolls';
+import { useRollList } from '#/features/rolls/queries';
 import {
   DropdownMenu,
   DropdownMenuContent,
