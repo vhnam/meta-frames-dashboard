@@ -39,15 +39,19 @@ defineProps<{
         #aside
         ><slot name="aside"
       /></template>
-      <CreatableCombobox
-        :model-value="(field.input as string | undefined) ?? ''"
-        :options="options"
-        :noun="noun"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :invalid="!!field.errors"
-        @update:model-value="(value) => (field.input = value as never)"
-      />
+      <template #default="{ id, errorId }">
+        <CreatableCombobox
+          :model-value="(field.input as string | undefined) ?? ''"
+          :options="options"
+          :noun="noun"
+          :placeholder="placeholder"
+          :disabled="disabled"
+          :invalid="!!field.errors"
+          :input-id="id"
+          :error-id="errorId"
+          @update:model-value="(value) => (field.input = value as never)"
+        />
+      </template>
     </FormField>
   </Field>
 </template>

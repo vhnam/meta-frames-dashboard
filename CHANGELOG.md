@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-11-24
+
 ### Added
 
 - Trivy security scan. `vp run scan` checks `pnpm-lock.yaml` for known vulnerabilities and the repository for secrets and misconfigurations (`trivy.yaml`). The pre-push hook runs it after the tests and the build, and blocks the push on a HIGH or CRITICAL finding.
@@ -14,20 +16,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Brand field of the Add and Edit film stock forms suggests the brands already used on film stocks while you type, one entry per brand whatever its case. Pick one or type a new brand.
 - The Film stock field on Add rolls filters the list as you type. You pick one existing stock.
 - End-to-end tests with Playwright. `vp run e2e` builds the dashboard and runs it in Chromium against a real API and a throwaway Postgres container, then removes both. It never uses your `.env` or your development database. The tests cover sign-in with the login redirect, an expired session, adding rolls, loading a roll into a camera, a conflicting roll edit from two tabs, and linking a processing job to a lab order line. It needs Docker, Go, the server checkout at `../meta-frames-server` (or `E2E_SERVER_DIR`), free ports 4173 and 18080, and `pnpm exec playwright install chromium` once.
+- A GitHub Actions workflow runs the format, lint and type checks, the unit tests, the build and the production dependency audit on each pull request and each push to `main`.
 
 ### Changed
 
+- The dashboard has a new slate and emerald look in light and dark mode. Text sizes follow the new type scale, and buttons, inputs and cards use new corner radii. The fonts are unchanged.
 - The formatter settings moved to `.oxfmtrc.json`, which `vite.config.ts` loads. They set a line width of 100, 2-space indent, single quotes in script code (also in Vue files), trailing commas, one attribute per line in Vue templates, sorted imports and sorted Tailwind classes. Run `vp check --fix` to apply them to existing files.
 - The pnpm version in `devEngines` is now 12.21.0.
 - Internal: the GitNexus rules in `AGENTS.md` use plain wording. The impact check no longer applies to comment, docs, and formatting edits.
+- The sidebar label "Film Stocks" is now "Film stocks", the same as the page title.
 
 ### Fixed
 
 - A suggestion field, such as a camera brand or model, keeps filtering the list when the text you type is the value already shown, and still filters after you leave the field and open it again.
+- Each dashboard page has one main landmark. Screen readers read the sidebar brand link as "Meta Frames Film tracker" when the sidebar is expanded and when it is collapsed.
+- Each dashboard list and detail page has its own browser tab title.
+- Screen readers now read the label of text fields, drop-down fields, searchable drop-down fields and suggestion fields (such as camera brand) and notes fields in forms, and read the field error when the field has focus.
+- Saving a form while offline now ends at once with an error message, keeps what you typed, and does not send the change later.
+- An unexpected error in a dashboard page, or outside a page, now shows a message instead of failing silently.
+- When a roll changed while you edited it and the dashboard cannot load the new version, the edit dialog now stays open with what you typed, and saving again tries again.
 
 ### Security
 
 - `decode-uri-component` 0.2.2 is gone (CVE-2026-118664, denial of service through malformed percent-encoded input). An override moves `stylus` from 0.57 to 0.64, which drops the chain that pulled it in. It was a build-time dependency only.
+- `zod` below 4.6.6 is gone from the production dependencies (GHSA-mrhx-c7xc-m3w5, memory exhaustion while validating oversized collections). `shadcn-vue`, a CLI, moved to `devDependencies`, and `zod` 4.6.6 is pinned as a dev dependency, which the optional peer of `@t3-oss/env-core` now uses. The app does not import `zod`.
 
 ## [3.0.0] - 2026-11-15
 
@@ -392,7 +404,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v1.0.0...v2.0.0

@@ -43,33 +43,39 @@ defineProps<{
         #aside
         ><slot name="aside"
       /></template>
-      <div class="flex min-w-0 gap-2 [&>[data-slot=select-trigger]]:min-w-0">
-        <SearchableSelect
-          v-if="searchable"
-          :model-value="field.input == null ? '' : String(field.input)"
-          :options="options"
-          :placeholder="placeholder"
-          :disabled="disabled"
-          :invalid="!!field.errors"
-          @update:model-value="(value) => (field.input = value as never)"
-        />
-        <Select
-          v-else
-          :model-value="field.input == null ? '' : String(field.input)"
-          v-bind="field.props"
-          :options="options"
-          :placeholder="placeholder"
-          :allow-empty="!!optional"
-          :disabled="disabled"
-          @update:model-value="
-            (value) =>
-              (field.input = (
-                numeric ? (value === '' ? undefined : Number(value)) : value
-              ) as never)
-          "
-        />
-        <slot name="action" />
-      </div>
+      <template #default="{ id, errorId }">
+        <div class="flex min-w-0 gap-2 [&>[data-slot=select-trigger]]:min-w-0">
+          <SearchableSelect
+            v-if="searchable"
+            :model-value="field.input == null ? '' : String(field.input)"
+            :options="options"
+            :placeholder="placeholder"
+            :disabled="disabled"
+            :invalid="!!field.errors"
+            :input-id="id"
+            :error-id="errorId"
+            @update:model-value="(value) => (field.input = value as never)"
+          />
+          <Select
+            v-else
+            :id="id"
+            :aria-describedby="errorId"
+            :model-value="field.input == null ? '' : String(field.input)"
+            v-bind="field.props"
+            :options="options"
+            :placeholder="placeholder"
+            :allow-empty="!!optional"
+            :disabled="disabled"
+            @update:model-value="
+              (value) =>
+                (field.input = (
+                  numeric ? (value === '' ? undefined : Number(value)) : value
+                ) as never)
+            "
+          />
+          <slot name="action" />
+        </div>
+      </template>
     </FormField>
   </Field>
 </template>

@@ -65,16 +65,15 @@ const itemClass =
             class="group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center hover:bg-transparent"
             as-child
           >
-            <Link
-              to="/app"
-              aria-label="Meta Frames dashboard"
-            >
+            <Link to="/app">
               <img
                 src="/logo.png"
                 alt=""
                 class="size-8 shrink-0 rounded-md shadow-sm"
               />
-              <div class="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+              <div
+                class="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:sr-only"
+              >
                 <span class="truncate font-heading text-[0.95rem] font-bold">Meta Frames</span>
                 <span class="text-xs font-semibold tracking-[0.12em] text-primary uppercase">
                   Film tracker

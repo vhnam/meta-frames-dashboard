@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { useTitle } from '@vueuse/core';
+
 /**
  * Header card of a detail page: accent rule, kind tag and short ID, actions, the title, chips
  * and a row of stats. Fill `stats` with `<div>`s holding a `dt` and `dd`s. The default slot
  * goes under the chips.
  */
-defineProps<{
+const props = defineProps<{
   kind: string;
   id: string;
   title: string;
@@ -12,6 +14,11 @@ defineProps<{
   numericTitle?: boolean;
   wideStats?: boolean;
 }>();
+
+useTitle(() => props.title, {
+  titleTemplate: (title) => `${title} | Meta Frames`,
+  restoreOnUnmount: () => 'Meta Frames | Dashboard',
+});
 </script>
 
 <template>

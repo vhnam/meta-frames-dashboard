@@ -47,41 +47,47 @@ defineProps<{
         #aside
         ><slot name="aside"
       /></template>
-      <Textarea
-        v-if="multiline"
-        :model-value="field.input as string"
-        v-bind="field.props"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        @update:model-value="(value) => (field.input = value as never)"
-      />
-      <div
-        v-else
-        class="relative"
-      >
-        <Input
-          :model-value="field.input as string | number | undefined"
+      <template #default="{ id, errorId }">
+        <Textarea
+          v-if="multiline"
+          :id="id"
+          :aria-describedby="errorId"
+          :model-value="field.input as string"
           v-bind="field.props"
-          :type="type"
-          :min="min"
-          :max="max"
-          :step="step"
-          :list="list"
           :placeholder="placeholder"
-          :autocomplete="autocomplete"
           :disabled="disabled"
-          :aria-invalid="!!field.errors"
-          :class="suffix ? 'pr-20' : undefined"
           @update:model-value="(value) => (field.input = value as never)"
         />
-        <span
-          v-if="suffix"
-          class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground"
-          aria-hidden="true"
+        <div
+          v-else
+          class="relative"
         >
-          {{ suffix }}
-        </span>
-      </div>
+          <Input
+            :id="id"
+            :aria-describedby="errorId"
+            :model-value="field.input as string | number | undefined"
+            v-bind="field.props"
+            :type="type"
+            :min="min"
+            :max="max"
+            :step="step"
+            :list="list"
+            :placeholder="placeholder"
+            :autocomplete="autocomplete"
+            :disabled="disabled"
+            :aria-invalid="!!field.errors"
+            :class="suffix ? 'pr-20' : undefined"
+            @update:model-value="(value) => (field.input = value as never)"
+          />
+          <span
+            v-if="suffix"
+            class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground"
+            aria-hidden="true"
+          >
+            {{ suffix }}
+          </span>
+        </div>
+      </template>
     </FormField>
   </Field>
 </template>

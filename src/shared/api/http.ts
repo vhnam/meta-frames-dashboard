@@ -22,6 +22,10 @@ http.interceptors.response.use(undefined, (error: unknown) => {
     const message = error.response?.data?.message;
     // keep the AxiosError (callers read `response.status`), but show the server's message
     if (message) error.message = message;
+    // no response: the request did not reach the server
+    else if (!error.response) {
+      error.message = 'Could not reach the server. Check your connection and try again.';
+    }
     if (error.response?.status === 401 && !error.config?.url?.startsWith('/auth/')) {
       onUnauthorized?.();
     }

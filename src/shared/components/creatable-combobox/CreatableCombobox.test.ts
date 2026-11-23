@@ -28,6 +28,17 @@ afterEach(() => {
 });
 
 describe('CreatableCombobox', () => {
+  it('omits the input ID and description when no field IDs are supplied', () => {
+    const wrapper = render();
+    try {
+      const input = wrapper.get('input[role="combobox"]');
+      expect(input.attributes('id')).toBeUndefined();
+      expect(input.attributes('aria-describedby')).toBeUndefined();
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('lists the known values and picks one', async () => {
     const wrapper = render();
     await wrapper.find('button').trigger('click');

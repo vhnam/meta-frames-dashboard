@@ -1,5 +1,12 @@
 <script setup lang="ts">
-defineProps<{ title: string; description?: string }>();
+import { useTitle } from '@vueuse/core';
+
+const props = defineProps<{ title: string; description?: string }>();
+
+useTitle(() => props.title, {
+  titleTemplate: (title) => `${title} | Meta Frames`,
+  restoreOnUnmount: () => 'Meta Frames | Dashboard',
+});
 </script>
 
 <template>

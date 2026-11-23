@@ -25,10 +25,24 @@ const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
   id?: string;
+  /** `id` of the label element; set as `aria-labelledby` of the editable element. */
+  labelledBy?: string;
+  /** `id` of the error text; set as `aria-describedby` of the editable element. */
+  describedBy?: string;
   /** Put the cursor at the end as soon as the editor mounts. */
   autofocus?: boolean;
 }>();
 const model = defineModel<string>({ default: '' });
+
+// The editable element is made by tiptap; role="textbox" is its default, aria-multiline is not.
+const attributes = () => ({
+  ...(props.id ? { id: props.id } : {}),
+  ...(props.labelledBy ? { 'aria-labelledby': props.labelledBy } : {}),
+  ...(props.describedBy ? { 'aria-describedby': props.describedBy } : {}),
+  'aria-multiline': 'true',
+  'data-slot': 'rich-text-input',
+  class: 'rich-text font-heading min-h-24 px-3.5 py-2.5 leading-relaxed outline-none',
+});
 
 const editor = useEditor({
   content: model.value,
@@ -42,11 +56,7 @@ const editor = useEditor({
     Placeholder.configure({ placeholder: () => props.placeholder ?? '' }),
   ],
   editorProps: {
-    attributes: {
-      ...(props.id ? { id: props.id } : {}),
-      'data-slot': 'rich-text-input',
-      class: 'rich-text font-heading min-h-24 px-3.5 py-2.5 leading-relaxed outline-none',
-    },
+    attributes: attributes(),
   },
   onUpdate: ({ editor }) => {
     model.value = editor.isEmpty ? '' : editor.getMarkdown();
@@ -59,6 +69,11 @@ watch(model, (value) => {
   if (!instance || value === (instance.isEmpty ? '' : instance.getMarkdown())) return;
   instance.commands.setContent(value, { contentType: 'markdown', emitUpdate: false });
 });
+// tiptap reads editorProps.attributes once; setOptions re-applies them to the editable element.
+watch(
+  () => [props.labelledBy, props.describedBy],
+  () => editor.value?.setOptions({ editorProps: { attributes: attributes() } }),
+);
 watch(
   () => props.disabled,
   (disabled) => editor.value?.setEditable(!disabled),

@@ -1,12 +1,15 @@
 // @vitest-environment happy-dom
-import { VueQueryPlugin } from '@tanstack/vue-query';
-import { mount } from '@vue/test-utils';
+import { onlineManager, useMutation, VueQueryPlugin } from '@tanstack/vue-query';
+import { flushPromises, mount } from '@vue/test-utils';
+import { AxiosError } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { defineComponent, h } from 'vue';
+import { toast } from 'vue-sonner';
 
 import { auditKeys } from '#/features/audit/api';
 
-import { queryClient } from './client';
+import { errorMessage, queryClient } from './client';
+import { http } from './http';
 import { useApiMutation } from './mutation';
 
 vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -35,4 +38,57 @@ describe('audit log after a write', () => {
     expect(queryClient.getQueryState(auditKeys.list())?.isInvalidated).toBe(true);
     wrapper.unmount();
   });
+});
+
+describe('offline saves', () => {
+  it.each([false, true])(
+    'fails offline without replaying on reconnect (quiet: %s)',
+    async (quiet) => {
+      const message = 'Could not reach the server. Check your connection and try again.';
+      const adapter = vi.fn(async () => {
+        throw new AxiosError('Network Error', 'ERR_NETWORK');
+      });
+      const wasOnline = onlineManager.isOnline();
+      vi.mocked(toast.error).mockClear();
+      onlineManager.setOnline(false);
+
+      let save!: ReturnType<typeof useMutation<void>>;
+      const wrapper = mount(
+        defineComponent({
+          setup() {
+            save = useMutation({
+              mutationFn: async () => {
+                await http.post('/cameras', {}, { adapter });
+              },
+              meta: { quiet },
+            });
+            return () => h('div');
+          },
+        }),
+        { global: { plugins: [[VueQueryPlugin, { queryClient }]] } },
+      );
+
+      try {
+        save.mutate();
+        await vi.waitFor(() => expect(save.status.value).toBe('error'));
+        expect(save.isPaused.value).toBe(false);
+        expect(errorMessage(save.error.value)).toBe(message);
+        expect(adapter).toHaveBeenCalledTimes(1);
+        if (quiet) {
+          expect(toast.error).not.toHaveBeenCalled();
+        } else {
+          expect(toast.error).toHaveBeenCalledExactlyOnceWith(message, expect.any(Object));
+        }
+
+        onlineManager.setOnline(true);
+        await flushPromises();
+        expect(adapter).toHaveBeenCalledTimes(1);
+        expect(save.status.value).toBe('error');
+      } finally {
+        wrapper.unmount();
+        queryClient.clear();
+        onlineManager.setOnline(wasOnline);
+      }
+    },
+  );
 });

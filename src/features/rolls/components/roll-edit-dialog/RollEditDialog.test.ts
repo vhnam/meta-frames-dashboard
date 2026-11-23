@@ -1,8 +1,19 @@
 import { VueQueryPlugin } from '@tanstack/vue-query';
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRouter,
+  RouterProvider,
+} from '@tanstack/vue-router';
 import { flushPromises, mount } from '@vue/test-utils';
+import { AxiosError, type AxiosAdapter } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { h, onMounted, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
+import { installProviders } from '#/app/providers';
 import { queryClient } from '#/shared/api/client';
+import { http } from '#/shared/api/http';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 // @vitest-environment happy-dom
@@ -94,6 +105,88 @@ describe('RollEditDialog', () => {
     await flushPromises();
   };
   const puts = () => server.requests.filter((request) => request.method === 'put');
+
+  it('keeps a failed roll conflict refresh out of the route error boundary', async () => {
+    const rec = server.addRoll({ version: 2 });
+    const [row] = await queryClient.fetchQuery(rollQueries.list({}));
+    const rootRoute = createRootRoute({
+      component: {
+        setup() {
+          const open = ref(false);
+          onMounted(() => {
+            open.value = true;
+          });
+          return () => h(RollEditDialog, { row, open: open.value });
+        },
+      },
+    });
+    const router = createRouter({
+      routeTree: rootRoute,
+      history: createMemoryHistory({ initialEntries: ['/'] }),
+    });
+    await router.load();
+    const wrapper = mount(() => h(RouterProvider, { router }), {
+      attachTo: document.body,
+      global: { plugins: [installProviders] },
+    });
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(toast.error).mockClear();
+    Object.assign(server.rolls[0], { exposures: 12, version: 3 });
+    const originalAdapter = http.defaults.adapter;
+    const refreshError = new AxiosError('Network Error', 'ERR_NETWORK');
+    http.defaults.adapter = (config) => {
+      if (config.method === 'get' && config.url === `/rolls/${rec.id}`) {
+        return Promise.reject(refreshError);
+      }
+      return (originalAdapter as AxiosAdapter)(config);
+    };
+
+    try {
+      await vi.waitFor(() => expect(exposuresInput()).toBeTruthy());
+      await typeExposures('24');
+      await save();
+      await vi.waitFor(
+        () =>
+          expect(queryClient.getQueryState(rollQueries.detail(rec.id).queryKey)?.error).toBe(
+            refreshError,
+          ),
+        { timeout: 3000 },
+      );
+      await flushPromises();
+      expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+        'the roll was changed since it was loaded; reload it and apply your edit again',
+        expect.not.objectContaining({ id: 'unexpected-error' }),
+      );
+      expect(log).not.toHaveBeenCalled();
+      expect(warn).not.toHaveBeenCalledWith('Warning:', refreshError);
+      expect(exposuresInput().value).toBe('24');
+      expect(document.body.querySelector<HTMLButtonElement>('button[type=submit]')?.disabled).toBe(
+        false,
+      );
+      expect(puts()).toHaveLength(1);
+
+      http.defaults.adapter = originalAdapter;
+      await save();
+      await vi.waitFor(() => {
+        const conflict = document.body.querySelector('[role=alert]');
+        expect(conflict?.textContent).toContain('12');
+        expect(conflict?.textContent).toContain('Keep my edits');
+        expect(conflict?.textContent).toContain('Use the current values');
+      });
+      expect(puts()).toHaveLength(2);
+      expect(puts()[1].headers['If-Match']).toBe('"2"');
+      expect(
+        server.requests.filter(({ method, url }) => method === 'get' && url === `/rolls/${rec.id}`),
+      ).toHaveLength(1);
+      expect(exposuresInput().value).toBe('24');
+    } finally {
+      http.defaults.adapter = originalAdapter;
+      log.mockRestore();
+      warn.mockRestore();
+      wrapper.unmount();
+    }
+  });
 
   it('sends the version it loaded as If-Match', async () => {
     const rec = server.addRoll({ version: 4 });

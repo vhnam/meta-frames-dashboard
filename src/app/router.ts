@@ -1,6 +1,7 @@
-import { createRoute, createRouter, redirect } from '@tanstack/vue-router';
+import { createRoute, createRouter, ErrorComponent, redirect } from '@tanstack/vue-router';
 
 import { appRoute } from '#/app/appRoute';
+import { reportUnexpectedError } from '#/app/providers';
 import { rootRoute } from '#/app/rootRoute';
 import { auditRoutes } from '#/features/audit/routes';
 import { authKeys } from '#/features/auth';
@@ -48,7 +49,12 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-export const router = createRouter({ routeTree });
+// `defaultOnCatch` runs only when an error component is set (router Match.js:31-32).
+export const router = createRouter({
+  routeTree,
+  defaultErrorComponent: ErrorComponent,
+  defaultOnCatch: (error) => reportUnexpectedError(error, 'router error boundary'),
+});
 
 // The session ended on the server (logout elsewhere, password reset): back to login,
 // dropping every cached record of the previous user as Log out does.
