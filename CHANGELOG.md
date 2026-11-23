@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Opening a page while offline shows the error message instead of the browser's offline page.
 - A page that fails while it loads (not only while it renders) now shows the error message and is reported once.
 
 ## [3.1.0] - 2026-11-24

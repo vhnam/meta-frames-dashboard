@@ -223,6 +223,27 @@ it.each(['key set', 'missing', 'read throws', 'write throws'] as const)(
   },
 );
 
+it('shows and reports one stale import fallback without reloading while offline', async () => {
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+  const importer = vi.fn().mockRejectedValue(staleError);
+  const { log, report, reload } = observeErrors();
+  const { wrapper, navigate } = mountRouter(importer);
+  await vi.waitFor(() => expect(wrapper.find('a').exists()).toBe(true));
+
+  await navigate();
+
+  expect(reload).not.toHaveBeenCalled();
+  expect(wrapper.findAllComponents(RouteError)).toHaveLength(1);
+  const error: unknown = wrapper
+    .getComponent(RouteError)
+    .getComponent(ErrorComponent)
+    .props('error');
+  expect(error).toHaveProperty('cause', staleError);
+  expect(importer).toHaveBeenCalledTimes(1);
+  expect(log).toHaveBeenCalledExactlyOnceWith(error, 'router error boundary');
+  expect(report).toHaveBeenCalledExactlyOnceWith(expect.any(String), toastOptions);
+});
+
 it('uses the router reload on the first stale import without reporting before reload', async () => {
   const importer = vi.fn().mockRejectedValue(staleError);
   const { log, report, reload } = observeErrors();

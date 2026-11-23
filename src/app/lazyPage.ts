@@ -20,6 +20,8 @@ const ROUTER_RELOAD_KEY_PREFIX = 'tanstack_router_reload:';
 // shortcut: depends on the private key prefix of @tanstack/vue-router 1.170.42 and on the router
 // writing the key only in a mounted component's `setup` (lazyRouteComponent.js:55-63); recheck on a router upgrade.
 function routerCanReload() {
+  // offline, the reload would land on the browser's offline page instead of the app
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
   try {
     if (typeof sessionStorage === 'undefined') return false;
     sessionStorage.getItem(ROUTER_RELOAD_KEY_PREFIX); // a blocked read throws here
