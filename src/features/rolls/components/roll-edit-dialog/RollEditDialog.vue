@@ -99,6 +99,8 @@ async function showLatest(rollId: string) {
   try {
     const detail = await queryClient.fetchQuery({ ...rollQueries.detail(rollId), staleTime: 0 });
     latest.value = detail?.roll ?? null;
+  } catch {
+    // the conflict toast already shows; `latest` stays unset, so Save tries the refresh again
   } finally {
     reloading.value = false;
   }
