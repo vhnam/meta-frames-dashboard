@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-24
+
 ### Changed
 
 - The sign-in pages load only their own code; the dashboard shell loads after sign-in. The Rolls, Cameras, Lenses, Film stocks, Lab orders, Audit, Labs and Scanners pages load when you open them.
@@ -413,7 +415,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.0.0...v2.1.0
