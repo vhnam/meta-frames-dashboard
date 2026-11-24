@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Status badges, the Active and Inactive chips on cameras and lenses, and the film stock compatibility warnings use the design-system status colors in light and dark mode.
+- Status badges, the Active and Inactive chips on cameras and lenses, and the film stock compatibility warnings, the processing job dates, the expiry alerts and the sign-in form messages use the design-system status colors in light and dark mode.
 
 ## [3.2.0] - 2026-11-24
 

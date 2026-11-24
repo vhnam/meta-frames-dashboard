@@ -10,17 +10,16 @@ defineProps<{ tone?: 'error' | 'success' }>();
   <Alert
     v-if="tone === 'success'"
     role="status"
-    class="border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+    class="bg-status-success-bg text-status-success-fg"
   >
     <IconCircleCheck aria-hidden="true" />
     <AlertDescription class="text-current"><slot /></AlertDescription>
   </Alert>
   <Alert
     v-else
-    variant="destructive"
-    class="border-destructive/25 bg-destructive/10"
+    class="bg-status-danger-bg text-status-danger-fg"
   >
     <IconAlertCircle aria-hidden="true" />
-    <AlertDescription><slot /></AlertDescription>
+    <AlertDescription class="text-current"><slot /></AlertDescription>
   </Alert>
 </template>
