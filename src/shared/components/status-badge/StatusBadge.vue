@@ -6,15 +6,13 @@ export type StatusTone = 'neutral' | 'muted' | 'accent' | 'warning' | 'success' 
 defineProps<{ tone?: StatusTone }>();
 
 const TONE: Record<StatusTone, string> = {
-  neutral: 'bg-secondary text-secondary-foreground [&>i]:bg-foreground/60',
-  muted: 'bg-card text-muted-foreground [&>i]:bg-muted-foreground/60',
-  accent: 'border-primary/30 bg-primary/10 text-primary [&>i]:bg-primary',
-  warning:
-    'border-amber-200 bg-amber-100 text-amber-950 [&>i]:bg-amber-600 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100',
-  success:
-    'border-emerald-200 bg-emerald-50 text-emerald-900 [&>i]:bg-emerald-600 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-100',
-  info: 'border-sky-200 bg-sky-50 text-sky-900 [&>i]:bg-sky-600 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-100',
-  danger: 'border-destructive bg-destructive text-white [&>i]:bg-white',
+  neutral: 'bg-badge-neutral-bg text-badge-neutral-fg [&>i]:bg-badge-neutral-fg',
+  muted: 'bg-badge-neutral-bg text-badge-neutral-fg [&>i]:bg-badge-neutral-fg',
+  accent: 'bg-badge-info-bg text-badge-info-fg [&>i]:bg-badge-info-fg',
+  warning: 'bg-badge-warning-bg text-badge-warning-fg [&>i]:bg-badge-warning-fg',
+  success: 'bg-badge-success-bg text-badge-success-fg [&>i]:bg-badge-success-fg',
+  info: 'bg-badge-info-bg text-badge-info-fg [&>i]:bg-badge-info-fg',
+  danger: 'bg-badge-danger-bg text-badge-danger-fg [&>i]:bg-badge-danger-fg',
 };
 </script>
 
@@ -23,7 +21,7 @@ const TONE: Record<StatusTone, string> = {
     :class="
       cn(
         'inline-flex h-7 items-center gap-2 rounded-md border px-2.5 text-xs font-medium whitespace-nowrap shadow-xs',
-        TONE[tone ?? 'neutral'],
+        tone && Object.hasOwn(TONE, tone) ? TONE[tone] : TONE.neutral,
       )
     "
   >

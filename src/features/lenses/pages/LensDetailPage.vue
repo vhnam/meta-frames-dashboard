@@ -31,10 +31,8 @@ async function doDelete() {
 }
 
 const CHIP = 'inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm';
-const ACTIVE_TONE =
-  'border-transparent bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-100';
-const INACTIVE_TONE =
-  'border-transparent bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100';
+const ACTIVE_TONE = 'border-transparent bg-badge-success-bg text-badge-success-fg';
+const INACTIVE_TONE = 'border-transparent bg-badge-neutral-bg text-badge-neutral-fg';
 /** Header button tints, matching Delete's: amber to switch off, emerald to switch on. */
 const DEACTIVATE_TONE =
   'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900';

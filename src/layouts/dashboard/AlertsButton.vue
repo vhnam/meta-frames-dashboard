@@ -103,14 +103,14 @@ function setMenuOpen(open: boolean) {
               :class="[
                 'flex size-10 shrink-0 items-center justify-center rounded-full',
                 alert.expired
-                  ? 'bg-destructive/10 text-destructive'
-                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
+                  ? 'bg-status-danger-bg text-status-danger-fg'
+                  : 'bg-status-warning-bg text-status-warning-fg',
               ]"
               aria-hidden="true"
             >
               <component
                 :is="alert.expired ? IconCalendarX : IconClockHour4"
-                class="size-5"
+                class="size-5 text-current"
               />
             </span>
             <span class="grid min-w-0 gap-0.5">
@@ -123,7 +123,7 @@ function setMenuOpen(open: boolean) {
               <span
                 :class="[
                   'text-xs font-medium',
-                  alert.expired ? 'text-destructive' : 'text-amber-700 dark:text-amber-400',
+                  alert.expired ? 'text-status-danger-fg' : 'text-status-warning-fg',
                 ]"
               >
                 {{ expiryFromNow(alert.roll) }}

@@ -129,11 +129,11 @@ function statusOf(expected: string | null, actual: string | null): Step['status'
 }
 
 const TONE_CLASSES: Record<Tone, string> = {
-  done: 'text-emerald-700 dark:text-emerald-400',
-  late: 'text-amber-700 dark:text-amber-400',
-  overdue: 'text-destructive font-medium',
-  due: 'text-foreground',
-  pending: 'text-muted-foreground',
+  done: 'text-status-success-fg',
+  late: 'text-status-warning-fg',
+  overdue: 'text-status-danger-fg font-medium',
+  due: 'text-status-neutral-fg',
+  pending: 'text-status-neutral-fg',
 };
 
 /**

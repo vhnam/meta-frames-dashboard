@@ -106,7 +106,12 @@ describe('ProcessingJobs', () => {
       ['Negatives back', '04/09/2026', '06/09/2026', 'Done'],
       ['Scans back', '05/09/2026', '—', expect.stringMatching(/^Overdue \d+ days$/)],
     ]);
-    expect(rows[3]!.findAll('td')[2]!.classes()).toContain('text-destructive');
+    await wrapper.setProps({ jobs: [{ ...atLab, scansReceivedDate: '2026-09-07' }] } as never);
+    const scanStep = wrapper
+      .findAll('[aria-label=Dates] tbody tr')
+      .map(cells)
+      .find(([step]) => step === 'Scans back');
+    expect(scanStep).toEqual(['Scans back', '05/09/2026', '07/09/2026', '2 days late']);
     wrapper.unmount();
   });
 
