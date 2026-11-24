@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-11-24
+
 ### Changed
 
-- Status badges, the Active and Inactive chips on cameras and lenses, and the film stock compatibility warnings, the processing job dates, the expiry alerts and the sign-in form messages use the design-system status colors in light and dark mode.
+- Status badges, the Active and Inactive chips on cameras and lenses, film stock compatibility warnings, processing job dates, expiry alerts and sign-in form messages use the design-system status colors in light and dark mode.
 
 ## [3.2.0] - 2026-11-24
 
@@ -419,7 +421,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v2.1.0...v3.0.0
