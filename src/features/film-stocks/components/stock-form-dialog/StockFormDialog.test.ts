@@ -4,6 +4,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { queryClient } from '#/shared/api/client';
+import { http } from '#/shared/api/http';
 import { installFakeServer, server } from '#/test/fakeServer';
 
 import StockFormDialog from './StockFormDialog.vue';
@@ -42,4 +43,33 @@ describe('StockFormDialog brand', () => {
     expect(options).toEqual(['Ilford', 'Kodak']);
     wrapper.unmount();
   });
+});
+
+it('saves a stock whose film type and process produce a compatibility warning', async () => {
+  const stock = server.addStock({ type: 'bw', process: 'C-41' });
+  const save = vi.spyOn(http, 'put').mockResolvedValue({ status: 204 });
+  const wrapper = mount(StockFormDialog, {
+    attachTo: document.body,
+    props: { open: false, stockId: stock.id },
+    global: { plugins: [[VueQueryPlugin, { queryClient }]] },
+  });
+
+  try {
+    await flushPromises();
+    await wrapper.setProps({ open: true } as never);
+    await flushPromises();
+    document.body
+      .querySelector('form')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await flushPromises();
+
+    expect(save).toHaveBeenCalledExactlyOnceWith(
+      `/film-stocks/${stock.id}`,
+      expect.objectContaining({ type: 'bw', process: 'C-41' }),
+    );
+    expect(wrapper.emitted('saved')).toEqual([[stock.id]]);
+  } finally {
+    wrapper.unmount();
+    save.mockRestore();
+  }
 });

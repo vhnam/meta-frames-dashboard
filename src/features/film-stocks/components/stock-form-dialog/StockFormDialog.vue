@@ -199,7 +199,7 @@ async function submit(output: v.InferOutput<typeof StockSchema>) {
       <p
         v-for="warning in warnings"
         :key="warning"
-        class="text-sm text-amber-600"
+        class="rounded-md bg-status-warning-bg px-3 py-2 text-sm text-status-warning-fg"
       >
         {{ warning }}
       </p>
