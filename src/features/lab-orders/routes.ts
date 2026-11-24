@@ -1,25 +1,23 @@
 import { createRoute } from '@tanstack/vue-router';
-import { h, type VNode } from 'vue';
 
 import { appRoute } from '#/app/appRoute';
-
-import LabOrderDetailPage from './pages/LabOrderDetailPage.vue';
-import LabOrderListPage from './pages/LabOrderListPage.vue';
+import { lazyPage } from '#/app/lazyPage';
 
 const labOrderListRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'orders',
-  component: LabOrderListPage,
+  component: lazyPage(() => import('./pages/LabOrderListPage.vue')),
 });
 
-function LabOrderDetailRoute(): VNode {
-  return h(LabOrderDetailPage, { orderId: labOrderDetailRoute.useParams().value.orderId });
+function labOrderDetailProps(): () => Record<string, unknown> {
+  const params = labOrderDetailRoute.useParams();
+  return () => ({ orderId: params.value.orderId });
 }
 
 const labOrderDetailRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'orders/$orderId',
-  component: LabOrderDetailRoute,
+  component: lazyPage(() => import('./pages/LabOrderDetailPage.vue'), labOrderDetailProps),
 });
 
 export const labOrdersRoutes = [labOrderListRoute, labOrderDetailRoute];

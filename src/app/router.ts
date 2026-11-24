@@ -1,8 +1,9 @@
-import { createRoute, createRouter, ErrorComponent, redirect } from '@tanstack/vue-router';
+import { createRoute, createRouter, redirect } from '@tanstack/vue-router';
 
 import { appRoute } from '#/app/appRoute';
-import { reportUnexpectedError } from '#/app/providers';
 import { rootRoute } from '#/app/rootRoute';
+import RouteError from '#/app/RouteError.vue';
+import RoutePending from '#/app/RoutePending.vue';
 import { auditRoutes } from '#/features/audit/routes';
 import { authKeys } from '#/features/auth';
 import { authRoutes } from '#/features/auth/routes';
@@ -49,11 +50,12 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-// `defaultOnCatch` runs only when an error component is set (router Match.js:31-32).
+// `RouteError` reports in its own setup: the router renders it on the boundary path and on the match error path, and only the boundary path calls `defaultOnCatch`.
 export const router = createRouter({
   routeTree,
-  defaultErrorComponent: ErrorComponent,
-  defaultOnCatch: (error) => reportUnexpectedError(error, 'router error boundary'),
+  defaultErrorComponent: RouteError,
+  defaultPendingComponent: RoutePending,
+  defaultPreload: 'intent',
 });
 
 // The session ended on the server (logout elsewhere, password reset): back to login,

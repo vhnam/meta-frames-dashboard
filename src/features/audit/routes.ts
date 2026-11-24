@@ -1,9 +1,12 @@
 import { createRoute } from '@tanstack/vue-router';
 
 import { appRoute } from '#/app/appRoute';
-
-import AuditLogPage from './pages/AuditLogPage.vue';
+import { lazyPage } from '#/app/lazyPage';
 
 export const auditRoutes = [
-  createRoute({ getParentRoute: () => appRoute, path: 'audit', component: AuditLogPage }),
+  createRoute({
+    getParentRoute: () => appRoute,
+    path: 'audit',
+    component: lazyPage(() => import('./pages/AuditLogPage.vue')),
+  }),
 ];

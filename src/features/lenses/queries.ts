@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { toValue, type MaybeRefOrGetter } from 'vue';
 
 import { cameraKeys } from '#/features/cameras';
-import { rollKeys } from '#/features/rolls';
+import { rollKeys } from '#/features/rolls/api';
 import { patchQueries, useApiMutation } from '#/shared/api/mutation';
 
 import { deleteLens, lensKeys, lensQueries, saveLens, setLensActive } from './api';

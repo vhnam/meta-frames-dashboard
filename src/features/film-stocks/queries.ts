@@ -3,7 +3,7 @@ import { toValue, type MaybeRefOrGetter } from 'vue';
 
 import { cameraKeys } from '#/features/cameras';
 import { labOrderKeys } from '#/features/lab-orders/api';
-import { rollKeys } from '#/features/rolls';
+import { rollKeys } from '#/features/rolls/api';
 import { useApiMutation } from '#/shared/api/mutation';
 
 import { deleteStock, saveStock, stockKeys, stockQueries } from './api';

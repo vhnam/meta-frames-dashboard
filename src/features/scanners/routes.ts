@@ -1,9 +1,12 @@
 import { createRoute } from '@tanstack/vue-router';
 
 import { appRoute } from '#/app/appRoute';
-
-import ScannerListPage from './pages/ScannerListPage.vue';
+import { lazyPage } from '#/app/lazyPage';
 
 export const scannersRoutes = [
-  createRoute({ getParentRoute: () => appRoute, path: 'scanners', component: ScannerListPage }),
+  createRoute({
+    getParentRoute: () => appRoute,
+    path: 'scanners',
+    component: lazyPage(() => import('./pages/ScannerListPage.vue')),
+  }),
 ];

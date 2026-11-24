@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query';
 import { toValue, type MaybeRefOrGetter } from 'vue';
 
-import { rollKeys } from '#/features/rolls';
+import { rollKeys } from '#/features/rolls/api';
 import { useApiMutation } from '#/shared/api/mutation';
 
 import { importScans, previewImport, scanKeys, scanQueries } from './api';
