@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Status badges use the design-system status colors in light and dark mode.
+
 ## [3.2.0] - 2026-11-24
 
 ### Changed
