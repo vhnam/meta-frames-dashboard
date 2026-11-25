@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The sign-in page tells you when a Google sign-in uses an email that already belongs to another account: "This email already belongs to another account. Sign in the way you first signed up."
+
 ## [3.3.0] - 2026-11-24
 
 ### Changed
