@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - When the server requires a verified email, registering shows the server message and sends you to the sign-in page instead of signing you in.
-- The sign-in page tells you when a Google sign-in uses an email that already belongs to another account: "This email already belongs to another account. Sign in the way you first signed up."
+- Google sign-in account-conflict errors tell users that the email belongs to another account and to sign in using their original sign-in method.
+- Packaging badges now use the status colors (factory green, repack amber), and the other colors come from design tokens.
 
 ## [3.3.0] - 2026-11-24
 

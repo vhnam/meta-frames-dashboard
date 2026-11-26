@@ -88,10 +88,7 @@ const rolls = computed(() => (order.data.value ? jobsOnOrder(order.data.value) :
           <template #chips>
             <span
               :class="
-                cn(
-                  CHIP,
-                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                )
+                cn(CHIP, 'border-highlight-border bg-highlight-bg font-semibold text-highlight-fg')
               "
             >
               Lab: {{ data.labName }}

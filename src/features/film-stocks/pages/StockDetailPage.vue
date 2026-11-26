@@ -107,10 +107,7 @@ function relatedGroups(detail: StockDetail) {
             </span>
             <span
               :class="
-                cn(
-                  CHIP,
-                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                )
+                cn(CHIP, 'border-highlight-border bg-highlight-bg font-semibold text-highlight-fg')
               "
             >
               Box ISO {{ loaded.stock.boxIso }}
@@ -196,7 +193,7 @@ function relatedGroups(detail: StockDetail) {
                   </SpecTile>
                   <SpecTile label="Box ISO">
                     <span
-                      class="inline-flex rounded-sm border border-amber-300 bg-amber-50 px-2 py-0.5 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+                      class="inline-flex rounded-sm border border-highlight-border bg-highlight-bg px-2 py-0.5 text-sm text-highlight-fg"
                     >
                       ISO {{ loaded.stock.boxIso }}
                     </span>

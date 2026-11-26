@@ -33,11 +33,11 @@ async function doDelete() {
 const CHIP = 'inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm';
 const ACTIVE_TONE = 'border-transparent bg-badge-success-bg text-badge-success-fg';
 const INACTIVE_TONE = 'border-transparent bg-badge-neutral-bg text-badge-neutral-fg';
-/** Header button tints, matching Delete's: amber to switch off, emerald to switch on. */
+/** Header button tints, matching Delete's: deactivate and activate tokens. */
 const DEACTIVATE_TONE =
-  'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900';
+  'border-deactivate-border bg-deactivate-bg text-deactivate-fg hover:bg-deactivate-bg-hover hover:text-deactivate-fg-hover dark:border-deactivate-border dark:bg-deactivate-bg dark:hover:bg-deactivate-bg-hover';
 const ACTIVATE_TONE =
-  'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-900';
+  'border-activate-border bg-activate-bg text-activate-fg hover:bg-activate-bg-hover hover:text-activate-fg-hover dark:border-activate-border dark:bg-activate-bg dark:hover:bg-activate-bg-hover';
 
 const rows = computed(() => rolls.data.value ?? []);
 /** The roll this lens is shooting now, if any. */
@@ -92,10 +92,7 @@ const shot = computed(
           <template #chips>
             <span
               :class="
-                cn(
-                  CHIP,
-                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                )
+                cn(CHIP, 'border-highlight-border bg-highlight-bg font-semibold text-highlight-fg')
               "
             >
               {{ detail.lens.focalLength }}mm f/{{ detail.lens.maxAperture.toFixed(1) }}

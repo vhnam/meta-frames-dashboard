@@ -5,13 +5,6 @@
 set -euo pipefail
 
 baseline=(
-  src/features/cameras/pages/CameraDetailPage.vue
-  src/features/film-stocks/format.ts
-  src/features/film-stocks/pages/StockDetailPage.vue
-  src/features/lab-orders/pages/LabOrderDetailPage.vue
-  src/features/lenses/pages/LensDetailPage.vue
-  src/features/rolls/pages/RollDetailPage.vue
-  src/features/auth/components/auth-card/AuthCard.vue
 )
 
 # Permanent exceptions. Changes only with Nam's approval.
@@ -37,7 +30,7 @@ while IFS= read -r line; do
   [[ -z "$line" ]] && continue
   file=${line%%:*}
   allowed=0
-  for entry in "${baseline[@]}" "${exceptions[@]}"; do
+  for entry in "${baseline[@]+"${baseline[@]}"}" "${exceptions[@]}"; do
     [[ "$file" == "$entry" ]] && allowed=1
   done
   if [[ $allowed -eq 0 ]]; then
@@ -46,7 +39,7 @@ while IFS= read -r line; do
   fi
 done <<< "$matches"
 
-for entry in "${baseline[@]}"; do
+for entry in "${baseline[@]+"${baseline[@]}"}"; do
   entry_status=0
   grep -qE "$pattern" "$entry" 2>/dev/null || entry_status=$?
   if [[ $entry_status -eq 1 ]]; then

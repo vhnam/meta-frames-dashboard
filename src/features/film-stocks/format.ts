@@ -1,32 +1,31 @@
 import type { FilmStock, FilmType, Packaging, Process } from './types';
 
 const tone = {
-  amber: 'border-transparent bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-100',
-  zinc: 'border-transparent bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100',
-  sky: 'border-transparent bg-sky-100 text-sky-950 dark:bg-sky-950 dark:text-sky-100',
-  violet:
-    'border-transparent bg-violet-100 text-violet-950 dark:bg-violet-950 dark:text-violet-100',
-  emerald:
-    'border-transparent bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-100',
+  c41: 'border-transparent bg-process-c41-bg text-process-c41-fg',
+  e6: 'border-transparent bg-process-e6-bg text-process-e6-fg',
+  ecn2: 'border-transparent bg-process-ecn2-bg text-process-ecn2-fg',
+  bw: 'border-transparent bg-process-bw-bg text-process-bw-fg',
+  success: 'border-transparent bg-badge-success-bg text-badge-success-fg',
+  warning: 'border-transparent bg-badge-warning-bg text-badge-warning-fg',
 } as const;
 
 export const TYPE_TONE: Record<FilmType, string> = {
-  color: tone.amber,
-  bw: tone.zinc,
-  slide: tone.sky,
+  color: tone.c41,
+  bw: tone.bw,
+  slide: tone.e6,
 };
 
 export const PROCESS_TONE: Record<Process, string> = {
-  'C-41': tone.amber,
-  'E-6': tone.sky,
-  BW: tone.zinc,
-  'ECN-2': tone.violet,
+  'C-41': tone.c41,
+  'E-6': tone.e6,
+  BW: tone.bw,
+  'ECN-2': tone.ecn2,
 };
 
 export const PACKAGING_TONE: Record<Packaging, string> = {
-  factory: tone.emerald,
-  repack: tone.amber,
-  respooled: tone.violet,
+  factory: tone.success,
+  repack: tone.warning,
+  respooled: tone.ecn2,
 };
 
 /** What each process is: "C-41" reads as "Color negative". */

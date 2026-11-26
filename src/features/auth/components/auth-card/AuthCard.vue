@@ -9,7 +9,7 @@ defineProps<{ title: string; description: string }>();
       aria-hidden="true"
     >
       <span class="bg-primary" />
-      <span class="bg-[oklch(0.3_0.09_38)]" />
+      <span class="bg-brand-stripe" />
       <span class="bg-primary/20" />
       <span class="bg-border" />
     </div>
