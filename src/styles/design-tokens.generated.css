@@ -1,6 +1,6 @@
 /*
  * GENERATED FILE. DO NOT EDIT.
- * Source: meta-frames-design-tokens/tokens/tokens.json (not in Git), sha256 04e51a389123747a5b4dbfbe13e6f47d7083e28c4aaf02469a1fc46b1217baa9
+ * Source: meta-frames-design-tokens/tokens/tokens.json (not in Git), sha256 0091b2da032f6b25b135c2472e881ee57dbcfd808775e8052188af962a105cf8
  * Generator: sha256 225f8f17d3599819963ea2915e0ed12faa7158e0082927ea4da1b399cf7cd521 of package.json, pnpm-lock.yaml, src/build.ts, src/hooks.ts, tokens/bindings.json (meta-frames-design-tokens/, sorted by path)
  * Regenerate: node meta-frames-design-tokens/src/build.ts. Verify: node meta-frames-design-tokens/src/build.ts --check
  */
@@ -73,6 +73,28 @@
   --mf-semantic-color-chart-3: #f59e0b;
   --mf-semantic-color-chart-4: #0284c7;
   --mf-semantic-color-chart-5: #ef4444;
+  --mf-semantic-color-process-c41-bg: #fef3c7;
+  --mf-semantic-color-process-c41-fg: #451a03;
+  --mf-semantic-color-process-e6-bg: #e0f2fe;
+  --mf-semantic-color-process-e6-fg: #082f49;
+  --mf-semantic-color-process-ecn2-bg: #ede9fe;
+  --mf-semantic-color-process-ecn2-fg: #2e1065;
+  --mf-semantic-color-process-bw-bg: #e2e8f0;
+  --mf-semantic-color-process-bw-fg: #1e293b;
+  --mf-semantic-color-highlight-bg: #fffbeb;
+  --mf-semantic-color-highlight-fg: #451a03;
+  --mf-semantic-color-highlight-border: #fcd34d;
+  --mf-semantic-color-activate-bg: #ecfdf5;
+  --mf-semantic-color-activate-fg: #065f46;
+  --mf-semantic-color-activate-border: #6ee7b7;
+  --mf-semantic-color-activate-bg-hover: #d1fae5;
+  --mf-semantic-color-activate-fg-hover: #064e3b;
+  --mf-semantic-color-deactivate-bg: #fffbeb;
+  --mf-semantic-color-deactivate-fg: #92400e;
+  --mf-semantic-color-deactivate-border: #fcd34d;
+  --mf-semantic-color-deactivate-bg-hover: #fef3c7;
+  --mf-semantic-color-deactivate-fg-hover: #78350f;
+  --mf-semantic-color-brand-stripe: #511805;
   --mf-semantic-space-inset-xs: 4px;
   --mf-semantic-space-inset-sm: 8px;
   --mf-semantic-space-inset-md: 12px;
@@ -156,6 +178,16 @@
   --mf-component-button-danger-bg: #dc2626;
   --mf-component-button-danger-bg-hover: #b91c1c;
   --mf-component-button-danger-fg: #ffffff;
+  --mf-component-button-activate-bg: #ecfdf5;
+  --mf-component-button-activate-fg: #065f46;
+  --mf-component-button-activate-border: #6ee7b7;
+  --mf-component-button-activate-bg-hover: #d1fae5;
+  --mf-component-button-activate-fg-hover: #064e3b;
+  --mf-component-button-deactivate-bg: #fffbeb;
+  --mf-component-button-deactivate-fg: #92400e;
+  --mf-component-button-deactivate-border: #fcd34d;
+  --mf-component-button-deactivate-bg-hover: #fef3c7;
+  --mf-component-button-deactivate-fg-hover: #78350f;
   --mf-component-button-height-sm: 32px;
   --mf-component-button-height-md: 40px;
   --mf-component-button-height-lg: 48px;
@@ -201,6 +233,10 @@
   --mf-component-badge-radius: 9999px;
   --mf-component-badge-padding-x: 8px;
   --mf-component-badge-font-size: 0.75rem;
+  --mf-component-chip-highlight-bg: #fffbeb;
+  --mf-component-chip-highlight-fg: #451a03;
+  --mf-component-chip-highlight-border: #fcd34d;
+  --mf-component-auth-card-stripe: #511805;
   --mf-component-table-header-bg: #f1f5f9;
   --mf-component-table-header-fg: #475569;
   --mf-component-table-row-border: #e2e8f0;
@@ -293,6 +329,28 @@
   --mf-semantic-color-chart-3: #fbbf24;
   --mf-semantic-color-chart-4: #38bdf8;
   --mf-semantic-color-chart-5: #f87171;
+  --mf-semantic-color-process-c41-bg: #451a03;
+  --mf-semantic-color-process-c41-fg: #fef3c7;
+  --mf-semantic-color-process-e6-bg: #082f49;
+  --mf-semantic-color-process-e6-fg: #e0f2fe;
+  --mf-semantic-color-process-ecn2-bg: #2e1065;
+  --mf-semantic-color-process-ecn2-fg: #ede9fe;
+  --mf-semantic-color-process-bw-bg: #334155;
+  --mf-semantic-color-process-bw-fg: #f1f5f9;
+  --mf-semantic-color-highlight-bg: #451a03;
+  --mf-semantic-color-highlight-fg: #fef3c7;
+  --mf-semantic-color-highlight-border: #92400e;
+  --mf-semantic-color-activate-bg: #022c22;
+  --mf-semantic-color-activate-fg: #a7f3d0;
+  --mf-semantic-color-activate-border: #065f46;
+  --mf-semantic-color-activate-bg-hover: #064e3b;
+  --mf-semantic-color-activate-fg-hover: #a7f3d0;
+  --mf-semantic-color-deactivate-bg: #451a03;
+  --mf-semantic-color-deactivate-fg: #fde68a;
+  --mf-semantic-color-deactivate-border: #92400e;
+  --mf-semantic-color-deactivate-bg-hover: #78350f;
+  --mf-semantic-color-deactivate-fg-hover: #fde68a;
+  --mf-semantic-color-brand-stripe: #511805;
   --mf-component-button-primary-bg: #e2e8f0;
   --mf-component-button-primary-bg-hover: #cbd5e1;
   --mf-component-button-primary-fg: #0f172a;
@@ -309,6 +367,16 @@
   --mf-component-button-danger-bg: #f87171;
   --mf-component-button-danger-bg-hover: #fca5a5;
   --mf-component-button-danger-fg: #020617;
+  --mf-component-button-activate-bg: #022c22;
+  --mf-component-button-activate-fg: #a7f3d0;
+  --mf-component-button-activate-border: #065f46;
+  --mf-component-button-activate-bg-hover: #064e3b;
+  --mf-component-button-activate-fg-hover: #a7f3d0;
+  --mf-component-button-deactivate-bg: #451a03;
+  --mf-component-button-deactivate-fg: #fde68a;
+  --mf-component-button-deactivate-border: #92400e;
+  --mf-component-button-deactivate-bg-hover: #78350f;
+  --mf-component-button-deactivate-fg-hover: #fde68a;
   --mf-component-input-bg: #0f172a;
   --mf-component-input-fg: #f8fafc;
   --mf-component-input-placeholder: #94a3b8;
@@ -334,6 +402,10 @@
   --mf-component-badge-danger-fg: #f87171;
   --mf-component-badge-info-bg: #082f49;
   --mf-component-badge-info-fg: #38bdf8;
+  --mf-component-chip-highlight-bg: #451a03;
+  --mf-component-chip-highlight-fg: #fef3c7;
+  --mf-component-chip-highlight-border: #92400e;
+  --mf-component-auth-card-stripe: #511805;
   --mf-component-table-header-bg: #1e293b;
   --mf-component-table-header-fg: #cbd5e1;
   --mf-component-table-row-border: #1e293b;
