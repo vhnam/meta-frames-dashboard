@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- When the server requires a verified email, registering shows the server message and sends you to the sign-in page instead of signing you in.
+
 ### Changed
 
 - The sign-in page tells you when a Google sign-in uses an email that already belongs to another account: "This email already belongs to another account. Sign in the way you first signed up."

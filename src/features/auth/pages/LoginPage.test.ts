@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vite-
 import { queryClient } from '#/shared/api/client';
 import { http } from '#/shared/api/http';
 
+import { authKeys } from '../api';
 import { googleErrors } from '../session';
 import LoginPage from './LoginPage.vue';
 
@@ -85,6 +86,17 @@ describe('LoginPage', () => {
     const wrapper = await signIn();
     await vi.waitFor(() => expect(wrapper.text()).toContain('Wrong email or password.'));
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it('shows the server message when the email is not verified, stays on the page and caches no user', async () => {
+    loginReply = {
+      status: 403,
+      data: { code: 'email_verification_required', message: 'Verify your email first.' },
+    };
+    const wrapper = await signIn();
+    await vi.waitFor(() => expect(wrapper.text()).toContain('Verify your email first.'));
+    expect(push).not.toHaveBeenCalled();
+    expect(queryClient.getQueryData(authKeys.me())).toBeUndefined();
   });
 
   it.each([

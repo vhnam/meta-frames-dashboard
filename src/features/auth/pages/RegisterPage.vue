@@ -5,6 +5,7 @@ import type * as v from 'valibot';
 import { computed } from 'vue';
 
 import { errorMessage } from '#/shared/api/client';
+import { notify } from '#/shared/lib/toast';
 
 import AuthCard from '../components/auth-card/AuthCard.vue';
 import AuthInput from '../components/auth-input/AuthInput.vue';
@@ -26,10 +27,16 @@ const form = useForm({
 const target = computed(() => safeRedirect(props.redirect));
 
 async function submit({ name, email, password }: v.InferOutput<typeof RegisterSchema>) {
+  let result;
   try {
-    await registerUser.mutateAsync({ name, email, password });
+    result = await registerUser.mutateAsync({ name, email, password });
   } catch {
     return; // shown inline
+  }
+  if ('verificationRequired' in result) {
+    notify.success(result.message);
+    await router.navigate({ to: '/auth/login', search: { redirect: props.redirect } });
+    return;
   }
   router.history.push(target.value);
 }
