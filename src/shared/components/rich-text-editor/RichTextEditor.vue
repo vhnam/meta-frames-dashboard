@@ -25,7 +25,7 @@ import { inputFocusVariants } from '#/shared/ui/input';
 const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
-  id?: string;
+  inputId?: string;
   /** `id` of the label element; set as `aria-labelledby` of the editable element. */
   labelledBy?: string;
   /** `id` of the error text; set as `aria-describedby` of the editable element. */
@@ -37,7 +37,7 @@ const model = defineModel<string>({ default: '' });
 
 // The editable element is made by tiptap; role="textbox" is its default, aria-multiline is not.
 const attributes = () => ({
-  ...(props.id ? { id: props.id } : {}),
+  ...(props.inputId ? { id: props.inputId } : {}),
   ...(props.labelledBy ? { 'aria-labelledby': props.labelledBy } : {}),
   ...(props.describedBy ? { 'aria-describedby': props.describedBy } : {}),
   'aria-multiline': 'true',
