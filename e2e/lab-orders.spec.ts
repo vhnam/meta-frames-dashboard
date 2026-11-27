@@ -1,4 +1,4 @@
-import { API_URL, expect, seed, test } from './fixtures';
+import { API_URL, expect, expectNoSeriousA11yViolations, seed, test } from './fixtures';
 
 interface ApiOrder {
   items: { id: string; jobs: { id: string }[] }[];
@@ -24,6 +24,8 @@ test('L1: link an eligible job to a lab-order line, the relationship persists', 
   expect((await read()).items.flatMap((item) => item.jobs)).toEqual([]);
 
   await page.goto(`/app/orders/${order.id}`);
+  await expect(page.getByRole('row').filter({ hasText: 'L1 Scan' })).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
   // the "Add" button of the second line opens the dialog with that line ticked
   await page
     .getByRole('row')

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import AxeBuilder from '@axe-core/playwright';
 import { test as base, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
@@ -107,6 +108,24 @@ export function seed(page: Page) {
       return id;
     },
   };
+}
+
+/** Scan the loaded page with axe. Fails on any serious or critical WCAG A/AA violation. */
+export async function expectNoSeriousA11yViolations(page: Page) {
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  const serious = violations.filter(
+    (violation) => violation.impact === 'serious' || violation.impact === 'critical',
+  );
+  const report = serious.map(
+    (violation) =>
+      `${violation.id} (${violation.impact}): ${violation.nodes
+        .slice(0, 3)
+        .map((node) => node.target.join(' '))
+        .join(' | ')}`,
+  );
+  expect(report, `axe violations on ${page.url()}`).toEqual([]);
 }
 
 export { API_URL, expect };

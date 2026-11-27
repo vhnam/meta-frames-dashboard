@@ -87,7 +87,7 @@ function relatedGroups(detail: StockDetail) {
           <template #actions>
             <Button
               variant="outline"
-              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              class="border-destructive/30 bg-status-danger-bg text-status-danger-fg hover:bg-destructive/10 hover:text-status-danger-fg dark:border-destructive/30 dark:bg-status-danger-bg dark:hover:bg-destructive/20"
               @click="doDelete"
             >
               <IconTrash aria-hidden="true" /> Delete

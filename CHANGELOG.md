@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
 - End-to-end tests for email verification with the server in `enforce` mode (`pnpm exec playwright test --project=email-verification`): registering sends one verification mail and starts no session, a login before verification is refused with `email_verification_required`, the link verifies the address and a login then works, and a used link is refused with `invalid_token`.
+### Fixed
+
+- The Delete button on detail pages now has enough text contrast (WCAG AA).
 
 ### Changed
 
