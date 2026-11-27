@@ -14,10 +14,10 @@ const LABELS: Record<RollStatus, string> = {
   scanned: 'Scanned',
 };
 
-/** At lab stands out (the roll is away); in camera uses the accent; the rest stay quiet. */
+/** At lab stands out (the roll is away); in camera is informational; the rest stay quiet. */
 const TONE: Record<RollStatus, StatusTone> = {
-  in_stock: 'muted',
-  in_camera: 'accent',
+  in_stock: 'neutral',
+  in_camera: 'info',
   done_shooting: 'warning',
   at_lab: 'danger',
   developed: 'success',
