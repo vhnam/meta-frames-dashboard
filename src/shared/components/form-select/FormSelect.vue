@@ -44,7 +44,7 @@ defineProps<{
         ><slot name="aside"
       /></template>
       <template #default="{ id, errorId }">
-        <div class="flex min-w-0 gap-2 [&>[data-slot=select-trigger]]:min-w-0">
+        <div class="flex min-w-0 gap-2 *:data-[slot=select-trigger]:min-w-0">
           <SearchableSelect
             v-if="searchable"
             :model-value="field.input == null ? '' : String(field.input)"

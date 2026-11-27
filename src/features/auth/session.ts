@@ -15,7 +15,8 @@ export function safeRedirect(target: unknown): string {
 export const googleErrors: Record<string, string> = {
   google_denied: 'Google sign-in was cancelled.',
   email_not_verified: 'Your Google email address is not verified.',
-  account_conflict: "This email's account is linked to another Google account.",
+  account_conflict:
+    'This email already belongs to another account. Sign in the way you first signed up.',
   account_locked: 'Your account is locked. Try again in 15 minutes.',
   google_failed: 'Sign-in with Google failed. Try again.',
 };

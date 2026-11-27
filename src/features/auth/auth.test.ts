@@ -113,6 +113,26 @@ describe('session', () => {
     expect(queryClient.getQueryData(authKeys.me())).not.toEqual(expect.objectContaining(user));
   });
 
+  it('keeps the open page, query included, as the post-login target', async () => {
+    signedIn = true;
+    await router.navigate({ to: '/app/rolls', search: { tab: 'in_stock' } });
+    signedIn = false;
+    await http.get('/rolls').catch(() => {});
+    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/auth/login'));
+    const { redirect } = router.state.location.search as { redirect?: string };
+    expect(redirect).toBe('/app/rolls?tab=in_stock');
+    expect(safeRedirect(redirect)).toBe(redirect);
+  });
+
+  it('does not navigate when a 401 arrives outside the app, but still drops the cache', async () => {
+    await router.navigate({ to: '/auth/login' });
+    queryClient.setQueryData(['rolls'], [{ id: 'r1' }]);
+    await http.get('/rolls').catch(() => {});
+    await vi.waitFor(() => expect(queryClient.getQueryData(['rolls'])).toBeUndefined());
+    expect(router.state.location.pathname).toBe('/auth/login');
+    expect(router.state.location.search).not.toHaveProperty('redirect');
+  });
+
   it("forwards the API's legacy /login link with its query", async () => {
     await router.navigate({ href: '/login?error=google_denied' });
     expect(router.state.location.pathname).toBe('/auth/login');
