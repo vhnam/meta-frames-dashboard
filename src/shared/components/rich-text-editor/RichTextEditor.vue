@@ -19,6 +19,7 @@ import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { type Component, watch } from 'vue';
 
 import { cn } from '#/shared/lib/utils';
+import { inputFocusVariants } from '#/shared/ui/input';
 
 /** A WYSIWYG editor that reads and writes Markdown, so plain-text notes stay valid. */
 const props = defineProps<{
@@ -168,7 +169,12 @@ const groups: Tool[][] = [
   <div
     data-slot="rich-text"
     :data-disabled="disabled || undefined"
-    class="overflow-hidden rounded-md border border-input bg-transparent text-base shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[disabled]:opacity-50 dark:bg-input/30"
+    :class="
+      cn(
+        'overflow-hidden rounded-md border border-input bg-transparent text-base shadow-xs transition-[color,box-shadow] data-[disabled]:opacity-50 dark:bg-input/30',
+        inputFocusVariants({ focus: 'within' }),
+      )
+    "
   >
     <div
       v-if="editor && !disabled"
