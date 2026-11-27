@@ -6,17 +6,20 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vite-
 
 import { queryClient } from '#/shared/api/client';
 import { http } from '#/shared/api/http';
+import { notify } from '#/shared/lib/toast';
 
+import { authKeys } from '../api';
 import { PASSWORD_HINT } from '../schema';
 import RegisterPage from './RegisterPage.vue';
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+const { push, navigate } = vi.hoisted(() => ({ push: vi.fn(), navigate: vi.fn() }));
 
 vi.mock('@tanstack/vue-router', async (original) => ({
   ...(await original<typeof import('@tanstack/vue-router')>()),
-  useRouter: () => ({ history: { push } }),
+  useRouter: () => ({ history: { push }, navigate }),
 }));
 vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('#/shared/lib/toast', () => ({ notify: { success: vi.fn(), error: vi.fn() } }));
 
 const user = {
   id: '5a0c2f6e-8d31-4b7a-9e15-3c7f1d2b4a60',
@@ -30,6 +33,8 @@ const requests: InternalAxiosRequestConfig[] = [];
 const originalAdapter = http.defaults.adapter;
 http.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
   requests.push(config);
+  if (config.url === '/auth/me')
+    return { data: user, status: 200, statusText: 'OK', headers: {}, config };
   const response = { ...reply, statusText: String(reply.status), headers: {}, config };
   if (reply.status >= 400) {
     throw new AxiosError(`HTTP ${reply.status}`, 'ERR_BAD_REQUEST', config, null, response);
@@ -44,6 +49,8 @@ afterAll(() => {
 });
 beforeEach(() => {
   push.mockClear();
+  navigate.mockClear();
+  vi.mocked(notify.success).mockClear();
   requests.length = 0;
   queryClient.clear();
 });
@@ -100,5 +107,32 @@ describe('RegisterPage', () => {
     await submit(mountPage({ redirect }));
     await vi.waitFor(() => expect(push).toHaveBeenCalledExactlyOnceWith(expected));
     expect(requests[0]?.data).toContain('"email":"ansel@example.com"');
+  });
+
+  it('with verification required it caches no user, skips /auth/me, shows the message and goes to login', async () => {
+    reply = {
+      status: 201,
+      data: { message: 'Check your email to verify.', verificationRequired: true },
+    };
+    await submit(mountPage({ redirect: '/app/labs?page=2' }));
+    await vi.waitFor(() =>
+      expect(navigate).toHaveBeenCalledExactlyOnceWith({
+        to: '/auth/login',
+        search: { redirect: '/app/labs?page=2' },
+      }),
+    );
+    expect(notify.success).toHaveBeenCalledExactlyOnceWith('Check your email to verify.');
+    expect(queryClient.getQueryData(authKeys.me())).toBeUndefined();
+    expect(requests.map((request) => request.url)).toEqual(['/auth/register']);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('fetches and caches the user when registration returns only a message', async () => {
+    reply = { status: 201, data: { message: 'Registered' } };
+    await submit(mountPage({ redirect: '/app/labs' }));
+    await vi.waitFor(() => expect(push).toHaveBeenCalledExactlyOnceWith('/app/labs'));
+    expect(requests.map((request) => request.url)).toEqual(['/auth/register', '/auth/me']);
+    expect(queryClient.getQueryData(authKeys.me())).toMatchObject(user);
+    expect(notify.success).not.toHaveBeenCalled();
   });
 });

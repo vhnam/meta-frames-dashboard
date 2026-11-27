@@ -21,7 +21,11 @@ export interface ApiUser {
 interface AuthResult {
   message: string;
   user?: ApiUser;
+  verificationRequired?: boolean;
 }
+
+/** `verificationRequired` means the server made no session: the email must be verified first. */
+export type RegisterResult = { user: User } | { verificationRequired: true; message: string };
 
 const toUser = (apiUser: ApiUser): User => ({
   id: apiUser.id,
@@ -59,14 +63,15 @@ export const register = async (variables: {
   email: string;
   password: string;
   name: string;
-}): Promise<User> => {
+}): Promise<RegisterResult> => {
   const body = {
     email: variables.email,
     password: variables.password,
     name: variables.name.trim() || undefined,
   };
   const { data } = await http.post<AuthResult>('/auth/register', body);
-  return data.user ? toUser(data.user) : fetchMe();
+  if (data.verificationRequired) return { verificationRequired: true, message: data.message };
+  return { user: data.user ? toUser(data.user) : await fetchMe() };
 };
 
 export const logout = async () => {

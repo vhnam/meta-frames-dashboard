@@ -27,7 +27,18 @@ const useSignIn = <TVars>(fn: (vars: TVars) => Promise<User>) => {
 };
 
 export const useLogin = () => useSignIn(login);
-export const useRegister = () => useSignIn(register);
+
+/** Registration stores a user only when the server opened a session; otherwise the email needs verifying. */
+export const useRegister = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: register,
+    meta: { quiet: true },
+    onSuccess: (result) => {
+      if ('user' in result) qc.setQueryData(authKeys.me(), result.user);
+    },
+  });
+};
 
 export const useStartRecovery = () =>
   useMutation({ mutationFn: startRecovery, meta: { quiet: true } });
