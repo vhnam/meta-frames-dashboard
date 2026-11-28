@@ -24,8 +24,8 @@ export const STAGE_DETAIL_LABELS: Record<StageDetail, string> = {
 };
 
 const STAGE_TONE: Record<RollStage, StatusTone> = {
-  in_stock: 'muted',
-  in_camera: 'accent',
+  in_stock: 'neutral',
+  in_camera: 'info',
   done_shooting: 'warning',
   processing: 'info',
   completed: 'success',
@@ -35,8 +35,8 @@ const STAGE_TONE: Record<RollStage, StatusTone> = {
 const DETAIL_TONE: Record<StageDetail, StatusTone> = {
   lab_developing: 'info',
   lab_scanning: 'info',
-  home_developing: 'accent',
-  home_scanning: 'accent',
+  home_developing: 'info',
+  home_scanning: 'info',
   rescanning: 'info',
   waiting_scan: 'warning',
   waiting_home_scan: 'warning',

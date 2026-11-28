@@ -41,6 +41,15 @@ release. Add a tool name to select part of the graph. For example, run
 
 - Do not use single-character variable names, including callback parameters, loop indices and destructured values. Name the thing it holds: `roll`, `stock`, `index`, `event`, not `r`, `s`, `i`, `e`. `vp lint` enforces it (`id-length`); `_` for an unused parameter and `v` for the valibot import are allowed.
 
+## Design system rules
+
+- Before you build a new component, look in `src/shared/components` first, then in `src/shared/ui`.
+- Use colors only through tokens: the utilities in `src/styles/design-tokens.generated.css`.
+- Feature code is `src/` outside `src/shared/ui/` and the generated CSS. It has no raw palette class, no `oklch(` and no hex color.
+- Use one prop name for each concept: `inputId` for the input id, `invalid` for the error state.
+- `scripts/check-raw-colors.sh` enforces the color rule. The file list at the top of that script is a baseline. Remove a file from it when you fix the file. Never add a file to it.
+- The `exceptions` list in that script holds permanent exceptions, each with a reason. It changes only with Nam's approval.
+
 <!-- gitnexus:start -->
 
 # GitNexus — Code Intelligence

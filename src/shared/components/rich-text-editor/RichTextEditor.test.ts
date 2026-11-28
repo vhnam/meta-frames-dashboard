@@ -31,7 +31,7 @@ describe('RichTextEditor', () => {
     const disabled = ref(false);
     const wrapper = mount(() =>
       h(RichTextEditor, {
-        id: 'order-notes',
+        inputId: 'order-notes',
         describedBy: describedBy.value,
         disabled: disabled.value,
       }),

@@ -19,12 +19,13 @@ import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { type Component, watch } from 'vue';
 
 import { cn } from '#/shared/lib/utils';
+import { inputFocusVariants } from '#/shared/ui/input';
 
 /** A WYSIWYG editor that reads and writes Markdown, so plain-text notes stay valid. */
 const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
-  id?: string;
+  inputId?: string;
   /** `id` of the label element; set as `aria-labelledby` of the editable element. */
   labelledBy?: string;
   /** `id` of the error text; set as `aria-describedby` of the editable element. */
@@ -36,7 +37,7 @@ const model = defineModel<string>({ default: '' });
 
 // The editable element is made by tiptap; role="textbox" is its default, aria-multiline is not.
 const attributes = () => ({
-  ...(props.id ? { id: props.id } : {}),
+  ...(props.inputId ? { id: props.inputId } : {}),
   ...(props.labelledBy ? { 'aria-labelledby': props.labelledBy } : {}),
   ...(props.describedBy ? { 'aria-describedby': props.describedBy } : {}),
   'aria-multiline': 'true',
@@ -168,7 +169,12 @@ const groups: Tool[][] = [
   <div
     data-slot="rich-text"
     :data-disabled="disabled || undefined"
-    class="overflow-hidden rounded-md border border-input bg-transparent text-base shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 data-[disabled]:opacity-50 dark:bg-input/30"
+    :class="
+      cn(
+        'overflow-hidden rounded-md border border-input bg-transparent text-base shadow-xs transition-[color,box-shadow] data-[disabled]:opacity-50 dark:bg-input/30',
+        inputFocusVariants({ focus: 'within' }),
+      )
+    "
   >
     <div
       v-if="editor && !disabled"

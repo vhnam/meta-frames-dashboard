@@ -7,14 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-11-28
+
 ### Added
 
 - End-to-end tests for email verification with the server in `enforce` mode (`pnpm exec playwright test --project=email-verification`): registering sends one verification mail and starts no session, a login before verification is refused with `email_verification_required`, the link verifies the address and a login then works, and a used link is refused with `invalid_token`.
+- Storybook (`pnpm storybook`, `pnpm build-storybook`) with stories for the `shared/ui` primitives and the shared components, the accessibility addon, a light and dark theme toolbar and a router, so components with links render.
+- Utility classes for the new color roles: process, highlight, activate, deactivate and brand stripe.
+- `scripts/check-raw-colors.sh` runs in CI and fails on raw palette classes, `oklch()` and hex colors in feature code, except for a baseline that can only shrink and a list of exceptions with reasons.
+- `pnpm test` runs the unit tests (`vp test`). Before, it ran nothing and exited 0.
 
 ### Changed
 
 - When the server requires a verified email, registering shows the server message and sends you to the sign-in page instead of signing you in.
-- The sign-in page tells you when a Google sign-in uses an email that already belongs to another account: "This email already belongs to another account. Sign in the way you first signed up."
+- Google sign-in account-conflict errors tell users that the email belongs to another account and to sign in using their original sign-in method.
+- Packaging badges now use the status colors (factory green, repack amber), and the other colors come from design tokens.
+
+### Removed
+
+- The unused shared components `filter-card`, `filter-field`, `form-dialog` and `search-field`, and the `muted` and `accent` status tones (use `neutral` and `info`, which have the same classes).
+
+### Fixed
+
+- The Delete button on detail pages now has enough text contrast (WCAG AA).
 
 ## [3.3.0] - 2026-11-24
 
@@ -430,7 +445,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...v3.1.0

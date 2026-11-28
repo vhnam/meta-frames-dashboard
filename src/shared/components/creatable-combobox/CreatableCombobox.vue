@@ -14,6 +14,9 @@ import {
 } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 
+import { cn } from '#/shared/lib/utils';
+import { inputBoxClasses, inputFocusVariants } from '#/shared/ui/input';
+
 import type { ComboOption } from './combobox';
 
 /**
@@ -81,7 +84,7 @@ function commit() {
         :placeholder="placeholder"
         :aria-invalid="invalid || undefined"
         :aria-describedby="errorId"
-        class="h-9 w-full min-w-0 rounded-md border border-input bg-transparent py-1 pr-10 pl-3 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
+        :class="cn(inputBoxClasses, 'pr-10 pl-3', inputFocusVariants())"
         @input="typed = true"
         @blur="commit"
       />

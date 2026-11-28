@@ -87,7 +87,7 @@ function relatedGroups(detail: StockDetail) {
           <template #actions>
             <Button
               variant="outline"
-              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              class="border-destructive/30 bg-status-danger-bg text-status-danger-fg hover:bg-destructive/10 hover:text-status-danger-fg dark:border-destructive/30 dark:bg-status-danger-bg dark:hover:bg-destructive/20"
               @click="doDelete"
             >
               <IconTrash aria-hidden="true" /> Delete
@@ -107,10 +107,7 @@ function relatedGroups(detail: StockDetail) {
             </span>
             <span
               :class="
-                cn(
-                  CHIP,
-                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                )
+                cn(CHIP, 'border-highlight-border bg-highlight-bg font-semibold text-highlight-fg')
               "
             >
               Box ISO {{ loaded.stock.boxIso }}
@@ -196,7 +193,7 @@ function relatedGroups(detail: StockDetail) {
                   </SpecTile>
                   <SpecTile label="Box ISO">
                     <span
-                      class="inline-flex rounded-sm border border-amber-300 bg-amber-50 px-2 py-0.5 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+                      class="inline-flex rounded-sm border border-highlight-border bg-highlight-bg px-2 py-0.5 text-sm text-highlight-fg"
                     >
                       ISO {{ loaded.stock.boxIso }}
                     </span>

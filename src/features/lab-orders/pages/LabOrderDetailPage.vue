@@ -66,7 +66,7 @@ const rolls = computed(() => (order.data.value ? jobsOnOrder(order.data.value) :
           <template #actions>
             <Button
               variant="outline"
-              class="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              class="border-destructive/30 bg-status-danger-bg text-status-danger-fg hover:bg-destructive/10 hover:text-status-danger-fg dark:border-destructive/30 dark:bg-status-danger-bg dark:hover:bg-destructive/20"
               @click="doDelete"
             >
               <IconTrash aria-hidden="true" /> Delete
@@ -88,10 +88,7 @@ const rolls = computed(() => (order.data.value ? jobsOnOrder(order.data.value) :
           <template #chips>
             <span
               :class="
-                cn(
-                  CHIP,
-                  'border-amber-300 bg-amber-50 font-semibold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100',
-                )
+                cn(CHIP, 'border-highlight-border bg-highlight-bg font-semibold text-highlight-fg')
               "
             >
               Lab: {{ data.labName }}

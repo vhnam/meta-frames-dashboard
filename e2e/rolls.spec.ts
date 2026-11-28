@@ -1,4 +1,4 @@
-import { API_URL, expect, seed, test } from './fixtures';
+import { API_URL, expect, expectNoSeriousA11yViolations, seed, test } from './fixtures';
 import type { ApiRoll } from './fixtures';
 
 test('R1: add two rolls for a stock, they persist as distinct in-stock rolls', async ({
@@ -11,6 +11,9 @@ test('R1: add two rolls for a stock, they persist as distinct in-stock rolls', a
   expect(await (await api.get(listUrl)).json()).toEqual([]);
 
   await page.goto('/app/rolls');
+  await expect(page.getByRole('button', { name: 'Add rolls' })).toBeVisible();
+  await expect(page.getByRole('tablist')).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
   await page.getByRole('button', { name: 'Add rolls' }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('combobox', { name: 'Select film stock' }).click();
@@ -60,6 +63,8 @@ test('R2: load an in-stock roll into a camera, the assignment persists', async (
   const [rollId] = await seeded.rolls(stockId, 1);
 
   await page.goto(`/app/rolls/${rollId}`);
+  await expect(page.getByRole('button', { name: 'Load into camera' })).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
   await page.getByRole('button', { name: 'Load into camera' }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('combobox').filter({ hasText: 'Select a camera' }).click();

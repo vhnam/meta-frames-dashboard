@@ -2,17 +2,23 @@ import { randomUUID } from 'node:crypto';
 
 import type { Page } from '@playwright/test';
 
-import { API_URL, expect, test } from './fixtures';
+import { API_URL, expect, expectNoSeriousA11yViolations, test } from './fixtures';
 
 test('A1: login restores the protected path, the session survives reload, logout ends it', async ({
   page,
   account,
 }) => {
   const protectedPath = '/app/rolls?tab=in_stock';
+  await page.goto('/auth/register');
+  await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
+
   await page.goto(protectedPath);
 
   // anonymous visit lands on login and keeps the original location
   await expect(page).toHaveURL(/\/auth\/login/);
+  await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
   expect(new URL(page.url()).searchParams.get('redirect')).toContain(protectedPath);
 
   await page.getByRole('textbox', { name: 'Email' }).fill(account.email);
@@ -22,6 +28,9 @@ test('A1: login restores the protected path, the session survives reload, logout
   await expect(page).toHaveURL(
     (url) => url.pathname === '/app/rolls' && url.searchParams.get('tab') === 'in_stock',
   );
+  await expect(page.getByRole('button', { name: account.email })).toBeVisible();
+  await expect(page.getByRole('tablist')).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
 
   // reload: the cookie alone identifies the account
   const meResponse = page.waitForResponse(

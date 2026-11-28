@@ -44,3 +44,7 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.auth/
+
+# Storybook
+storybook-static/
+debug-storybook.log

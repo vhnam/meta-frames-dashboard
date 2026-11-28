@@ -1,7 +1,7 @@
 /*
  * GENERATED FILE. DO NOT EDIT.
- * Source: meta-frames-design-tokens/tokens/tokens.json (not in Git), sha256 04e51a389123747a5b4dbfbe13e6f47d7083e28c4aaf02469a1fc46b1217baa9
- * Generator: sha256 225f8f17d3599819963ea2915e0ed12faa7158e0082927ea4da1b399cf7cd521 of package.json, pnpm-lock.yaml, src/build.ts, src/hooks.ts, tokens/bindings.json (meta-frames-design-tokens/, sorted by path)
+ * Source: meta-frames-design-tokens/tokens/tokens.json (not in Git), sha256 ad9868c2dde00f25d599d23d7c494b5d412909549b979806762a56ec6db9385a
+ * Generator: sha256 afc89c6b2773fc473a735dc87886087780dc5cc17e59f13e335c18abaec857a7 of package.json, pnpm-lock.yaml, src/build.ts, src/hooks.ts, tokens/bindings.json (meta-frames-design-tokens/, sorted by path)
  * Regenerate: node meta-frames-design-tokens/src/build.ts. Verify: node meta-frames-design-tokens/src/build.ts --check
  */
 
@@ -34,111 +34,261 @@
 }
 
 :root {
+  /* Page background behind all other surfaces. Use bg.surface for cards and panels on top of it. */
   --mf-semantic-color-bg-canvas: #f8fafc;
+  /* Background of cards and panels on the page canvas. Use bg.surface-raised for dialogs, menus and popovers. */
   --mf-semantic-color-bg-surface: #ffffff;
+  /* Background of layers that float above a surface, such as dialogs, menus and popovers. Use bg.surface for flat cards and panels. */
   --mf-semantic-color-bg-surface-raised: #ffffff;
+  /* Quiet fill for hover rows, table headers and grouped areas. Do not use it as a page or card background. */
   --mf-semantic-color-bg-subtle: #f1f5f9;
+  /* Dark fill in light mode and light fill in dark mode, for tooltips and toasts. Put fg.inverse text on it. */
   --mf-semantic-color-bg-inverse: #0f172a;
+  /* Overlay behind a modal dialog or sheet. It is the same in light and dark mode. */
   --mf-semantic-color-bg-scrim: #0f172a99;
+  /* Main text and icon colour. Use fg.muted for secondary text. */
   --mf-semantic-color-fg-default: #0f172a;
+  /* Secondary text such as descriptions and helper text. It passes text contrast on bg.canvas and bg.surface. Use fg.subtle only for non-essential text. */
   --mf-semantic-color-fg-muted: #475569;
+  /* Weakest text colour, for hints and non-essential detail. Its contrast is not tested. Use fg.muted for text a user must read. */
   --mf-semantic-color-fg-subtle: #64748b;
+  /* Text and icons on bg.inverse. Do not use it on action.primary: use fg.on-primary. */
   --mf-semantic-color-fg-inverse: #ffffff;
+  /* Text and icons on action.primary and action.primary-hover. Do not use it on other fills. */
   --mf-semantic-color-fg-on-primary: #ffffff;
+  /* Text and icons on action.accent and action.accent-hover. */
   --mf-semantic-color-fg-on-accent: #ffffff;
+  /* Text and icons on action.danger and action.danger-hover. */
   --mf-semantic-color-fg-on-danger: #ffffff;
+  /* Divider and card outline. It is decorative. Use border.control for the edge of an input or button. */
   --mf-semantic-color-border-default: #e2e8f0;
+  /* Edge of form controls such as inputs, selects and checkboxes. It passes the 3:1 contrast needed for controls. Use border.default for dividers. */
   --mf-semantic-color-border-control: #64748b;
+  /* Focus ring colour on any interactive element. Pair it with border-width.focus. It passes 3:1 contrast on the page backgrounds. */
   --mf-semantic-color-border-focus: #059669;
+  /* Fill of the main button. Put fg.on-primary text on it. Use action.accent for the brand call to action. */
   --mf-semantic-color-action-primary: #334155;
+  /* Fill of the main button on hover or press. Put fg.on-primary text on it. */
   --mf-semantic-color-action-primary-hover: #1e293b;
+  /* Fill of the brand call-to-action button. Put fg.on-accent text on it. Use action.primary for normal main buttons. */
   --mf-semantic-color-action-accent: #047857;
+  /* Fill of the accent button on hover or press. Put fg.on-accent text on it. */
   --mf-semantic-color-action-accent-hover: #065f46;
+  /* Fill of the secondary button. Use fg.default text on it. */
   --mf-semantic-color-action-secondary: #f1f5f9;
+  /* Fill of the secondary button on hover or press. */
   --mf-semantic-color-action-secondary-hover: #e2e8f0;
+  /* Fill of a destructive button, such as delete. Put fg.on-danger text on it. Use status.danger for messages. */
   --mf-semantic-color-action-danger: #dc2626;
+  /* Fill of the destructive button on hover or press. Put fg.on-danger text on it. */
   --mf-semantic-color-action-danger-hover: #b91c1c;
+  /* Text and icon colour for a success message or badge. Use it on status.success.bg. */
   --mf-semantic-color-status-success-fg: #047857;
+  /* Background of a success message or badge. Put status.success.fg on it. */
   --mf-semantic-color-status-success-bg: #ecfdf5;
+  /* Text and icon colour for a warning message or badge. Use it on status.warning.bg. */
   --mf-semantic-color-status-warning-fg: #b45309;
+  /* Background of a warning message or badge. Put status.warning.fg on it. */
   --mf-semantic-color-status-warning-bg: #fffbeb;
+  /* Text and icon colour for an error message or badge. Use it on status.danger.bg. Use action.danger for buttons. */
   --mf-semantic-color-status-danger-fg: #b91c1c;
+  /* Background of an error message or badge. Put status.danger.fg on it. */
   --mf-semantic-color-status-danger-bg: #fef2f2;
+  /* Text and icon colour for an information message or badge. Use it on status.info.bg. */
   --mf-semantic-color-status-info-fg: #0369a1;
+  /* Background of an information message or badge. Put status.info.fg on it. */
   --mf-semantic-color-status-info-bg: #f0f9ff;
+  /* Text and icon colour for a neutral status badge with no good or bad meaning. Use it on status.neutral.bg. */
   --mf-semantic-color-status-neutral-fg: #334155;
+  /* Background of a neutral status badge. Put status.neutral.fg on it. */
   --mf-semantic-color-status-neutral-bg: #f1f5f9;
+  /* First series colour in a chart. Use the chart colours in order 1 to 5. */
   --mf-semantic-color-chart-1: #334155;
+  /* Second series colour in a chart. */
   --mf-semantic-color-chart-2: #059669;
+  /* Third series colour in a chart. */
   --mf-semantic-color-chart-3: #f59e0b;
+  /* Fourth series colour in a chart. */
   --mf-semantic-color-chart-4: #0284c7;
+  /* Fifth series colour in a chart. */
   --mf-semantic-color-chart-5: #ef4444;
+  /* Background of the C-41 label: the color film type and the C-41 process label. Put process.c41.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-c41-bg: #fef3c7;
+  /* Text of the C-41 label on process.c41.bg. The app uses this color for the C-41 stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-c41-fg: #451a03;
+  /* Background of the E-6 label: the slide film type and the E-6 process label. Put process.e6.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-e6-bg: #e0f2fe;
+  /* Text of the E-6 label on process.e6.bg. The app uses this color for the E-6 stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-e6-fg: #082f49;
+  /* Background of the ECN-2 process label and the respooled packaging label. Put process.ecn2.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-ecn2-bg: #ede9fe;
+  /* Text of the ECN-2 label on process.ecn2.bg. The app uses this color for the ECN-2 stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-ecn2-fg: #2e1065;
+  /* Background of the black and white label: the BW film type and the BW process label. Put process.bw.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-bw-bg: #e2e8f0;
+  /* Text of the black and white label on process.bw.bg. The app uses this color for the B&W stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-bw-fg: #1e293b;
+  /* Background of a metadata chip, such as a lens specification. Put highlight.fg on it. */
+  --mf-semantic-color-highlight-bg: #fffbeb;
+  /* Text of a metadata chip on highlight.bg. */
+  --mf-semantic-color-highlight-fg: #451a03;
+  /* Outline of a metadata chip. Use it with highlight.bg. */
+  --mf-semantic-color-highlight-border: #fcd34d;
+  /* Background of the activate button on equipment detail pages, such as cameras and lenses. Put activate.fg on it. Active and Inactive badges use status colors. */
+  --mf-semantic-color-activate-bg: #ecfdf5;
+  /* Text and icons of the activate button, on activate.bg. */
+  --mf-semantic-color-activate-fg: #065f46;
+  /* Outline of the activate button. Use it with activate.bg. */
+  --mf-semantic-color-activate-border: #6ee7b7;
+  /* Background of the activate button on hover or press. */
+  --mf-semantic-color-activate-bg-hover: #d1fae5;
+  /* Text and icons of the activate button on hover, on activate.bg-hover. */
+  --mf-semantic-color-activate-fg-hover: #064e3b;
+  /* Background of the deactivate button on equipment detail pages, such as cameras and lenses. Put deactivate.fg on it. Active and Inactive badges use status colors. */
+  --mf-semantic-color-deactivate-bg: #fffbeb;
+  /* Text and icons of the deactivate button, on deactivate.bg. */
+  --mf-semantic-color-deactivate-fg: #92400e;
+  /* Outline of the deactivate button. Use it with deactivate.bg. */
+  --mf-semantic-color-deactivate-border: #fcd34d;
+  /* Background of the deactivate button on hover or press. */
+  --mf-semantic-color-deactivate-bg-hover: #fef3c7;
+  /* Text and icons of the deactivate button on hover, on deactivate.bg-hover. */
+  --mf-semantic-color-deactivate-fg-hover: #78350f;
+  /* Colour of the decorative brand stripe on the auth card. It is the same in light and dark mode. Do not use it for text or controls. */
+  --mf-semantic-color-brand-stripe: #511805;
+  /* Padding inside a component, smallest step. Use space.gap for the space between components. */
   --mf-semantic-space-inset-xs: 4px;
+  /* Padding inside a compact component, such as a badge or a small button. */
   --mf-semantic-space-inset-sm: 8px;
+  /* Default padding inside a component, such as an input or a list row. */
   --mf-semantic-space-inset-md: 12px;
+  /* Padding inside a card or a panel. */
   --mf-semantic-space-inset-lg: 16px;
+  /* Padding inside a large section or a dialog. */
   --mf-semantic-space-inset-xl: 24px;
+  /* Smallest space between related elements, such as an icon and its label. Use space.inset for padding inside a component. */
   --mf-semantic-space-gap-xs: 4px;
+  /* Space between closely related elements, such as form label and field. */
   --mf-semantic-space-gap-sm: 8px;
+  /* Default space between sibling elements in a group. */
   --mf-semantic-space-gap-md: 12px;
+  /* Space between groups of elements, such as form fields. */
   --mf-semantic-space-gap-lg: 16px;
+  /* Space between page sections. */
   --mf-semantic-space-gap-xl: 24px;
+  /* Largest space between major page areas. */
   --mf-semantic-space-gap-2xl: 32px;
+  /* Page side margin on narrow screens, such as phones. */
   --mf-semantic-space-gutter-compact: 16px;
+  /* Page side margin on wide screens, such as desktop. */
   --mf-semantic-space-gutter-wide: 32px;
+  /* Smallest touch target height and width. Make every tap target at least this size. */
   --mf-semantic-size-touch-min: 44px;
+  /* Height of a small control, such as a compact button or input. It is smaller than size.touch-min, so add hit area around it. */
   --mf-semantic-size-control-sm: 32px;
+  /* Height of the default control, such as a button or input. */
   --mf-semantic-size-control-md: 40px;
+  /* Height of a large control, such as a main call-to-action button. */
   --mf-semantic-size-control-lg: 48px;
+  /* Small icon size, for icons inside dense rows or badges. */
   --mf-semantic-size-icon-sm: 16px;
+  /* Default icon size, for icons next to body text and in buttons. */
   --mf-semantic-size-icon-md: 20px;
+  /* Large icon size, for icons in headers and empty states. */
   --mf-semantic-size-icon-lg: 24px;
+  /* Corner radius of controls such as buttons and inputs. Use radius.surface for cards. */
   --mf-semantic-radius-control: 6px;
+  /* Corner radius of cards, panels and dialogs. Use radius.control for buttons and inputs. */
   --mf-semantic-radius-surface: 8px;
+  /* Fully rounded corner, for badges, chips and avatars. */
   --mf-semantic-radius-pill: 9999px;
+  /* Width of normal borders and dividers. */
   --mf-semantic-border-width-default: 1px;
+  /* Width of the focus ring. Use it with color.border.focus. */
   --mf-semantic-border-width-focus: 2px;
+  /* Font family of the display style. */
   --mf-semantic-text-display-font-family: "Space Grotesk Variable", ui-sans-serif, sans-serif;
+  /* Largest text style, for the main title of a page or a hero area. */
   --mf-semantic-text-display-font-size: 1.875rem;
+  /* Line height of the display style. */
   --mf-semantic-text-display-line-height: 1.25;
+  /* Font weight of the display style. */
   --mf-semantic-text-display-font-weight: 700;
+  /* Font family of the heading-1 style. */
   --mf-semantic-text-heading-1-font-family: "Space Grotesk Variable", ui-sans-serif, sans-serif;
+  /* Style of the main heading on a page. */
   --mf-semantic-text-heading-1-font-size: 1.5rem;
+  /* Line height of the heading-1 style. */
   --mf-semantic-text-heading-1-line-height: 1.25;
+  /* Font weight of the heading-1 style. */
   --mf-semantic-text-heading-1-font-weight: 600;
+  /* Font family of the heading-2 style. */
   --mf-semantic-text-heading-2-font-family: "Space Grotesk Variable", ui-sans-serif, sans-serif;
+  /* Style of a section heading. */
   --mf-semantic-text-heading-2-font-size: 1.25rem;
+  /* Line height of the heading-2 style. */
   --mf-semantic-text-heading-2-line-height: 1.375;
+  /* Font weight of the heading-2 style. */
   --mf-semantic-text-heading-2-font-weight: 600;
+  /* Font family of the heading-3 style. */
   --mf-semantic-text-heading-3-font-family: "Space Grotesk Variable", ui-sans-serif, sans-serif;
+  /* Style of a sub-section or card heading. */
   --mf-semantic-text-heading-3-font-size: 1.125rem;
+  /* Line height of the heading-3 style. */
   --mf-semantic-text-heading-3-line-height: 1.375;
+  /* Font weight of the heading-3 style. */
   --mf-semantic-text-heading-3-font-weight: 600;
+  /* Font family of the body style. */
   --mf-semantic-text-body-font-family: "Geist Mono Variable", ui-monospace, monospace;
+  /* Default style for paragraphs and most interface text. */
   --mf-semantic-text-body-font-size: 1rem;
+  /* Line height of the body style. */
   --mf-semantic-text-body-line-height: 1.5;
+  /* Font weight of the body style. */
   --mf-semantic-text-body-font-weight: 400;
+  /* Font family of the body-sm style. */
   --mf-semantic-text-body-sm-font-family: "Geist Mono Variable", ui-monospace, monospace;
+  /* Smaller body style, for secondary text and dense areas. */
   --mf-semantic-text-body-sm-font-size: 0.875rem;
+  /* Line height of the body-sm style. */
   --mf-semantic-text-body-sm-line-height: 1.5;
+  /* Font weight of the body-sm style. */
   --mf-semantic-text-body-sm-font-weight: 400;
+  /* Font family of the label style. */
   --mf-semantic-text-label-font-family: "Geist Mono Variable", ui-monospace, monospace;
+  /* Style of form labels and button text. */
   --mf-semantic-text-label-font-size: 0.875rem;
+  /* Line height of the label style. */
   --mf-semantic-text-label-line-height: 1.25;
+  /* Font weight of the label style. */
   --mf-semantic-text-label-font-weight: 500;
+  /* Font family of the caption style. */
   --mf-semantic-text-caption-font-family: "Geist Mono Variable", ui-monospace, monospace;
+  /* Smallest style, for captions, helper text and metadata. */
   --mf-semantic-text-caption-font-size: 0.75rem;
+  /* Line height of the caption style. */
   --mf-semantic-text-caption-line-height: 1.375;
+  /* Font weight of the caption style. */
   --mf-semantic-text-caption-font-weight: 400;
+  /* Font family of the data style. */
   --mf-semantic-text-data-font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  /* Monospace style, for numbers, codes and technical values. */
   --mf-semantic-text-data-font-size: 0.875rem;
+  /* Line height of the data style. */
   --mf-semantic-text-data-line-height: 1.5;
+  /* Font weight of the data style. */
   --mf-semantic-text-data-font-weight: 400;
+  /* Duration of an element that appears, such as a menu or dialog opening. Use motion.duration.exit when it leaves. */
   --mf-semantic-motion-duration-enter: 200ms;
+  /* Duration of an element that leaves. It is shorter than the enter duration, so the screen feels fast. */
   --mf-semantic-motion-duration-exit: 150ms;
+  /* Duration of a larger movement that needs attention, such as a page-level change. */
   --mf-semantic-motion-duration-emphasis: 300ms;
+  /* Easing curve for an element that appears. Use motion.easing.exit when it leaves. */
   --mf-semantic-motion-easing-enter: cubic-bezier(0.2, 0, 0, 1);
+  /* Easing curve for an element that leaves. It speeds up as it goes. */
   --mf-semantic-motion-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* Opacity for the text and icon colours of a disabled control. The app theme applies it to those colours, not to the whole control. */
   --mf-semantic-opacity-disabled: 0.38;
   --mf-component-button-primary-bg: #334155;
   --mf-component-button-primary-bg-hover: #1e293b;
@@ -156,6 +306,16 @@
   --mf-component-button-danger-bg: #dc2626;
   --mf-component-button-danger-bg-hover: #b91c1c;
   --mf-component-button-danger-fg: #ffffff;
+  --mf-component-button-activate-bg: #ecfdf5;
+  --mf-component-button-activate-fg: #065f46;
+  --mf-component-button-activate-border: #6ee7b7;
+  --mf-component-button-activate-bg-hover: #d1fae5;
+  --mf-component-button-activate-fg-hover: #064e3b;
+  --mf-component-button-deactivate-bg: #fffbeb;
+  --mf-component-button-deactivate-fg: #92400e;
+  --mf-component-button-deactivate-border: #fcd34d;
+  --mf-component-button-deactivate-bg-hover: #fef3c7;
+  --mf-component-button-deactivate-fg-hover: #78350f;
   --mf-component-button-height-sm: 32px;
   --mf-component-button-height-md: 40px;
   --mf-component-button-height-lg: 48px;
@@ -201,6 +361,10 @@
   --mf-component-badge-radius: 9999px;
   --mf-component-badge-padding-x: 8px;
   --mf-component-badge-font-size: 0.75rem;
+  --mf-component-chip-highlight-bg: #fffbeb;
+  --mf-component-chip-highlight-fg: #451a03;
+  --mf-component-chip-highlight-border: #fcd34d;
+  --mf-component-auth-card-stripe: #511805;
   --mf-component-table-header-bg: #f1f5f9;
   --mf-component-table-header-fg: #475569;
   --mf-component-table-row-border: #e2e8f0;
@@ -254,45 +418,128 @@
 }
 
 .dark {
+  /* Page background behind all other surfaces. Use bg.surface for cards and panels on top of it. */
   --mf-semantic-color-bg-canvas: #020617;
+  /* Background of cards and panels on the page canvas. Use bg.surface-raised for dialogs, menus and popovers. */
   --mf-semantic-color-bg-surface: #0f172a;
+  /* Background of layers that float above a surface, such as dialogs, menus and popovers. Use bg.surface for flat cards and panels. */
   --mf-semantic-color-bg-surface-raised: #1e293b;
+  /* Quiet fill for hover rows, table headers and grouped areas. Do not use it as a page or card background. */
   --mf-semantic-color-bg-subtle: #1e293b;
+  /* Dark fill in light mode and light fill in dark mode, for tooltips and toasts. Put fg.inverse text on it. */
   --mf-semantic-color-bg-inverse: #f8fafc;
+  /* Overlay behind a modal dialog or sheet. It is the same in light and dark mode. */
   --mf-semantic-color-bg-scrim: #0f172a99;
+  /* Main text and icon colour. Use fg.muted for secondary text. */
   --mf-semantic-color-fg-default: #f8fafc;
+  /* Secondary text such as descriptions and helper text. It passes text contrast on bg.canvas and bg.surface. Use fg.subtle only for non-essential text. */
   --mf-semantic-color-fg-muted: #cbd5e1;
+  /* Weakest text colour, for hints and non-essential detail. Its contrast is not tested. Use fg.muted for text a user must read. */
   --mf-semantic-color-fg-subtle: #94a3b8;
+  /* Text and icons on bg.inverse. Do not use it on action.primary: use fg.on-primary. */
   --mf-semantic-color-fg-inverse: #020617;
+  /* Text and icons on action.primary and action.primary-hover. Do not use it on other fills. */
   --mf-semantic-color-fg-on-primary: #0f172a;
+  /* Text and icons on action.accent and action.accent-hover. */
   --mf-semantic-color-fg-on-accent: #020617;
+  /* Text and icons on action.danger and action.danger-hover. */
   --mf-semantic-color-fg-on-danger: #020617;
+  /* Divider and card outline. It is decorative. Use border.control for the edge of an input or button. */
   --mf-semantic-color-border-default: #1e293b;
+  /* Edge of form controls such as inputs, selects and checkboxes. It passes the 3:1 contrast needed for controls. Use border.default for dividers. */
   --mf-semantic-color-border-control: #64748b;
+  /* Focus ring colour on any interactive element. Pair it with border-width.focus. It passes 3:1 contrast on the page backgrounds. */
   --mf-semantic-color-border-focus: #34d399;
+  /* Fill of the main button. Put fg.on-primary text on it. Use action.accent for the brand call to action. */
   --mf-semantic-color-action-primary: #e2e8f0;
+  /* Fill of the main button on hover or press. Put fg.on-primary text on it. */
   --mf-semantic-color-action-primary-hover: #cbd5e1;
+  /* Fill of the brand call-to-action button. Put fg.on-accent text on it. Use action.primary for normal main buttons. */
   --mf-semantic-color-action-accent: #34d399;
+  /* Fill of the accent button on hover or press. Put fg.on-accent text on it. */
   --mf-semantic-color-action-accent-hover: #6ee7b7;
+  /* Fill of the secondary button. Use fg.default text on it. */
   --mf-semantic-color-action-secondary: #1e293b;
+  /* Fill of the secondary button on hover or press. */
   --mf-semantic-color-action-secondary-hover: #334155;
+  /* Fill of a destructive button, such as delete. Put fg.on-danger text on it. Use status.danger for messages. */
   --mf-semantic-color-action-danger: #f87171;
+  /* Fill of the destructive button on hover or press. Put fg.on-danger text on it. */
   --mf-semantic-color-action-danger-hover: #fca5a5;
+  /* Text and icon colour for a success message or badge. Use it on status.success.bg. */
   --mf-semantic-color-status-success-fg: #34d399;
+  /* Background of a success message or badge. Put status.success.fg on it. */
   --mf-semantic-color-status-success-bg: #022c22;
+  /* Text and icon colour for a warning message or badge. Use it on status.warning.bg. */
   --mf-semantic-color-status-warning-fg: #fbbf24;
+  /* Background of a warning message or badge. Put status.warning.fg on it. */
   --mf-semantic-color-status-warning-bg: #451a03;
+  /* Text and icon colour for an error message or badge. Use it on status.danger.bg. Use action.danger for buttons. */
   --mf-semantic-color-status-danger-fg: #f87171;
+  /* Background of an error message or badge. Put status.danger.fg on it. */
   --mf-semantic-color-status-danger-bg: #450a0a;
+  /* Text and icon colour for an information message or badge. Use it on status.info.bg. */
   --mf-semantic-color-status-info-fg: #38bdf8;
+  /* Background of an information message or badge. Put status.info.fg on it. */
   --mf-semantic-color-status-info-bg: #082f49;
+  /* Text and icon colour for a neutral status badge with no good or bad meaning. Use it on status.neutral.bg. */
   --mf-semantic-color-status-neutral-fg: #cbd5e1;
+  /* Background of a neutral status badge. Put status.neutral.fg on it. */
   --mf-semantic-color-status-neutral-bg: #1e293b;
+  /* First series colour in a chart. Use the chart colours in order 1 to 5. */
   --mf-semantic-color-chart-1: #cbd5e1;
+  /* Second series colour in a chart. */
   --mf-semantic-color-chart-2: #34d399;
+  /* Third series colour in a chart. */
   --mf-semantic-color-chart-3: #fbbf24;
+  /* Fourth series colour in a chart. */
   --mf-semantic-color-chart-4: #38bdf8;
+  /* Fifth series colour in a chart. */
   --mf-semantic-color-chart-5: #f87171;
+  /* Background of the C-41 label: the color film type and the C-41 process label. Put process.c41.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-c41-bg: #451a03;
+  /* Text of the C-41 label on process.c41.bg. The app uses this color for the C-41 stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-c41-fg: #fef3c7;
+  /* Background of the E-6 label: the slide film type and the E-6 process label. Put process.e6.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-e6-bg: #082f49;
+  /* Text of the E-6 label on process.e6.bg. The app uses this color for the E-6 stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-e6-fg: #e0f2fe;
+  /* Background of the ECN-2 process label and the respooled packaging label. Put process.ecn2.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-ecn2-bg: #2e1065;
+  /* Text of the ECN-2 label on process.ecn2.bg. The app uses this color for the ECN-2 stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-ecn2-fg: #ede9fe;
+  /* Background of the black and white label: the BW film type and the BW process label. Put process.bw.fg on it. The app uses only the fg. */
+  --mf-semantic-color-process-bw-bg: #334155;
+  /* Text of the black and white label on process.bw.bg. The app uses this color for the B&W stamp, which draws its own tinted fill and border. */
+  --mf-semantic-color-process-bw-fg: #f1f5f9;
+  /* Background of a metadata chip, such as a lens specification. Put highlight.fg on it. */
+  --mf-semantic-color-highlight-bg: #451a03;
+  /* Text of a metadata chip on highlight.bg. */
+  --mf-semantic-color-highlight-fg: #fef3c7;
+  /* Outline of a metadata chip. Use it with highlight.bg. */
+  --mf-semantic-color-highlight-border: #92400e;
+  /* Background of the activate button on equipment detail pages, such as cameras and lenses. Put activate.fg on it. Active and Inactive badges use status colors. */
+  --mf-semantic-color-activate-bg: #022c22;
+  /* Text and icons of the activate button, on activate.bg. */
+  --mf-semantic-color-activate-fg: #a7f3d0;
+  /* Outline of the activate button. Use it with activate.bg. */
+  --mf-semantic-color-activate-border: #065f46;
+  /* Background of the activate button on hover or press. */
+  --mf-semantic-color-activate-bg-hover: #064e3b;
+  /* Text and icons of the activate button on hover, on activate.bg-hover. */
+  --mf-semantic-color-activate-fg-hover: #a7f3d0;
+  /* Background of the deactivate button on equipment detail pages, such as cameras and lenses. Put deactivate.fg on it. Active and Inactive badges use status colors. */
+  --mf-semantic-color-deactivate-bg: #451a03;
+  /* Text and icons of the deactivate button, on deactivate.bg. */
+  --mf-semantic-color-deactivate-fg: #fde68a;
+  /* Outline of the deactivate button. Use it with deactivate.bg. */
+  --mf-semantic-color-deactivate-border: #92400e;
+  /* Background of the deactivate button on hover or press. */
+  --mf-semantic-color-deactivate-bg-hover: #78350f;
+  /* Text and icons of the deactivate button on hover, on deactivate.bg-hover. */
+  --mf-semantic-color-deactivate-fg-hover: #fde68a;
+  /* Colour of the decorative brand stripe on the auth card. It is the same in light and dark mode. Do not use it for text or controls. */
+  --mf-semantic-color-brand-stripe: #511805;
   --mf-component-button-primary-bg: #e2e8f0;
   --mf-component-button-primary-bg-hover: #cbd5e1;
   --mf-component-button-primary-fg: #0f172a;
@@ -309,6 +556,16 @@
   --mf-component-button-danger-bg: #f87171;
   --mf-component-button-danger-bg-hover: #fca5a5;
   --mf-component-button-danger-fg: #020617;
+  --mf-component-button-activate-bg: #022c22;
+  --mf-component-button-activate-fg: #a7f3d0;
+  --mf-component-button-activate-border: #065f46;
+  --mf-component-button-activate-bg-hover: #064e3b;
+  --mf-component-button-activate-fg-hover: #a7f3d0;
+  --mf-component-button-deactivate-bg: #451a03;
+  --mf-component-button-deactivate-fg: #fde68a;
+  --mf-component-button-deactivate-border: #92400e;
+  --mf-component-button-deactivate-bg-hover: #78350f;
+  --mf-component-button-deactivate-fg-hover: #fde68a;
   --mf-component-input-bg: #0f172a;
   --mf-component-input-fg: #f8fafc;
   --mf-component-input-placeholder: #94a3b8;
@@ -334,6 +591,10 @@
   --mf-component-badge-danger-fg: #f87171;
   --mf-component-badge-info-bg: #082f49;
   --mf-component-badge-info-fg: #38bdf8;
+  --mf-component-chip-highlight-bg: #451a03;
+  --mf-component-chip-highlight-fg: #fef3c7;
+  --mf-component-chip-highlight-border: #92400e;
+  --mf-component-auth-card-stripe: #511805;
   --mf-component-table-header-bg: #1e293b;
   --mf-component-table-header-fg: #cbd5e1;
   --mf-component-table-row-border: #1e293b;
