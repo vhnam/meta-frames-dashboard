@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Storybook (`pnpm storybook`, `pnpm build-storybook`) with stories for the `shared/ui` primitives and the shared components, the accessibility addon, a light and dark theme toolbar and a router, so components with links render.
 - Utility classes for the new color roles: process, highlight, activate, deactivate and brand stripe.
 - `scripts/check-raw-colors.sh` runs in CI and fails on raw palette classes, `oklch()` and hex colors in feature code, except for a baseline that can only shrink and a list of exceptions with reasons.
+- `pnpm test` runs the unit tests (`vp test`). Before, it ran nothing and exited 0.
 
 ### Changed
 
