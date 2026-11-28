@@ -8,16 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- End-to-end tests for email verification with the server in `enforce` mode (`pnpm exec playwright test --project=email-verification`): registering sends one verification mail and starts no session, a login before verification is refused with `email_verification_required`, the link verifies the address and a login then works, and a used link is refused with `invalid_token`.
-### Fixed
 
-- The Delete button on detail pages now has enough text contrast (WCAG AA).
+- End-to-end tests for email verification with the server in `enforce` mode (`pnpm exec playwright test --project=email-verification`): registering sends one verification mail and starts no session, a login before verification is refused with `email_verification_required`, the link verifies the address and a login then works, and a used link is refused with `invalid_token`.
+- Storybook (`pnpm storybook`, `pnpm build-storybook`) with stories for the `shared/ui` primitives and the shared components, the accessibility addon, a light and dark theme toolbar and a router, so components with links render.
+- Utility classes for the new color roles: process, highlight, activate, deactivate and brand stripe.
+- `scripts/check-raw-colors.sh` runs in CI and fails on raw palette classes, `oklch()` and hex colors in feature code, except for a baseline that can only shrink and a list of exceptions with reasons.
 
 ### Changed
 
 - When the server requires a verified email, registering shows the server message and sends you to the sign-in page instead of signing you in.
 - Google sign-in account-conflict errors tell users that the email belongs to another account and to sign in using their original sign-in method.
 - Packaging badges now use the status colors (factory green, repack amber), and the other colors come from design tokens.
+
+### Removed
+
+- The unused shared components `filter-card`, `filter-field`, `form-dialog` and `search-field`, and the `muted` and `accent` status tones (use `neutral` and `info`, which have the same classes).
+
+### Fixed
+
+- The Delete button on detail pages now has enough text contrast (WCAG AA).
 
 ## [3.3.0] - 2026-11-24
 
