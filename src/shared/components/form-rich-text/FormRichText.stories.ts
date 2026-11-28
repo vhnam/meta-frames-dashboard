@@ -1,6 +1,7 @@
 import { getInput, useForm } from '@formisch/vue';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import * as v from 'valibot';
+import type { ConcreteComponent } from 'vue';
 
 import { required } from '#/shared/lib/schema';
 
@@ -37,7 +38,8 @@ const renderWith =
   });
 
 const meta = {
-  component: FormRichText,
+  // Generic SFC: Storybook cannot infer its props, so type it with the story args.
+  component: FormRichText as unknown as ConcreteComponent<Props>,
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
   args: {

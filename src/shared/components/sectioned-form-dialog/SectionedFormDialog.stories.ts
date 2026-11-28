@@ -2,6 +2,7 @@ import { useForm } from '@formisch/vue';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import * as v from 'valibot';
 import { ref } from 'vue';
+import type { ConcreteComponent } from 'vue';
 
 import { required } from '#/shared/lib/schema';
 import { Button } from '#/shared/ui/button';
@@ -50,7 +51,8 @@ const renderWith = (options: { startOpen: boolean; invalid?: boolean }) => (args
 
 // Every story opens the one shared dialog overlay, so a docs page would mount several: autodocs is off.
 const meta = {
-  component: SectionedFormDialog,
+  // Generic SFC: Storybook cannot infer its props, so type it with the story args.
+  component: SectionedFormDialog as unknown as ConcreteComponent<Props>,
   tags: ['!autodocs'],
   parameters: { layout: 'centered' },
   args: {

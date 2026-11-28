@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref, watch } from 'vue';
+import type { ConcreteComponent } from 'vue';
 
 import type { DataTableColumn } from './dataTable';
 import DataTable from './DataTable.vue';
@@ -60,7 +61,8 @@ const columns: DataTableColumn<Roll>[] = [
 
 // The router comes from the global router decorator (the table keeps page and page size in the URL).
 const meta = {
-  component: DataTable,
+  // Generic SFC: Storybook cannot infer its props, so type it with the story args.
+  component: DataTable as unknown as ConcreteComponent<Props>,
   tags: ['autodocs'],
   args: {
     columns,

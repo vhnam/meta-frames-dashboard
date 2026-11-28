@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { useQuery } from '@tanstack/vue-query';
+import type { ConcreteComponent } from 'vue';
 
 import QueryBoundary from './QueryBoundary.vue';
 
@@ -22,7 +23,8 @@ const fetchers: Record<State, () => Promise<Roll[]>> = {
 };
 
 const meta = {
-  component: QueryBoundary,
+  // Generic SFC: Storybook cannot infer its props, so type it with the story args.
+  component: QueryBoundary as unknown as ConcreteComponent<Props>,
   tags: ['autodocs'],
   args: { state: 'success' },
   argTypes: {

@@ -1,6 +1,7 @@
 import { useForm } from '@formisch/vue';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import * as v from 'valibot';
+import type { ConcreteComponent } from 'vue';
 
 import { required } from '#/shared/lib/schema';
 
@@ -36,7 +37,8 @@ const renderWith =
   });
 
 const meta = {
-  component: FormCombobox,
+  // Generic SFC: Storybook cannot infer its props, so type it with the story args.
+  component: FormCombobox as unknown as ConcreteComponent<Props>,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
   args: {
