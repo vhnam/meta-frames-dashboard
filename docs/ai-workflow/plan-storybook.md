@@ -19,17 +19,16 @@ No story ships to production. No `CHANGELOG.md` entry (dev tooling only, not use
 ## Decisions
 
 1. **Story location:** colocate `<Name>.stories.ts` next to the component, as the repo colocates `*.test.ts`.
-2. **One story file per component group.** A shadcn group (for example `src/shared/ui/dialog/*`) gets one file that composes its parts. A shared or feature component gets one file.
-3. **Titles:** automatic from the path, with `titlePrefix` per directory in `main.ts`: `UI` (`src/shared/ui`), `Components` (`src/shared/components`), `Features` (`src/features`). No explicit `title` in the story files.
+2. **One story file per component group.** A shadcn group (for example `src/shared/ui/dialog/*`) gets one file that composes its parts. A shared component gets one file.
+3. **Titles:** automatic from the path, with `titlePrefix` per directory in `main.ts`: `UI` (`src/shared/ui`), `Components` (`src/shared/components`). No explicit `title` in the story files.
 4. **Addons:** keep `@storybook/addon-docs`. Add `@storybook/addon-a11y` (the repo already scans pages with axe). Remove `@chromatic-com/storybook` (no Chromatic account in use). Keep `@storybook/addon-vitest` installed but do not wire story tests into `vp test` (out of scope).
 5. **Global setup in `preview.ts`:**
    - Import `#/styles/index.css` and `vue-sonner/style.css`.
    - `setup(app)`: install `VueQueryPlugin` with a new `QueryClient` (`retry: false`, `staleTime: Infinity`). Do not use the app `queryClient` from `#/shared/api/client`.
    - A theme toolbar global (`light` / `dark`) and a decorator that toggles the `.dark` class on `document.documentElement`. Do not import `#/shared/lib/theme` (it writes `localStorage` and follows the OS).
    - A router decorator: a TanStack Vue Router with memory history and one catch-all route that renders the story, so components with `<Link>` render. Reuse it in every story; no per-story router.
-6. **Data-coupled feature components** (they call `use*List` / `use*Detail` or mutations): seed the story `QueryClient` with `setQueryData` under the feature's existing query keys (`rollKeys`, `cameraKeys`, and so on). No network, no MSW, no new mock layer. A story does not submit a mutation.
-7. **Form components** (`FormInput`, `FormSelect`, and so on) take a formisch `FormStore`: each story creates one with `useForm` and a small valibot schema inside `render`.
-8. **Fixtures:** typed inline objects in each story file. If 3 or more story files in one feature need the same object, put it in `src/features/<feature>/stories.fixtures.ts`.
+6. **Form components** (`FormInput`, `FormSelect`, and so on) take a formisch `FormStore`: each story creates one with `useForm` and a small valibot schema inside `render`.
+7. **Fixtures:** typed inline objects in each story file.
 
 ## Rules for every slice
 
@@ -42,10 +41,11 @@ No story ships to production. No `CHANGELOG.md` entry (dev tooling only, not use
 ## In scope
 
 - Storybook config, global decorators, cleanup of init boilerplate.
-- Stories for every component group in `src/shared/ui`, `src/shared/components`, `src/features/*/components`.
+- Stories for every component group in `src/shared/ui` and `src/shared/components`.
 
 ## Out of scope
 
+- Feature components (`src/features/*/components`). The plan ends at slice 5 (Nam, 2026-11-28).
 - Pages (`src/features/*/pages`), layouts (`src/layouts`), `src/app`.
 - Story tests in `vp test` (`@storybook/addon-vitest` wiring), visual regression, Chromatic, CI jobs.
 - MSW or any other new mock dependency.
@@ -88,28 +88,7 @@ Allowed files: `src/shared/components/<dir>/<Name>.stories.ts` for these directo
 `creatable-combobox`, `form-combobox`, `form-field`, `form-input`, `form-rich-text`, `form-section`, `form-select`, `rich-text-editor`, `searchable-select`, `sectioned-form-dialog`, `select`.
 Allowed files: `src/shared/components/<dir>/<Name>.stories.ts` for these directories.
 
-### Slice 6: features `audit`, `auth`, `scans`, `scanners`
-
-`audit-action-badge`, `audit-log-sheet`, `auth-card`, `auth-input`, `auth-layout`, `auth-submit`, `form-alert`, `google-sign-in`, `compare-scans-dialog`, `import-scans-dialog`, `scan-image`, `scan-settings-fields`, `scanner-form-dialog`.
-Allowed files: `<Name>.stories.ts` in those component directories, plus `src/features/<feature>/stories.fixtures.ts` for these features under Decision 8.
-Risk: `GoogleSignIn` loads the Google script. If it does not render offline, show its fallback state only.
-
-### Slice 7: features `cameras`, `lenses`, `film-stocks`, `labs`, `lab-orders`
-
-`camera-form-dialog`, `manage-lenses-dialog`, `lens-form-dialog`, `stock-form-dialog`, `lab-form-dialog`, `lab-scanner-picker`, `add-roll-to-order-dialog`, `lab-order-form-dialog`, `order-lines-picker`.
-Allowed files: as slice 6, for these features.
-
-### Slice 8: feature `rolls` display
-
-`frames-card`, `in-stock-groups`, `in-stock-toolbar`, `processing-history-card`, `processing-jobs`, `roll-gear-card`, `roll-plan-fields`, `roll-stage-badge`, `roll-status-badge`, `roll-summary-card`, `scan-order-picker`.
-Allowed files: `<Name>.stories.ts` in those directories, `src/features/rolls/stories.fixtures.ts`.
-
-### Slice 9: feature `rolls` dialogs
-
-`add-rolls-dialog`, `finish-roll-dialog`, `hand-over-dialog`, `load-roll-dialog`, `mark-developed-dialog`, `return-negatives-dialog`, `roll-edit-dialog`, `roll-lenses-dialog`, `send-to-lab-dialog`.
-Allowed files: `<Name>.stories.ts` in those directories, `src/features/rolls/stories.fixtures.ts`.
-
-Dependency order: slice 1 first. Slices 2 to 9 depend only on slice 1. Slice 9 reuses fixtures from slice 8, so run 8 before 9.
+Dependency order: slice 1 first. Slices 2 to 5 depend only on slice 1.
 
 ## Risks
 
@@ -119,6 +98,6 @@ Dependency order: slice 1 first. Slices 2 to 9 depend only on slice 1. Slice 9 r
 
 ## Reuse analysis
 
-- Existing patterns reviewed: colocated tests, feature query keys, `useForm` with valibot schemas, TanStack Router setup in `src/app/router.ts`.
-- Chosen approach: Reuse. Seed data with existing query keys. One shared router and theme decorator in `.storybook`.
-- Duplication risk: Low. Fixtures move to one file per feature when 3 or more stories share them.
+- Existing patterns reviewed: colocated tests, `useForm` with valibot schemas, TanStack Router setup in `src/app/router.ts`.
+- Chosen approach: Reuse. One shared router and theme decorator in `.storybook`.
+- Duplication risk: Low.

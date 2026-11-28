@@ -8,7 +8,6 @@ const config: StorybookConfig = {
       files: '**/*.stories.ts',
       titlePrefix: 'Components',
     },
-    { directory: '../src/features', files: '**/*.stories.ts', titlePrefix: 'Features' },
   ],
   addons: ['@storybook/addon-vitest', '@storybook/addon-a11y', '@storybook/addon-docs'],
   framework: '@storybook/vue3-vite',
