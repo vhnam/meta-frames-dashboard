@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-11-28
+
 ### Added
 
 - End-to-end tests for email verification with the server in `enforce` mode (`pnpm exec playwright test --project=email-verification`): registering sends one verification mail and starts no session, a login before verification is refused with `email_verification_required`, the link verifies the address and a login then works, and a used link is refused with `invalid_token`.
@@ -443,7 +445,8 @@ This release needs a Meta-Frame API that serves a film stock's `boxIso` as a str
 - Empty filters showed a blank value instead of "All …".
 - Console warning about a missing `Description` on `DialogContent`.
 
-[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/vhnam/meta-frames-dashboard/compare/v3.0.0...v3.1.0
