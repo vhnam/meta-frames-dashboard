@@ -59,8 +59,10 @@ export const Full: Story = {
   }),
 };
 
+const orderCode = '1042';
+
 export const WideStats: Story = {
-  args: { kind: 'Lab order', title: '#1042', numericTitle: true, wideStats: true },
+  args: { kind: 'Lab order', title: `#${orderCode}`, numericTitle: true, wideStats: true },
   render: (args) => ({
     components: { DetailHero },
     setup: () => ({ args }),
