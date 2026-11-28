@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- When the server requires a verified email, registering shows the server message and sends you to the sign-in page instead of signing you in.
+- End-to-end tests for email verification with the server in `enforce` mode (`pnpm exec playwright test --project=email-verification`): registering sends one verification mail and starts no session, a login before verification is refused with `email_verification_required`, the link verifies the address and a login then works, and a used link is refused with `invalid_token`.
 
 ### Changed
 
+- When the server requires a verified email, registering shows the server message and sends you to the sign-in page instead of signing you in.
 - The sign-in page tells you when a Google sign-in uses an email that already belongs to another account: "This email already belongs to another account. Sign in the way you first signed up."
 
 ## [3.3.0] - 2026-11-24
